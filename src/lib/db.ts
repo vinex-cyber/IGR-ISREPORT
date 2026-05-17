@@ -31,7 +31,7 @@ export const getPool = (branch: BranchType) => {
     pools[branch] = new Pool({
       host: configs[branch].host,
       database: configs[branch].database,
-      port: 5432,
+      port: process.env.PG_PORT ? parseInt(process.env.PG_PORT) : 5432,
       user: process.env.PG_USER,
       password: process.env.PG_PASSWORD,
     });

@@ -55,6 +55,7 @@ export default function FormSoHarian() {
         resolver: zodResolver(FilterFormSoHarianSchema),
         defaultValues: {
             prdcd: "",
+            branch: "IGRCPG",
         },
     });
 

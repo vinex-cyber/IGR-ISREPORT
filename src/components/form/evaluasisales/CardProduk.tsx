@@ -1,5 +1,9 @@
 // CardProduk.tsx
-import { CardContent, CardFieldset, CardTitleLegend } from "@/components/ui/card";
+import {
+  CardContent,
+  CardFieldset,
+  CardTitleLegend,
+} from "@/components/ui/card";
 import FormInput from "@/components/FormInput";
 import { Control } from "react-hook-form";
 import { FilterDetailStrukInput } from "@/schema/filterDetailStruk";
@@ -10,30 +14,31 @@ import SelectTag from "./SelectTag";
 import InputProdukPlu from "@/components/input/InputProdukPlu";
 import InputNamaProduk from "@/components/input/InputNamaProduk";
 import InputMonitoringPlu from "@/components/input/InputMonitoringPlu";
+import SelectNonPromo from "./SelectNonPromo";
 
 type CardProdukProps = {
-    control: Control<FilterDetailStrukInput>;
+  control: Control<FilterDetailStrukInput>;
 };
 
 const CardProduk = ({ control }: CardProdukProps) => {
-
-    return (
-        <CardFieldset className="relative border rounded-lg shadow">
-            <CardTitleLegend className="text-md font-semibold mx-6 px-2">
-                Produk
-            </CardTitleLegend>
-            <CardContent className="space-y-2">
-                <InputProdukPlu />
-                <InputNamaProduk />
-                <FormInput name="barcode" placeholder="Barcode" />
-                <InputMonitoringPlu />
-                <SelectDivisi control={control} />
-                <SelectDepartement control={control} />
-                <Selectkategori control={control} />
-                <SelectTag control={control} />
-            </CardContent>
-        </CardFieldset>
-    );
+  return (
+    <CardFieldset className="relative border rounded-lg shadow">
+      <CardTitleLegend className="text-md font-semibold mx-6 px-2">
+        Produk
+      </CardTitleLegend>
+      <CardContent className="space-y-2">
+        <InputProdukPlu />
+        <InputNamaProduk />
+        <FormInput name="barcode" placeholder="Barcode" />
+        <InputMonitoringPlu />
+        <SelectDivisi control={control} />
+        <SelectDepartement control={control} />
+        <Selectkategori control={control} />
+        <SelectTag control={control} />
+        <SelectNonPromo control={control} />
+      </CardContent>
+    </CardFieldset>
+  );
 };
 
 export default CardProduk;
