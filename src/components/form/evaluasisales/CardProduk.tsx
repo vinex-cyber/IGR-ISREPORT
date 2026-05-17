@@ -9,6 +9,7 @@ import Selectkategori from "./Selectkategori";
 import SelectTag from "./SelectTag";
 import InputProdukPlu from "@/components/input/InputProdukPlu";
 import InputNamaProduk from "@/components/input/InputNamaProduk";
+import InputMonitoringPlu from "@/components/input/InputMonitoringPlu";
 
 type CardProdukProps = {
     control: Control<FilterDetailStrukInput>;
@@ -25,7 +26,7 @@ const CardProduk = ({ control }: CardProdukProps) => {
                 <InputProdukPlu />
                 <InputNamaProduk />
                 <FormInput name="barcode" placeholder="Barcode" />
-                <FormInput name="monitoringPlu" placeholder="Kode Monitoring PLU" />
+                <InputMonitoringPlu />
                 <SelectDivisi control={control} />
                 <SelectDepartement control={control} />
                 <Selectkategori control={control} />

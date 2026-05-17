@@ -1,15 +1,15 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import pool from "@/lib/db";
+import { getPool, BranchType } from "@/lib/db";
 
 /**
  * =========================================
  * 🔌 API ROUTE: SelectTag
  * =========================================
- * 
+ *
  * 📍 Endpoint: /api/select-tag
  * 📄 File: src/pages/api/select-tag.ts
  * 🧩 Handler: selectTagHandler
- * 
+ *
  * 📌 Supported Methods:
  * - GET → Fetch data
  */
@@ -33,7 +33,7 @@ type SelectTag = {
  */
 export default async function selectTagHandler(
   req: NextApiRequest,
-  res: NextApiResponse<ApiResponse<SelectTag[]>>
+  res: NextApiResponse<ApiResponse<SelectTag[]>>,
 ) {
   // 🔥 hanya GET
   if (req.method !== "GET") {
@@ -53,6 +53,8 @@ export default async function selectTagHandler(
       order by tag_kodetag
     `;
 
+    const branch = (req.query.branch as BranchType) || "IGRCPG";
+    const pool = getPool(branch);
     const result = await pool.query(query);
 
     return res.status(200).json({

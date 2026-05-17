@@ -1,7 +1,7 @@
 import { useState } from "react";
 import FormInput from "../FormInput";
 import { Search } from "lucide-react";
-import SupplierModal from "../modal/evaluasi-sales/SupplierModal";
+import SupplierModal from "../modal/SupplierModal";
 
 const InputSerchSupplier = () => {
     const [supplierModal, setSupplierModal] = useState(false);

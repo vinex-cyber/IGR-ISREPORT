@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getPool, BranchType } from "@/lib/db";
-import { DaftarProdukRows } from "@/configs/input/daftar-produkConfig";
+import { DaftarMemberRows } from "@/configs/input/daftar-memberConfig";
 
 type ApiResponse<T> = {
   success: boolean;
@@ -10,9 +10,9 @@ type ApiResponse<T> = {
   error?: string;
 };
 
-export default async function daftarProdukHandler(
+export default async function daftarMemberHandler(
   req: NextApiRequest,
-  res: NextApiResponse<ApiResponse<DaftarProdukRows[]>>,
+  res: NextApiResponse<ApiResponse<DaftarMemberRows[]>>,
 ) {
   if (req.method !== "GET") {
     return res.status(405).json({
@@ -22,7 +22,10 @@ export default async function daftarProdukHandler(
   }
 
   try {
+    // 🔥 branch
     const branch = (req.query.branch as BranchType) || "IGRCPG";
+
+    // 🔥 database pool
     const pool = getPool(branch);
 
     // =========================
@@ -40,42 +43,44 @@ export default async function daftarProdukHandler(
     // =========================
     const query = `
       SELECT
-        prd_prdcd,
-        prd_deskripsipanjang,
-        prd_frac||' / '||prd_unit AS satuan,
-        COALESCE(st_saldoakhir, 0) AS st_saldoakhir,
+        cus_kodeigr,
+        cus_kodemember,
+        cus_namamember,
+        CASE
+            WHEN coalesce(cus_flagmemberkhusus,'N') = 'Y' THEN 'MERAH'
+            ELSE 'BIRU'
+        END             as jenis_member,
 
         -- 🔥 ranking gabungan
         (
           ts_rank_cd(
-            to_tsvector('simple', prd_deskripsipanjang),
+            to_tsvector('simple', cus_namamember),
             plainto_tsquery('simple', $1)
           )
           +
           CASE 
-            WHEN prd_prdcd ILIKE $2 THEN 5.0  -- boost kalau match kode
+            WHEN cus_kodemember ILIKE $2 THEN 5.0  -- boost kalau match kode
             ELSE 0
           END
         ) AS rank
 
-      FROM tbmaster_prodmast
-      LEFT JOIN tbmaster_stock 
-        ON prd_prdcd = st_prdcd
-        AND st_lokasi = '01'
-
+      FROM tbmaster_customer
+    
       WHERE 
-        prd_prdcd LIKE '%0'
+        cus_recordid IS NULL
+        AND cus_namamember <> 'NEW'
         AND (
           $1 = '' OR
-          to_tsvector('simple', prd_deskripsipanjang)
+          to_tsvector('simple', cus_namamember)
             @@ plainto_tsquery('simple', $1)
           OR
-          prd_prdcd ILIKE $2
+          cus_kodemember ILIKE $2
         )
 
       ORDER BY 
-        rank DESC,
-        prd_prdcd
+      rank DESC,
+      cus_kodeigr,
+      cus_kodemember
 
       LIMIT $3 OFFSET $4
     `;
@@ -92,15 +97,15 @@ export default async function daftarProdukHandler(
     // =========================
     const countQuery = `
       SELECT COUNT(*) AS total
-      FROM tbmaster_prodmast
+      FROM tbmaster_customer
       WHERE 
-        prd_prdcd LIKE '%0'
+        cus_recordid IS NULL
         AND (
           $1 = '' OR
-          to_tsvector('simple', prd_deskripsipanjang)
+          to_tsvector('simple', cus_namamember)
             @@ plainto_tsquery('simple', $1)
           OR
-          prd_prdcd ILIKE $2
+          cus_kodemember ILIKE $2
         )
     `;
 
@@ -112,7 +117,7 @@ export default async function daftarProdukHandler(
       total: Number(countResult.rows[0].total),
     });
   } catch (error) {
-    console.error("[ERROR] /api/daftar-produk:", error);
+    console.error("[ERROR] /api/daftar-member:", error);
 
     return res.status(500).json({
       success: false,

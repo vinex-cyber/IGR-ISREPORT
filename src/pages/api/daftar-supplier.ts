@@ -1,15 +1,15 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import pool from "@/lib/db";
+import { getPool, BranchType } from "@/lib/db";
 
 /**
  * =========================================
  * 🔌 API ROUTE: DaftarSupplier
  * =========================================
- * 
+ *
  * 📍 Endpoint: /api/daftar-supplier
  * 📄 File: src/pages/api/daftar-supplier.ts
  * 🧩 Handler: daftarSupplierHandler
- * 
+ *
  * 📌 Supported Methods:
  * - GET → Fetch data
  */
@@ -33,7 +33,7 @@ type DaftarSupplier = {
  */
 export default async function daftarSupplierHandler(
   req: NextApiRequest,
-  res: NextApiResponse<ApiResponse<DaftarSupplier[]>>
+  res: NextApiResponse<ApiResponse<DaftarSupplier[]>>,
 ) {
   // 🔥 hanya GET
   if (req.method !== "GET") {
@@ -57,6 +57,9 @@ export default async function daftarSupplierHandler(
       and hgb_tipe = '2'
       group by hgb_kodesupplier, sup_namasupplier
     `;
+
+    const branch = (req.query.branch as BranchType) || "IGRCPG";
+    const pool = getPool(branch);
 
     const result = await pool.query(query);
 

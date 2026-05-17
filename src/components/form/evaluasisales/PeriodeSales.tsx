@@ -32,6 +32,7 @@ const PeriodeSales = ({ control }: PeriodeSalesProps) => {
             <CardTitleLegend className="text-md font-semibold mx-6 px-2">Periode</CardTitleLegend>
             <CardContent>
                 <DateRangePicker
+
                     value={{
                         from: startField.value ? parseLocalDate(startField.value) : undefined,
                         to: endField.value ? parseLocalDate(endField.value) : undefined,

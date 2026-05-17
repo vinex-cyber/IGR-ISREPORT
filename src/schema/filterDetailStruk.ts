@@ -18,7 +18,7 @@ export const FilterDetailStrukSchema = z.object({
             if (!v) return true;
             return /^[0-9,]+$/.test(v); // hanya angka & koma
         }, { message: "Format PLU tidak valid" }),
-    monitoringPlu: z.string().toUpperCase().optional(),
+    kodeMonitoringPlu: z.string().toUpperCase().optional(),
     namaBarang: z.string().optional(),
     barcode: z.string().optional(),
     nonTunai: z.enum(["true", "false"]).optional(),
@@ -27,11 +27,11 @@ export const FilterDetailStrukSchema = z.object({
     outlet: z.string().optional(),
     subOutlet: z.string().optional(),
     katMember: z.string().optional(),
-    cashback: z.array(z.string()).optional(),
+    cashback: z.union([z.string(), z.array(z.string())]).optional(),
     cbAktif: z.string().optional(),
     cbUc: z.string().optional(),
     cbredempoin: z.string().optional(),
-    gift: z.string().optional(),
+    kodeGift: z.string().optional(),
     promo: z.array(z.string()).optional(),
     kasir: z.union([z.string(), z.array(z.string())]).optional(),
     kasirType: z.enum(["non-kss", "only-kss"]).optional(),
@@ -42,6 +42,7 @@ export const FilterDetailStrukSchema = z.object({
     monitoringSupplier: z.string().optional(),
     strukSupplier: z.string().optional(),
     selectedReport: z.string().optional(),
+    branch: z.enum(["IGRCPG", "ICMCPG", "SPICPG1I", "SPICPG4L"]).optional(),
 });
 
 export type FilterDetailStrukInput = z.infer<typeof FilterDetailStrukSchema>;

@@ -1,21 +1,21 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import pool from "@/lib/db";
+import { getPool, BranchType } from "@/lib/db";
 
 /**
  * =========================================
  * 🔌 API ROUTE: SelectDepartement
  * =========================================
- * 
+ *
  * 📍 Endpoint: /api/select-departement
  * 📄 File: src/pages/api/select-departement.ts
  * 🧩 Handler: selectDepartementHandler
- * 
+ *
  * 📌 Supported Methods:
  * - GET    → Fetch data
  * - POST   → Create new resource
  * - PUT    → Update existing resource
  * - DELETE → Remove resource
- * 
+ *
  * 📌 Tips:
  * - Gunakan try-catch untuk error handling
  * - Return JSON dengan status code yang sesuai
@@ -38,7 +38,7 @@ type ApiResponse<T> = {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ApiResponse<Departement[]>>
+  res: NextApiResponse<ApiResponse<Departement[]>>,
 ) {
   // 🔥 hanya GET
   if (req.method !== "GET") {
@@ -62,6 +62,9 @@ export default async function handler(
                 dep_kodedivisi,
                 dep_kodedepartement
         `;
+
+    const branch = (req.query.branch as BranchType) || "IGRCPG";
+    const pool = getPool(branch);
 
     const result = await pool.query(query);
 

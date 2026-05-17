@@ -1,26 +1,32 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import pool from "@/lib/db";
+import { getPool } from "@/lib/db";
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk"; // pastikan import benar
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk"; // pastikan import benar
 import { DetailStruk } from "@/utils/query/detailStruk";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    try {
-        // Ambil semua query string dan validasi pakai Zod
-        const result = FilterDetailStrukSchema.safeParse(req.query);
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
+  try {
+    // Ambil semua query string dan validasi pakai Zod
+    const result = FilterDetailStrukSchema.safeParse(req.query);
 
-        if (!result.success) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid query parameters",
-                errors: result.error.flatten(),
-            });
-        }
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid query parameters",
+        errors: result.error.flatten(),
+      });
+    }
 
-        const filters = result.data;
-        const { conditions, params } = FilterDetailStruk(filters);
+    const filters = result.data;
+    //branch
+    const branch = filters.branch || "IGRCPG";
+    const pool = getPool(branch);
+    const { conditions, params } = FilterDetailStruk(filters);
 
-        const query = `
+    const query = `
         SELECT
             dtl_k_div as div,
             dtl_k_dept as dept,
@@ -40,18 +46,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ORDER BY dtl_k_div, dtl_k_dept, dtl_k_katb
         `;
 
-        const resultQuery = await pool.query(query, params);
+    const resultQuery = await pool.query(query, params);
 
-        return res.status(200).json({
-            success: true,
-            data: resultQuery.rows,
-        });
-    } catch (error) {
-        console.error("Error:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error",
-            error: error instanceof Error ? error.message : String(error),
-        });
-    }
+    return res.status(200).json({
+      success: true,
+      data: resultQuery.rows,
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 }

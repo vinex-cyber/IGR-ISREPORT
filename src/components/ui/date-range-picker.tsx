@@ -1,4 +1,3 @@
-"use client"
 
 import * as React from "react"
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from "date-fns"
@@ -29,6 +28,10 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
     const months = Array.from({ length: 12 }, (_, i) =>
         new Date(0, i).toLocaleString("default", { month: "long" })
     )
+
+    React.useEffect(() => {
+        setDate(value)
+    }, [value])
 
     const handleSelect = (range: DateRange | undefined) => {
         setDate(range)

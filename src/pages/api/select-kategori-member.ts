@@ -1,15 +1,15 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import pool from "@/lib/db";
+import { getPool, BranchType } from "@/lib/db";
 
 /**
  * =========================================
  * 🔌 API ROUTE: SelectKategoriMember
  * =========================================
- * 
+ *
  * 📍 Endpoint: /api/select-kategori-member
  * 📄 File: src/pages/api/select-kategori-member.ts
  * 🧩 Handler: selectKategoriMemberHandler
- * 
+ *
  * 📌 Supported Methods:
  * - GET → Fetch data
  */
@@ -35,7 +35,7 @@ type SelectKategoriMember = {
  */
 export default async function selectKategoriMemberHandler(
   req: NextApiRequest,
-  res: NextApiResponse<ApiResponse<SelectKategoriMember[]>>
+  res: NextApiResponse<ApiResponse<SelectKategoriMember[]>>,
 ) {
   // 🔥 hanya GET
   if (req.method !== "GET") {
@@ -57,6 +57,8 @@ export default async function selectKategoriMemberHandler(
       order by grp_group desc, grp_kategori asc;
     `;
 
+    const branch = (req.query.branch as BranchType) || "IGRCPG";
+    const pool = getPool(branch);
     const result = await pool.query(query);
 
     return res.status(200).json({

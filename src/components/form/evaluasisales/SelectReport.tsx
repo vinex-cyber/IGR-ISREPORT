@@ -27,7 +27,7 @@ const SelectReport = ({ control }: SelectReportProps) => {
     return (
         <CardFieldset className="border rounded-lg shadow">
             <CardTitleLegend className="text-md font-semibold mx-6 px-2">
-                Laporan
+                Jenis Laporan
             </CardTitleLegend>
             <CardContent className="space-y-2">
                 <Controller

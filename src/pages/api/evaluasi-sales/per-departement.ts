@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import pool from "@/lib/db";
+import { getPool } from "@/lib/db";
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk"; // pastikan import benar
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk"; // pastikan import benar
 import { DetailStruk } from "@/utils/query/detailStruk";
@@ -18,6 +18,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         const filters = result.data;
+        // branch
+        const branch = filters.branch || "IGRCPG";
+        const pool = getPool(branch);
+        
         const { conditions, params } = FilterDetailStruk(filters);
 
         const query = `

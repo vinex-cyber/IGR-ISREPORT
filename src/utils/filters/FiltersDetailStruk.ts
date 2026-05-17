@@ -71,11 +71,11 @@ export const FilterDetailStruk = (filters: FilterDetailStrukInput) => {
         params.push(filters.prdcd);
     }
 
-    if (filters.monitoringPlu && filters.monitoringPlu !== "") {
-        conditions.push(`dtl_prdcd_ctn IN (
-                        SELECT unnest(string_to_array($1, ','))
-                )`);
-        params.push(filters.monitoringPlu);
+    if (filters.kodeMonitoringPlu && filters.kodeMonitoringPlu !== "") {
+        conditions.push(`dtl_prdcd_ctn = ANY(
+                        select mpl_prdcd from tbtr_monitoringplu where mpl_kodemonitoring = $${params.length + 1})
+                `);
+        params.push(filters.kodeMonitoringPlu);
     }
 
     // Filter Nama Barang
@@ -120,12 +120,15 @@ export const FilterDetailStruk = (filters: FilterDetailStrukInput) => {
         params.push(filters.subOutlet);
     }
     // Filter Cash Back
-    if (filters.cashback && filters.cashback.length > 0) {
-        conditions.push(
-            `dtl_struk = ANY(select to_char(tgl_trans,'yyyymmdd')||create_by||trans_no||'S' as cashback_struk from m_promosi_h where kd_promosi = ANY($${params.length + 1
-            }))`
-        );
-        params.push(filters.cashback);
+    const cashbacks = normalizeToArray(filters.cashback);
+    if (cashbacks.length > 0) {
+        if (cashbacks.length === 1) {
+            conditions.push(`dtl_struk = ANY(select distinct to_char(tgl_trans,'yyyymmdd')||create_by||trans_no||'S' as cashback_struk from m_promosi_h where kd_promosi = $${params.length + 1})`);
+            params.push(cashbacks[0]);
+        } else {
+            conditions.push(`dtl_struk = ANY(select distinct to_char(tgl_trans,'yyyymmdd')||create_by||trans_no||'S' as cashback_struk from m_promosi_h where kd_promosi = ANY($${params.length + 1}))`);
+            params.push(cashbacks);
+        }
     }
 
     // Filter Cashback Aktif
@@ -152,13 +155,12 @@ export const FilterDetailStruk = (filters: FilterDetailStrukInput) => {
         );
         params.push(filters.cbredempoin);
     }
-    // Filter Gift Aktif
-    if (filters.gift && filters.gift !== "") {
+    // Filter Gift
+    if (filters.kodeGift && filters.kodeGift !== "") {
         conditions.push(
-            `dtl_prdcd_ctn = ANY(select gfd_prdcd from tbtr_gift_dtl where gfd_kodepromosi = $${params.length + 1
-            })`
+            `dtl_cusno = ANY(select distinct kd_member from m_gift_h where kd_promosi = $${params.length + 1})`
         );
-        params.push(filters.gift);
+        params.push(filters.kodeGift);
     }
     // Filter Promo Gift
     if (filters.promo && filters.promo.length > 0) {

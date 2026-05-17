@@ -176,17 +176,28 @@ export default function FormSoHarian() {
                             const qty_rom = data.slice(0, 1).map((row) => (Number(row.qty_rom ?? 0)))[0] ?? 0;
                             const sumPlano = plano_qty + omi_recid4 + qty_rom;
                             const selisih = sumPlano - lpp;
-
+                            const keterangan = () => {
+                                if (sumPlano > lpp) {
+                                    return "Plano > dari LPP";
+                                } else if (sumPlano < lpp) {
+                                    return "Plano < LPP";
+                                } else {
+                                    return "Plano = LPP";
+                                }
+                            }
                             const acost = data[0]?.acost ?? 0;
                             const flag = data[0]?.flag ?? "-";
 
                             return (
                                 <>
                                     <tr className="bg-blue-400 font-semibold">
-                                        <td colSpan={3} className="border px-2 py-2">
-                                            Acost : {formatNumber(Number(acost))}
+                                        <td className="border px-2 py-2">
+                                            Acost
                                         </td>
-                                        <td>
+                                        <td colSpan={2} className="border px-2 py-2">
+                                            : {formatNumber(Number(acost))}
+                                        </td>
+                                        <td colSpan={2}>
                                             Plano Qty : {formatNumber(plano_qty)}
                                         </td>
                                         <td>
@@ -195,8 +206,8 @@ export default function FormSoHarian() {
                                         <td>
                                             Omi Retur : {formatNumber(qty_rom)}
                                         </td>
-                                        <td colSpan={2} className="border px-2 py-2 text-right">
-                                            Total Plano (a):
+                                        <td colSpan={1} className="border px-2 py-2 text-right">
+                                            {"Total Plano (a) :"}
                                         </td>
                                         <td className="border px-2 py-2 text-right">
                                             {formatNumber(sumPlano)}
@@ -204,11 +215,14 @@ export default function FormSoHarian() {
                                     </tr>
 
                                     <tr className="bg-blue-400 font-semibold">
-                                        <td colSpan={5} className="border px-2 py-2">
-                                            Flag : {flag}
+                                        <td className="border px-2 py-2">
+                                            Flag
+                                        </td>
+                                        <td colSpan={4} className="border px-2 py-2">
+                                            : {flag}
                                         </td>
                                         <td colSpan={3} className="border px-2 py-2 text-right">
-                                            LPP (b):
+                                            {"LPP (b) :"}
                                         </td>
                                         <td className="border px-2 py-2 text-right">
                                             {formatNumber(lpp)}
@@ -216,9 +230,14 @@ export default function FormSoHarian() {
                                     </tr>
 
                                     <tr className="bg-blue-400 font-semibold">
-                                        <td colSpan={5} className="border px-2 py-2"></td>
+                                        <td className="border px-2 py-2">
+                                            Keterangan
+                                        </td>
+                                        <td colSpan={4} className="border px-2 py-2">
+                                            : {keterangan()}
+                                        </td>
                                         <td colSpan={3} className="border px-2 py-2 text-right">
-                                            Selisih (a-b):
+                                            {"Selisih (a-b) :"}
                                         </td>
                                         <td className="border px-2 py-2 text-right">
                                             {formatNumber(selisih)}

@@ -16,6 +16,8 @@ const SelectReport = dynamic(() => import("@/components/form/evaluasisales/Selec
 const CardMember = dynamic(() => import("@/components/form/evaluasisales/CardMember"), { ssr: false });
 const CardProduk = dynamic(() => import("@/components/form/evaluasisales/CardProduk"), { ssr: false });
 const CardSupplier = dynamic(() => import("@/components/form/evaluasisales/CardSupplier"), { ssr: false });
+const CardPromo = dynamic(() => import("@/components/form/evaluasisales/CardPromo"), { ssr: false });
+const SelectBranch = dynamic(() => import("@/components/form/evaluasisales/SelectBranch"), { ssr: false });
 
 const EvaluasiSales = () => {
     const router = useRouter();
@@ -26,6 +28,7 @@ const EvaluasiSales = () => {
             selectedReport: "per-divisi",
             startDate: "",
             endDate: "",
+            branch: "IGRCPG",
         }
     });
 
@@ -37,6 +40,7 @@ const EvaluasiSales = () => {
             selectedReport: "per-divisi",
             startDate: today,
             endDate: today,
+            branch: "IGRCPG",
         });
     }, [methods]);
 
@@ -58,7 +62,7 @@ const EvaluasiSales = () => {
             router.push(`/evaluasi-sales/laporan/${reportType}?${params.toString()}`);
 
             toast.success(`Laporan ${reportType} sedang di proses`, {
-                duration: 20000,
+                duration: 2000,
                 position: "top-right",
                 description: `Periode: ${FormatTanggal(data.startDate)} - ${FormatTanggal(data.endDate)}`,
                 icon: "📊",
@@ -82,6 +86,9 @@ const EvaluasiSales = () => {
                     className="flex justify-between gap-4 flex-wrap"
                 >
                     <div className="space-y-4">
+                        <SelectBranch control={methods.control} />
+                    </div>
+                    <div className="space-y-4">
                         {/* Periode */}
                         <PeriodeSales control={methods.control} />
                         {/* Member */}
@@ -94,7 +101,13 @@ const EvaluasiSales = () => {
                     </div>
 
                     <div className="space-y-4">
+                        {/* Promo */}
+                        <CardPromo />
+                    </div>
+
+                    <div className="space-y-4">
                         <CardSupplier />
+
                         {/* Select Report */}
                         <SelectReport control={methods.control} />
                     </div>
