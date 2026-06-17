@@ -100,13 +100,15 @@ const EvaluasiSales = () => {
     <Layout title="Evaluasi Sales">
       <Form {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)}>
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="flex items-center text-2xl font-bold text-blue-500 mb-4">
-              Evaluasi Sales <ArrowRightIcon /> {methods.getValues("branch")}
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <h1 className="flex items-center gap-1 text-2xl font-bold text-blue-500">
+              Evaluasi Sales <ArrowRightIcon size={22} />{" "}
+              {methods.watch("branch")}
             </h1>
+
             <SettingsEvaluasiSales control={methods.control} />
           </div>
-          <div className="flex justify-between gap-4 flex-wrap">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
             <div className="space-y-4">
               {/* Periode */}
               <PeriodeSales control={methods.control} />
@@ -130,9 +132,10 @@ const EvaluasiSales = () => {
               {/* Select Report */}
               <SelectReport control={methods.control} />
             </div>
+          </div>
 
-            {/* Button */}
-            <div className="flex justify-end w-full">
+          <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-800">
+            <div className="flex justify-end">
               <Button type="submit" variant="outline">
                 Submit
               </Button>
