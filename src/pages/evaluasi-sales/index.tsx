@@ -41,6 +41,11 @@ const CardPromo = dynamic(
   { ssr: false },
 );
 
+const CardKasir = dynamic(
+  () => import("@/components/form/evaluasisales/CardKasir"),
+  { ssr: false },
+);
+
 const EvaluasiSales = () => {
   const router = useRouter();
 
@@ -124,6 +129,7 @@ const EvaluasiSales = () => {
             <div className="space-y-4">
               {/* Promo */}
               <CardPromo />
+              <CardKasir control={methods.control} />
             </div>
 
             <div className="space-y-4">

@@ -2,25 +2,25 @@ import { Controller, Control } from "react-hook-form";
 import SelectType from "@/components/SelectType";
 import { FilterDetailStrukInput } from "@/schema/filterDetailStruk";
 
-type SelectMemberKhususProps = {
+type SelectKassaProps = {
   control: Control<FilterDetailStrukInput>;
   placeholder?: string;
 };
 
-const SelectMemberKhusus = ({
+const SelectKassa = ({
   control,
-  placeholder = "All Member",
-}: SelectMemberKhususProps) => {
+  placeholder = "All Kassa",
+}: SelectKassaProps) => {
   const memberOptions = [
-    { label: "All Member", value: "__all__" }, // ✅ Tambahkan opsi 'semua'
-    { label: "Member Biru", value: "N" },
-    { label: "Member Merah", value: "Y" },
+    { label: "All Kassa", value: "__all__" }, // ✅ Tambahkan opsi 'semua'
+    { label: "Non Kss", value: "non-kss" },
+    { label: "Only Kss", value: "only-kss" },
   ];
 
   return (
     <Controller
       control={control}
-      name="memberKhusus"
+      name="kasirType"
       render={({ field }) => (
         <SelectType
           value={field.value || "__all__"} // ✅ tampilkan "__all__" jika kosong
@@ -33,4 +33,4 @@ const SelectMemberKhusus = ({
   );
 };
 
-export default SelectMemberKhusus;
+export default SelectKassa;

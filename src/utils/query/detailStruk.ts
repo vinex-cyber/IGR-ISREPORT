@@ -1,27 +1,26 @@
 // /src/utils/query/detailStruk.ts
 export const DetailStruk = (
-    conditions: string,
-    params: (string | string[])[] = []
+  conditions: string,
+  params: (string | string[])[] = [],
 ): string => {
+  const startDate = params[0] || null;
+  const endDate = params[1] || null;
 
-    const startDate = params[0] || null;
-    const endDate = params[1] || null;
+  const buildDateFilter = (alias: string): string => {
+    if (startDate && endDate) {
+      return `${alias} >= '${startDate}' AND  ${alias} < '${endDate}'`;
+    } else if (startDate) {
+      return `date_trunc('day', ${alias}) >= '${startDate}'`;
+    } else if (endDate) {
+      return `date_trunc('day', ${alias}) = '${endDate}'`;
+    }
+    return "";
+  };
 
-    const buildDateFilter = (alias: string): string => {
-        if (startDate && endDate) {
-            return `${alias} >= '${startDate}' AND  ${alias} < '${endDate}'`;
-        } else if (startDate) {
-            return `date_trunc('day', ${alias}) >= '${startDate}'`;
-        } else if (endDate) {
-            return `date_trunc('day', ${alias}) = '${endDate}'`;
-        }
-        return "";
-    };
+  const jualdetailDateFilter = buildDateFilter("trjd_transactiondate");
+  const virtualDateFilter = buildDateFilter("vir_transactiondate");
 
-    const jualdetailDateFilter = buildDateFilter("trjd_transactiondate");
-    const virtualDateFilter = buildDateFilter("vir_transactiondate");
-
-    return `
+  return `
 SELECT
         dtl_rtype,
         dtl_tanggal,
@@ -210,7 +209,7 @@ cast(trjd_noinvoice1 AS VARCHAR) as trjd_noinvoice1,
 cast(trjd_noinvoice2 AS VARCHAR) as trjd_noinvoice2,
 p_qty
 from tbtr_jualdetail
-${jualdetailDateFilter ? `where ${jualdetailDateFilter}` : ''}
+${jualdetailDateFilter ? `where ${jualdetailDateFilter}` : ""}
 union all
 select
 trjd_kodeigr,
@@ -242,7 +241,7 @@ cast(trjd_noinvoice1 AS VARCHAR) as trjd_noinvoice1,
 cast(trjd_noinvoice2 AS VARCHAR) as trjd_noinvoice2,
 p_qty
 from tbtr_jualdetail_interface
-${jualdetailDateFilter ? `where ${jualdetailDateFilter}` : ''})s)trjd
+${jualdetailDateFilter ? `where ${jualdetailDateFilter}` : ""})s)trjd
         LEFT JOIN tbmaster_prodmast ON trjd_prdcd = prd_prdcd
         LEFT JOIN tbmaster_tokoigr ON trjd_cus_kodemember = tko_kodecustomer
         LEFT JOIN tbmaster_customer ON trjd_cus_kodemember = cus_kodemember
@@ -288,5 +287,5 @@ ${jualdetailDateFilter ? `where ${jualdetailDateFilter}` : ''})s)trjd
     vir_method
     ) as vir on key_vir = dtl_struk
      ${conditions ? `${conditions}` : `WHERE date_trunc('day', dtl_tanggal) = current_date`}
-`
-}
+`;
+};
