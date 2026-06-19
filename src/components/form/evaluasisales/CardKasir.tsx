@@ -8,6 +8,7 @@ import FormInput from "@/components/FormInput";
 import { Control } from "react-hook-form";
 import { FilterDetailStrukInput } from "@/schema/filterDetailStruk";
 import SelectKassa from "./SelectKassa";
+import SelectMethode from "./SelectMethode";
 
 type CardKasirProps = {
   control: Control<FilterDetailStrukInput>;
@@ -24,6 +25,7 @@ const CardKasir = ({ control }: CardKasirProps) => {
         <FormInput name="station" placeholder="Station" />
         <FormInput name="noTrans" placeholder="No Trans" />
         <SelectKassa control={control} />
+        <SelectMethode control={control} />
       </CardContent>
     </CardFieldset>
   );
