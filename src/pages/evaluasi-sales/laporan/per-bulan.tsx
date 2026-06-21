@@ -11,161 +11,168 @@ import LoadingIgr from "@/components/LoadingIgr";
 import { FileText, ReceiptText } from "lucide-react";
 import RowDropdownMenu from "@/components/RowDropdownMenu";
 
-import { PerBulanRows, perBulanColumns } from "@/configs/evaluasi-sales/per-bulan-config";
+import {
+  PerBulanRows,
+  perBulanColumns,
+} from "@/configs/evaluasi-sales/per-bulan-config";
 import { buildReport } from "@/utils/reportBuilder";
 
 const PerBulanPage = () => {
-    const config = buildReport<PerBulanRows>(perBulanColumns);
-    const {
-        searchTerm,
-        setSearchTerm,
-        filteredData,
-        loading,
-        error,
-        title,
-        periode,
-        totalRow,
-        handleExport,
-        isRefreshing,
-        handleRefresh,
-    } = useReportPage<PerBulanRows>({
-        basePath: "evaluasi-sales",
-        ...config,
-    });
+  const config = buildReport<PerBulanRows>(perBulanColumns);
+  const {
+    searchTerm,
+    setSearchTerm,
+    filteredData,
+    loading,
+    error,
+    title,
+    periode,
+    totalRow,
+    handleExport,
+    isRefreshing,
+    handleRefresh,
+  } = useReportPage<PerBulanRows>({
+    basePath: "evaluasi-sales",
+    reportType: "per-bulan",
+    ...config,
+  });
 
-    const [selectedRow, setSelectedRow] = useState<PerBulanRows | null>(null);
-    const [showProdukModal, setShowProdukModal] = useState(false);
-    const [showStrukModal, setShowStrukModal] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<PerBulanRows | null>(null);
+  const [showProdukModal, setShowProdukModal] = useState(false);
+  const [showStrukModal, setShowStrukModal] = useState(false);
 
-    const getMonthRange = (
-        monthYear?: string
-    ): { startDate: string; endDate: string } => {
-        if (!monthYear) {
-            return { startDate: "", endDate: "" };
-        }
+  const getMonthRange = (
+    monthYear?: string,
+  ): { startDate: string; endDate: string } => {
+    if (!monthYear) {
+      return { startDate: "", endDate: "" };
+    }
 
-        const [monthStr, yearStr] = monthYear.split("-");
-        const month = parseInt(monthStr, 10);
-        const year = parseInt(yearStr, 10);
+    const [monthStr, yearStr] = monthYear.split("-");
+    const month = parseInt(monthStr, 10);
+    const year = parseInt(yearStr, 10);
 
-        if (isNaN(month) || isNaN(year)) {
-            return { startDate: "", endDate: "" };
-        }
+    if (isNaN(month) || isNaN(year)) {
+      return { startDate: "", endDate: "" };
+    }
 
-        const startDate = new Date(year, month - 1, 1); // awal bulan
-        const endDate = new Date(year, month, 0);       // akhir bulan
+    const startDate = new Date(year, month - 1, 1); // awal bulan
+    const endDate = new Date(year, month, 0); // akhir bulan
 
-        const formatLocalDate = (date: Date): string => {
-            const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, "0");
-            const d = String(date.getDate()).padStart(2, "0");
-            return `${y}-${m}-${d}`;
-        };
-
-        return {
-            startDate: formatLocalDate(startDate),
-            endDate: formatLocalDate(endDate),
-        };
+    const formatLocalDate = (date: Date): string => {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
     };
 
-
-    const monthRange = getMonthRange(selectedRow?.bulan);
-
-
-    const handleOpenStrukModal = (row: PerBulanRows) => {
-        setSelectedRow(row);
-        setShowStrukModal(true);
+    return {
+      startDate: formatLocalDate(startDate),
+      endDate: formatLocalDate(endDate),
     };
+  };
 
-    const handleOpenProdukModal = (row: PerBulanRows) => {
-        setSelectedRow(row);
-        setShowProdukModal(true);
-    };
+  const monthRange = getMonthRange(selectedRow?.bulan);
 
-    const actionsRows = [
-        {
-            label: "Produk",
-            onClick: handleOpenProdukModal,
-            icon: <ReceiptText size={16} />,
-        },
-        {
-            label: "Struk",
-            onClick: handleOpenStrukModal,
-            icon: <FileText size={16} />,
-        },
-    ];
+  const handleOpenStrukModal = (row: PerBulanRows) => {
+    setSelectedRow(row);
+    setShowStrukModal(true);
+  };
 
-    return (
-        <Layout title={title}>
-            <section className="space-y-4 p-4">
-                {loading && !isRefreshing ?
-                    <LoadingIgr /> :
-                    <>
-                        <ReportHeader
-                            title={title}
-                            periode={periode}
-                            onExport={handleExport}
-                            onRefresh={handleRefresh}
-                            isRefreshing={isRefreshing}
-                        />
+  const handleOpenProdukModal = (row: PerBulanRows) => {
+    setSelectedRow(row);
+    setShowProdukModal(true);
+  };
 
-                        <div className="flex space-x-2 justify-end">
-                            <Button
-                                variant="outline"
-                                onClick={() => setSearchTerm("")}
-                                className="text-sm h-8 bg-red-400 hover:bg-red-500 text-white shadow hover:cursor-pointer"
-                            >
-                                Reset
-                            </Button>
-                            <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder="Cari..." />
-                        </div>
+  const actionsRows = [
+    {
+      label: "Produk",
+      onClick: handleOpenProdukModal,
+      icon: <ReceiptText size={16} />,
+    },
+    {
+      label: "Struk",
+      onClick: handleOpenStrukModal,
+      icon: <FileText size={16} />,
+    },
+  ];
 
-                        {error && <p className="text-red-500">{error}</p>}
+  return (
+    <Layout title={title}>
+      <section className="space-y-4 p-4">
+        {loading && !isRefreshing ? (
+          <LoadingIgr />
+        ) : (
+          <>
+            <ReportHeader
+              title={title}
+              periode={periode}
+              onExport={handleExport}
+              onRefresh={handleRefresh}
+              isRefreshing={isRefreshing}
+            />
 
-                        {!error && filteredData && (
-                            <ReportTable
-                                columns={config.tableColumns}
-                                data={filteredData}
-                                totalRow={totalRow}
-                                keyField="bulan"
-                                showRowNumber={true}
-                                isRefreshing={isRefreshing}
-                                textHeader="sm"
-                                textFooter="sm"
-                                headerGroups={config.headerGroups}
-                                renderActions={(row) => (
-                                    <RowDropdownMenu
-                                        label={`Tgl: ${row.bulan}`}
-                                        triggerIconOnly={false}
-                                        actions={actionsRows.map(action => ({
-                                            label: action.label,
-                                            onClick: () => action.onClick(row),
-                                            icon: action.icon,
-                                        }))} />
-                                )}
-                            />
-                        )}
+            <div className="flex space-x-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setSearchTerm("")}
+                className="text-sm h-8 bg-red-400 hover:bg-red-500 text-white shadow hover:cursor-pointer">
+                Reset
+              </Button>
+              <SearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Cari..."
+              />
+            </div>
 
-                        {/* Modal Produk */}
-                        <ProdukModal
-                            show={showProdukModal && !!selectedRow}
-                            onClose={() => setShowProdukModal(false)}
-                            startDate={monthRange.startDate}
-                            endDate={monthRange.endDate}
-                        />
+            {error && <p className="text-red-500">{error}</p>}
 
-                        {/* Modal Struk */}
-                        <StrukModal
-                            show={showStrukModal && !!selectedRow}
-                            onClose={() => setShowStrukModal(false)}
-                            startDate={monthRange.startDate}
-                            endDate={monthRange.endDate}
-                        />
-                    </>
-                }
-            </section>
-        </Layout>
-    );
+            {!error && filteredData && (
+              <ReportTable
+                columns={config.tableColumns}
+                data={filteredData}
+                totalRow={totalRow}
+                keyField="bulan"
+                showRowNumber={true}
+                isRefreshing={isRefreshing}
+                textHeader="sm"
+                textFooter="sm"
+                headerGroups={config.headerGroups}
+                renderActions={(row) => (
+                  <RowDropdownMenu
+                    label={`Tgl: ${row.bulan}`}
+                    triggerIconOnly={false}
+                    actions={actionsRows.map((action) => ({
+                      label: action.label,
+                      onClick: () => action.onClick(row),
+                      icon: action.icon,
+                    }))}
+                  />
+                )}
+              />
+            )}
+
+            {/* Modal Produk */}
+            <ProdukModal
+              show={showProdukModal && !!selectedRow}
+              onClose={() => setShowProdukModal(false)}
+              startDate={monthRange.startDate}
+              endDate={monthRange.endDate}
+            />
+
+            {/* Modal Struk */}
+            <StrukModal
+              show={showStrukModal && !!selectedRow}
+              onClose={() => setShowStrukModal(false)}
+              startDate={monthRange.startDate}
+              endDate={monthRange.endDate}
+            />
+          </>
+        )}
+      </section>
+    </Layout>
+  );
 };
 
 export default PerBulanPage;

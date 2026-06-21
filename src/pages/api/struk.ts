@@ -105,15 +105,6 @@ export default async function handler(
       )
     : path.win32.join(STRUK_DIRECTORY, folderTanggal, station, filename);
 
-  console.log("PATH STRUK:", {
-    tanggal,
-    station,
-    kasir,
-    struk,
-    isIkiosk,
-    filePath,
-  });
-
   try {
     const content = await fs.readFile(filePath, "utf8");
 

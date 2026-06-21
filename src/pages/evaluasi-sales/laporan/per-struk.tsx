@@ -34,6 +34,7 @@ const PerProdukPage = () => {
     handleRefresh,
   } = useReportPage<PerStrukRows>({
     basePath: "evaluasi-sales",
+    reportType: "per-struk",
     ...config,
   });
   // State for modal

@@ -12,148 +12,181 @@ import LoadingIgr from "@/components/LoadingIgr";
 import { FileText, PackageSearch, ReceiptText } from "lucide-react";
 import RowDropdownMenu from "@/components/RowDropdownMenu";
 import { buildReport } from "@/utils/reportBuilder";
-import { perTanggalColumns, PerTanggalRows } from "@/configs/evaluasi-sales/per-tanggal-config";
+import {
+  perTanggalColumns,
+  PerTanggalRows,
+} from "@/configs/evaluasi-sales/per-tanggal-config";
 
 const PerTanggalPage = () => {
-    const config = buildReport<PerTanggalRows>(perTanggalColumns);
-    const {
-        searchTerm,
-        setSearchTerm,
-        filteredData,
-        loading,
-        error,
-        title,
-        periode,
-        totalRow,
-        handleExport,
-        isRefreshing,
-        handleRefresh,
-    } = useReportPage<PerTanggalRows>({
-        basePath: "evaluasi-sales",
-        ...config
-    });
+  const config = buildReport<PerTanggalRows>(perTanggalColumns);
+  const {
+    searchTerm,
+    setSearchTerm,
+    filteredData,
+    loading,
+    error,
+    title,
+    periode,
+    totalRow,
+    handleExport,
+    isRefreshing,
+    handleRefresh,
+  } = useReportPage<PerTanggalRows>({
+    basePath: "evaluasi-sales",
+    reportType: "per-tanggal",
+    ...config,
+  });
 
-    const convertToISODate = (dateStr: string): string => {
-        const [day, month, year] = dateStr.split("-");
-        return `${year}-${month}-${day}`;
-    };
+  const convertToISODate = (dateStr: string): string => {
+    const [day, month, year] = dateStr.split("-");
+    return `${year}-${month}-${day}`;
+  };
 
-    const [selectedRow, setSelectedRow] = useState<PerTanggalRows | null>(null);
-    const [showProdukModal, setShowProdukModal] = useState(false);
-    const [showProdukTanggalModal, setShowProdukTanggalModal] = useState(false);
-    const [showStrukModal, setShowStrukModal] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<PerTanggalRows | null>(null);
+  const [showProdukModal, setShowProdukModal] = useState(false);
+  const [showProdukTanggalModal, setShowProdukTanggalModal] = useState(false);
+  const [showStrukModal, setShowStrukModal] = useState(false);
 
-    const handleOpenProdukTanggalModal = (row: PerTanggalRows) => {
-        setSelectedRow(row);
-        setShowProdukTanggalModal(true);
-    };
+  const handleOpenProdukTanggalModal = (row: PerTanggalRows) => {
+    setSelectedRow(row);
+    setShowProdukTanggalModal(true);
+  };
 
-    const handleOpenStrukModal = (row: PerTanggalRows) => {
-        setSelectedRow(row);
-        setShowStrukModal(true);
-    };
+  const handleOpenStrukModal = (row: PerTanggalRows) => {
+    setSelectedRow(row);
+    setShowStrukModal(true);
+  };
 
-    const handleOpenProdukModal = (row: PerTanggalRows) => {
-        setSelectedRow(row);
-        setShowProdukModal(true);
-    };
+  const handleOpenProdukModal = (row: PerTanggalRows) => {
+    setSelectedRow(row);
+    setShowProdukModal(true);
+  };
 
-    const actionsRows = [
-        {
-            label: "Produk Per Tanggal",
-            onClick: handleOpenProdukTanggalModal,
-            icon: <PackageSearch size={16} />,
-        },
-        {
-            label: "Produk",
-            onClick: handleOpenProdukModal,
-            icon: <ReceiptText size={16} />,
-        },
-        {
-            label: "Struk",
-            onClick: handleOpenStrukModal,
-            icon: <FileText size={16} />,
-        },
-    ];
+  const actionsRows = [
+    {
+      label: "Produk Per Tanggal",
+      onClick: handleOpenProdukTanggalModal,
+      icon: <PackageSearch size={16} />,
+    },
+    {
+      label: "Produk",
+      onClick: handleOpenProdukModal,
+      icon: <ReceiptText size={16} />,
+    },
+    {
+      label: "Struk",
+      onClick: handleOpenStrukModal,
+      icon: <FileText size={16} />,
+    },
+  ];
 
-    return (
-        <Layout title={title}>
-            <section className="space-y-4 p-4">
-                {loading && !isRefreshing ?
-                    <LoadingIgr /> :
-                    <>
-                        <ReportHeader
-                            title={title}
-                            periode={periode}
-                            onExport={handleExport}
-                            onRefresh={handleRefresh}
-                            isRefreshing={isRefreshing}
-                        />
+  return (
+    <Layout title={title}>
+      <section className="space-y-4 p-4">
+        {loading && !isRefreshing ? (
+          <LoadingIgr />
+        ) : (
+          <>
+            <ReportHeader
+              title={title}
+              periode={periode}
+              onExport={handleExport}
+              onRefresh={handleRefresh}
+              isRefreshing={isRefreshing}
+            />
 
-                        <div className="flex space-x-2 justify-end">
-                            <Button
-                                variant="outline"
-                                onClick={() => setSearchTerm("")}
-                                className="text-sm h-8 bg-red-400 hover:bg-red-500 text-white shadow hover:cursor-pointer"
-                            >
-                                Reset
-                            </Button>
-                            <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder="Cari..." />
-                        </div>
+            <div className="flex space-x-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setSearchTerm("")}
+                className="text-sm h-8 bg-red-400 hover:bg-red-500 text-white shadow hover:cursor-pointer">
+                Reset
+              </Button>
+              <SearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Cari..."
+              />
+            </div>
 
-                        {error && <p className="text-red-500">{error}</p>}
+            {error && <p className="text-red-500">{error}</p>}
 
-                        {!error && filteredData && (
-                            <ReportTable
-                                columns={config.tableColumns}
-                                data={filteredData}
-                                totalRow={totalRow}
-                                keyField="tanggal"
-                                showRowNumber={true}
-                                isRefreshing={isRefreshing}
-                                textHeader="sm"
-                                textFooter="sm"
-                                headerGroups={config.headerGroups}
-                                renderActions={(row) => (
-                                    <RowDropdownMenu
-                                        label={`Tgl: ${row.tanggal}`}
-                                        triggerIconOnly={false}
-                                        actions={actionsRows.map(action => ({
-                                            label: action.label,
-                                            onClick: () => action.onClick(row),
-                                            icon: action.icon,
-                                        }))} />
-                                )}
-                            />
-                        )}
+            {!error && filteredData && (
+              <ReportTable
+                columns={config.tableColumns}
+                data={filteredData}
+                totalRow={totalRow}
+                keyField="tanggal"
+                showRowNumber={true}
+                isRefreshing={isRefreshing}
+                textHeader="sm"
+                textFooter="sm"
+                headerGroups={config.headerGroups}
+                renderActions={(row) => (
+                  <RowDropdownMenu
+                    label={`Tgl: ${row.tanggal}`}
+                    triggerIconOnly={false}
+                    actions={actionsRows.map((action) => ({
+                      label: action.label,
+                      onClick: () => action.onClick(row),
+                      icon: action.icon,
+                    }))}
+                  />
+                )}
+              />
+            )}
 
-                        {/* Modal Produk Per Tanggal */}
-                        <ProdukTanggalModal
-                            show={showProdukTanggalModal}
-                            onClose={() => setShowProdukTanggalModal(false)}
-                            startDate={selectedRow?.tanggal ? convertToISODate(selectedRow.tanggal) : ""}
-                            endDate={selectedRow?.tanggal ? convertToISODate(selectedRow.tanggal) : ""}
-                        />
+            {/* Modal Produk Per Tanggal */}
+            <ProdukTanggalModal
+              show={showProdukTanggalModal}
+              onClose={() => setShowProdukTanggalModal(false)}
+              startDate={
+                selectedRow?.tanggal
+                  ? convertToISODate(selectedRow.tanggal)
+                  : ""
+              }
+              endDate={
+                selectedRow?.tanggal
+                  ? convertToISODate(selectedRow.tanggal)
+                  : ""
+              }
+            />
 
-                        <ProdukModal
-                            show={showProdukModal}
-                            onClose={() => setShowProdukModal(false)}
-                            startDate={selectedRow?.tanggal ? convertToISODate(selectedRow.tanggal) : ""}
-                            endDate={selectedRow?.tanggal ? convertToISODate(selectedRow.tanggal) : ""}
-                        />
+            <ProdukModal
+              show={showProdukModal}
+              onClose={() => setShowProdukModal(false)}
+              startDate={
+                selectedRow?.tanggal
+                  ? convertToISODate(selectedRow.tanggal)
+                  : ""
+              }
+              endDate={
+                selectedRow?.tanggal
+                  ? convertToISODate(selectedRow.tanggal)
+                  : ""
+              }
+            />
 
-                        {/* Modal Struk */}
-                        <StrukModal
-                            show={showStrukModal}
-                            onClose={() => setShowStrukModal(false)}
-                            startDate={selectedRow?.tanggal ? convertToISODate(selectedRow.tanggal) : ""}
-                            endDate={selectedRow?.tanggal ? convertToISODate(selectedRow.tanggal) : ""}
-                        />
-                    </>
-                }
-            </section>
-        </Layout>
-    );
+            {/* Modal Struk */}
+            <StrukModal
+              show={showStrukModal}
+              onClose={() => setShowStrukModal(false)}
+              startDate={
+                selectedRow?.tanggal
+                  ? convertToISODate(selectedRow.tanggal)
+                  : ""
+              }
+              endDate={
+                selectedRow?.tanggal
+                  ? convertToISODate(selectedRow.tanggal)
+                  : ""
+              }
+            />
+          </>
+        )}
+      </section>
+    </Layout>
+  );
 };
 
 export default PerTanggalPage;
