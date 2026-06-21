@@ -143,6 +143,7 @@ const PerProdukPage = () => {
               startDate={query.startDate as string}
               endDate={query.endDate as string}
               struk={selectedRow?.struk || ""}
+              branch={query.branch as string}
             />
 
             <StrukViewModal

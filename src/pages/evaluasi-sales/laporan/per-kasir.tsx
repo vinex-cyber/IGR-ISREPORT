@@ -14,6 +14,7 @@ import {
   perKasirColumns,
 } from "@/configs/evaluasi-sales/per-kasir-config";
 import { buildReport } from "@/utils/reportBuilder";
+import StrukModal from "@/components/modal/evaluasi-sales/StrukModal";
 
 const PerProdukPage = () => {
   const config = buildReport<PerKasirRows>(perKasirColumns);
@@ -39,16 +40,27 @@ const PerProdukPage = () => {
   // Use a more specific type for selectedRow
   const [selectedRow, setSelectedRow] = useState<PerKasirRows | null>(null);
   const [showProdukModal, setShowProdukModal] = useState(false);
+  const [showStrukModal, setShowStrukModal] = useState(false);
 
   const handleOpenProdukModal = (row: PerKasirRows) => {
     setSelectedRow(row);
     setShowProdukModal(true);
   };
 
+  const handleOpenStrukModal = (row: PerKasirRows) => {
+    setSelectedRow(row);
+    setShowStrukModal(true);
+  };
+
   const actionsRows = [
     {
       label: "Produk",
       onClick: handleOpenProdukModal,
+      icon: <ReceiptText size={16} />,
+    },
+    {
+      label: "Struk",
+      onClick: handleOpenStrukModal,
       icon: <ReceiptText size={16} />,
     },
   ];
@@ -124,6 +136,15 @@ const PerProdukPage = () => {
               onClose={() => setShowProdukModal(false)}
               startDate={query.startDate as string}
               endDate={query.endDate as string}
+              kasir={selectedRow?.kasir || ""}
+              branch={query.branch as string}
+            />
+            <StrukModal
+              show={showStrukModal}
+              onClose={() => setShowStrukModal(false)}
+              startDate={query.startDate as string}
+              endDate={query.endDate as string}
+              branch={query.branch as string}
               kasir={selectedRow?.kasir || ""}
             />
           </>

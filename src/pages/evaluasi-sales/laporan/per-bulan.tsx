@@ -20,6 +20,7 @@ import { buildReport } from "@/utils/reportBuilder";
 const PerBulanPage = () => {
   const config = buildReport<PerBulanRows>(perBulanColumns);
   const {
+    query,
     searchTerm,
     setSearchTerm,
     filteredData,
@@ -159,6 +160,7 @@ const PerBulanPage = () => {
               onClose={() => setShowProdukModal(false)}
               startDate={monthRange.startDate}
               endDate={monthRange.endDate}
+              branch={query.branch as string}
             />
 
             {/* Modal Struk */}
@@ -167,6 +169,7 @@ const PerBulanPage = () => {
               onClose={() => setShowStrukModal(false)}
               startDate={monthRange.startDate}
               endDate={monthRange.endDate}
+              branch={query.branch as string}
             />
           </>
         )}

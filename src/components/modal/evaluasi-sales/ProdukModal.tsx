@@ -6,131 +6,148 @@ import { useReportPage } from "@/hooks/useReportPage";
 import { FormatTanggal } from "@/utils/formatTanggal";
 import SkeletonTable from "@/components/SkletonTable";
 import { buildReport } from "@/utils/reportBuilder";
-import { perProdukColumns, PerProdukRows } from "@/configs/evaluasi-sales/per-produk-config";
+import {
+  perProdukColumns,
+  PerProdukRows,
+} from "@/configs/evaluasi-sales/per-produk-config";
 
 interface Props {
-    show: boolean;
-    onClose: () => void;
-    startDate: string;
-    endDate: string;
-    div?: string;
-    dept?: string;
-    kat?: string;
-    prdcd?: string;
-    struk?: string;
-    kode_supplier?: string;
-    kasir?: string;
-    noMember?: string;
+  show: boolean;
+  onClose: () => void;
+  startDate: string;
+  endDate: string;
+  div?: string;
+  dept?: string;
+  kat?: string;
+  prdcd?: string;
+  struk?: string;
+  kode_supplier?: string;
+  kasir?: string;
+  noMember?: string;
+  branch: string;
 }
 
 export default function ProdukModal({
-    show,
-    onClose,
-    startDate,
-    endDate,
-    div,
-    dept,
-    kat,
-    prdcd,
-    struk,
-    kode_supplier,
-    kasir,
-    noMember,
+  show,
+  onClose,
+  startDate,
+  endDate,
+  div,
+  dept,
+  kat,
+  prdcd,
+  struk,
+  kode_supplier,
+  kasir,
+  noMember,
+  branch,
 }: Props) {
+  const config = buildReport<PerProdukRows>(perProdukColumns);
 
-    const config = buildReport<PerProdukRows>(perProdukColumns);
+  // ================= QUERY PARAMS =================
+  const queryParams = useMemo(
+    () => ({
+      startDate,
+      endDate,
+      branch,
+      ...(div && { div }),
+      ...(dept && { dept }),
+      ...(kat && { kat }),
+      ...(prdcd && { plu: prdcd }),
+      ...(struk && { struk }),
+      ...(kode_supplier && { kode_supplier }),
+      ...(kasir && { kasir }),
+      ...(noMember && { noMember }),
+    }),
+    [
+      startDate,
+      endDate,
+      div,
+      dept,
+      kat,
+      prdcd,
+      struk,
+      kode_supplier,
+      kasir,
+      noMember,
+      branch,
+    ],
+  );
 
-    // ================= QUERY PARAMS =================
-    const queryParams = useMemo(() => ({
-        startDate,
-        endDate,
-        ...(div && { div }),
-        ...(dept && { dept }),
-        ...(kat && { kat }),
-        ...(prdcd && { plu: prdcd }),
-        ...(struk && { struk }),
-        ...(kode_supplier && { kode_supplier }),
-        ...(kasir && { kasir }),
-        ...(noMember && { noMember }),
-    }), [startDate, endDate, div, dept, kat, prdcd, struk, kode_supplier, kasir, noMember]);
+  // ================= USE REPORT PAGE =================
+  const {
+    searchTerm,
+    setSearchTerm,
+    filteredData,
+    loading,
+    error,
+    totalRow,
+    handleExport,
+  } = useReportPage<PerProdukRows>({
+    basePath: "evaluasi-sales", // tetap wajib (dipakai hook internal)
+    ...config,
+    customFetch: {
+      endpoint: "/evaluasi-sales/per-produk",
+      queryParams,
+      enabled: show, // 🔥 hanya fetch saat modal buka
+    },
+  });
 
-    // ================= USE REPORT PAGE =================
-    const {
-        searchTerm,
-        setSearchTerm,
-        filteredData,
-        loading,
-        error,
-        totalRow,
-        handleExport,
-    } = useReportPage<PerProdukRows>({
-        basePath: "evaluasi-sales", // tetap wajib (dipakai hook internal)
-        ...config,
-        customFetch: {
-            endpoint: "/evaluasi-sales/per-produk",
-            queryParams,
-            enabled: show, // 🔥 hanya fetch saat modal buka
-        },
-    });
+  useEffect(() => {
+    if (!show) {
+      setSearchTerm("");
+    }
+  }, [show, setSearchTerm]);
 
-    useEffect(() => {
-        if (!show) {
-            setSearchTerm("");
-        }
-    }, [show, setSearchTerm]);
+  const dataClean = filteredData as PerProdukRows[];
+  return (
+    <Modal show={show} onClose={onClose}>
+      {loading ? (
+        <SkeletonTable rows={10} columns={config.tableColumns.length} />
+      ) : (
+        <div className="space-y-4 max-h-[90vh]">
+          {/* HEADER */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-green-600">
+                Detail Produk - {branch}
+              </h1>
+              <p>
+                {FormatTanggal(startDate)} s/d {FormatTanggal(endDate)}
+              </p>
+            </div>
 
-    const dataClean = filteredData as PerProdukRows[];
-    return (
-        <Modal show={show} onClose={onClose}>
-            {loading ? (
-                <SkeletonTable rows={10} columns={config.tableColumns.length} />
-            ) : (
-                <div className="space-y-4 max-h-[90vh]">
+            <button
+              onClick={handleExport}
+              className="text-sm text-blue-600 hover:underline">
+              Export
+            </button>
+          </div>
 
-                    {/* HEADER */}
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h1 className="text-2xl font-bold text-green-600">
-                                Detail Produk
-                            </h1>
-                            <p>
-                                {FormatTanggal(startDate)} s/d{" "}
-                                {FormatTanggal(endDate)}
-                            </p>
-                        </div>
+          {/* SEARCH */}
+          <SearchInput
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Cari Produk..."
+          />
 
-                        <button
-                            onClick={handleExport}
-                            className="text-sm text-blue-600 hover:underline"
-                        >
-                            Export
-                        </button>
-                    </div>
+          {error && <p className="text-red-500">{error}</p>}
 
-                    {/* SEARCH */}
-                    <SearchInput
-                        value={searchTerm}
-                        onChange={setSearchTerm}
-                        placeholder="Cari Produk..."
-                    />
-
-                    {error && <p className="text-red-500">{error}</p>}
-
-                    {/* TABLE */}
-                    {!error && (
-                        <ReportTable
-                            columns={config.tableColumns}
-                            headerGroups={config.headerGroups}
-                            data={dataClean}
-                            totalRow={totalRow}
-                            showRowNumber={true}
-                            keyField={(row) =>
-                                `${row.div}${row.dept}${row.kategori}${row.plu}`
-                            }
-                        />
-                    )}
-                </div>
-            )}
-        </Modal>
-    );
+          {/* TABLE */}
+          {!error && (
+            <ReportTable
+              columns={config.tableColumns}
+              headerGroups={config.headerGroups}
+              data={dataClean}
+              totalRow={totalRow}
+              showRowNumber={true}
+              keyField={(row) =>
+                `${row.div}${row.dept}${row.kategori}${row.plu}`
+              }
+            />
+          )}
+        </div>
+      )}
+    </Modal>
+  );
 }

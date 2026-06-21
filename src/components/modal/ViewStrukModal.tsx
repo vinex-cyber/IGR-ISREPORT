@@ -1,7 +1,10 @@
+// src/components/modal/evaluasi-sales/ViewStrukModal.tsx
+
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Loader2, Printer, ReceiptText, X } from "lucide-react";
+import { Loader2, Printer, ReceiptText } from "lucide-react";
 
+import Modal from "@/components/modal";
 import { Button } from "@/components/ui/button";
 
 interface StrukFileModalProps {
@@ -11,6 +14,7 @@ interface StrukFileModalProps {
   struk: string;
   kasir: string;
   onClose: () => void;
+  branch: string;
 }
 
 interface StrukFileSuccessResponse {
@@ -43,6 +47,7 @@ const StrukViewModal = ({
   station,
   kasir,
   struk,
+  branch,
   onClose,
 }: StrukFileModalProps) => {
   const [content, setContent] = useState("");
@@ -51,7 +56,7 @@ const StrukViewModal = ({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!show || !tanggal || !station || !kasir || !struk) {
+    if (!show || !tanggal || !station || !kasir || !struk || !branch) {
       return;
     }
 
@@ -77,16 +82,25 @@ const StrukViewModal = ({
           },
         );
 
-        setContent(response.data.data.content);
-        setFilename(response.data.data.filename);
-      } catch (error) {
-        if (axios.isAxiosError(error) && error.code === "ERR_CANCELED") {
+        if (controller.signal.aborted) {
           return;
         }
 
-        if (axios.isAxiosError<StrukFileErrorResponse>(error)) {
+        setContent(response.data.data.content);
+
+        setFilename(response.data.data.filename);
+      } catch (requestError) {
+        if (
+          axios.isAxiosError(requestError) &&
+          requestError.code === "ERR_CANCELED"
+        ) {
+          return;
+        }
+
+        if (axios.isAxiosError<StrukFileErrorResponse>(requestError)) {
           setError(
-            error.response?.data?.message ?? "Gagal mengambil file struk",
+            requestError.response?.data?.message ??
+              "Gagal mengambil file struk",
           );
 
           return;
@@ -105,30 +119,7 @@ const StrukViewModal = ({
     return () => {
       controller.abort();
     };
-  }, [show, tanggal, station, struk, kasir]);
-
-  useEffect(() => {
-    if (!show) {
-      return;
-    }
-
-    const previousOverflow = document.body.style.overflow;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [show, onClose]);
+  }, [show, tanggal, station, kasir, struk, branch]);
 
   const handlePrint = () => {
     if (!content) {
@@ -148,6 +139,7 @@ const StrukViewModal = ({
     document.body.appendChild(iframe);
 
     const iframeWindow = iframe.contentWindow;
+
     const iframeDocument = iframeWindow?.document;
 
     if (!iframeWindow || !iframeDocument) {
@@ -268,42 +260,24 @@ const StrukViewModal = ({
     window.setTimeout(printStruk, 300);
   };
 
-  if (!show) {
-    return null;
-  }
-
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
-      onMouseDown={onClose}>
-      <div
-        className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl dark:bg-slate-900"
-        onMouseDown={(event) => event.stopPropagation()}>
-        {/* Header modal */}
-        <div className="flex shrink-0 items-center justify-between border-b bg-white px-4 py-3 dark:bg-slate-900">
+    <Modal show={show} onClose={onClose} zIndex={100}>
+      <div className="flex max-h-[82vh] w-[90vw] max-w-2xl flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex shrink-0 items-center border-b bg-white px-4 py-3 pr-14 dark:bg-slate-900">
           <div className="flex min-w-0 items-center gap-3">
             <div className="shrink-0 rounded-md bg-blue-100 p-2 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
               <ReceiptText size={20} />
             </div>
 
             <div className="min-w-0">
-              <h2 className="font-semibold">Detail Struk</h2>
+              <h2 className="font-semibold">Detail Struk - {branch}</h2>
 
               <p className="truncate text-xs text-muted-foreground">
                 {filename || `${struk}.TXT`}
               </p>
             </div>
           </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-800"
-            aria-label="Tutup modal">
-            <X size={20} />
-          </button>
         </div>
 
         {/* Informasi struk */}
@@ -327,7 +301,7 @@ const StrukViewModal = ({
           </div>
         </div>
 
-        {/* Isi modal */}
+        {/* Isi struk */}
         <div className="min-h-[300px] flex-1 overflow-auto bg-white px-4 py-3 dark:bg-slate-950">
           {isLoading && (
             <div className="flex min-h-[300px] items-center justify-center gap-2">
@@ -347,9 +321,8 @@ const StrukViewModal = ({
 
           {!isLoading && !error && content && (
             <div className="flex min-w-max justify-center">
-              {/* Kertas struk */}
               <div className="w-[120mm] rounded bg-gray-100 p-2 shadow dark:bg-slate-800 dark:text-black">
-                <pre className="flex justify-center items-center whitespace-pre bg-gray-200 p-2 rounded">
+                <pre className="flex items-center justify-center whitespace-pre rounded bg-gray-200 p-2">
                   {content}
                 </pre>
               </div>
@@ -363,7 +336,7 @@ const StrukViewModal = ({
           )}
         </div>
 
-        {/* Footer modal */}
+        {/* Footer */}
         <div className="flex shrink-0 justify-end gap-2 border-t bg-white px-4 py-3 dark:bg-slate-900">
           <Button type="button" variant="outline" onClick={onClose}>
             Tutup
@@ -379,7 +352,7 @@ const StrukViewModal = ({
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

@@ -139,6 +139,7 @@ const PerDivisiPage = () => {
               startDate={query.startDate as string}
               endDate={query.endDate as string}
               div={selectedRow?.div}
+              branch={query.branch as string}
             />
 
             <ProdukModal
@@ -147,6 +148,7 @@ const PerDivisiPage = () => {
               startDate={query.startDate as string}
               endDate={query.endDate as string}
               div={selectedRow?.div}
+              branch={query.branch as string}
             />
 
             {/* Modal Struk */}
@@ -156,6 +158,7 @@ const PerDivisiPage = () => {
               startDate={query.startDate as string}
               endDate={query.endDate as string}
               div={selectedRow?.div}
+              branch={query.branch as string}
             />
           </>
         )}

@@ -150,6 +150,7 @@ const PerDepartementPage = () => {
               endDate={query.endDate as string}
               div={selectedRow?.div as string}
               dept={`${selectedRow?.div}${selectedRow?.dept}`}
+              branch={query.branch as string}
             />
             {/* Modal Produk */}
             <ProdukModal
@@ -159,6 +160,7 @@ const PerDepartementPage = () => {
               endDate={query.endDate as string}
               div={selectedRow?.div as string}
               dept={`${selectedRow?.div}${selectedRow?.dept}`}
+              branch={query.branch as string}
             />
 
             {/* Modal Struk */}
@@ -169,6 +171,7 @@ const PerDepartementPage = () => {
               endDate={query.endDate as string}
               div={selectedRow?.div as string}
               dept={`${selectedRow?.div}${selectedRow?.dept}`}
+              branch={query.branch as string}
             />
           </>
         )}
