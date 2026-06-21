@@ -1,62 +1,128 @@
-import { Control } from "react-hook-form";
+// components/Settings/SettingsDatabase.tsx
+
+import type {
+  Control,
+  FieldPath,
+  FieldPathValue,
+  FieldValues,
+} from "react-hook-form";
+
 import { FormField, FormItem } from "@/components/ui/form";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Check, Database, Settings } from "lucide-react";
-import { FilterDetailStrukInput } from "@/schema/filterDetailStruk";
 
-interface Props {
-  control: Control<FilterDetailStrukInput>;
+type StringFieldValue<
+  TFieldValues extends FieldValues,
+  TName extends FieldPath<TFieldValues>,
+> = Extract<FieldPathValue<TFieldValues, TName>, string>;
+
+export interface DatabaseOption<TValue extends string = string> {
+  label: string;
+  value: TValue;
 }
 
-const DATABASE_OPTIONS = [
-  { label: "IGR - CPG", value: "IGRCPG" },
-  { label: "ICM - CPG", value: "ICMCPG" },
-  { label: "SPI - CPG1I", value: "SPICPG1I" },
-  { label: "SPI - CPG4L", value: "SPICPG4L" },
-] as const;
+interface SettingsDatabaseProps<
+  TFieldValues extends FieldValues,
+  TName extends FieldPath<TFieldValues>,
+> {
+  /**
+   * Control dari React Hook Form.
+   *
+   * @example
+   * control={form.control}
+   */
+  control: Control<TFieldValues>;
 
-export default function SettingsEvaluasiSales({ control }: Props) {
+  /**
+   * Nama field form yang menyimpan pilihan database.
+   *
+   * @example
+   * name="branch"
+   *
+   * @example
+   * name="database"
+   */
+  name: TName;
+
+  /**
+   * Daftar database yang ditampilkan.
+   */
+  options: readonly DatabaseOption<StringFieldValue<TFieldValues, TName>>[];
+
+  /**
+   * Judul submenu.
+   *
+   * @default "Database"
+   */
+  menuLabel?: string;
+
+  /**
+   * Label aksesibilitas tombol settings.
+   *
+   * @default "Pilih database"
+   */
+  buttonLabel?: string;
+}
+
+export default function SettingsDatabase<
+  TFieldValues extends FieldValues,
+  TName extends FieldPath<TFieldValues>,
+>({
+  control,
+  name,
+  options,
+  menuLabel = "Database",
+  buttonLabel = "Pilih database",
+}: SettingsDatabaseProps<TFieldValues, TName>) {
   return (
-    <FormField
+    <FormField<TFieldValues, TName>
       control={control}
-      name="branch"
+      name={name}
       render={({ field }) => (
         <FormItem>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className=" hover:cursor-pointer">
+              <Button
+                type="button"
+                variant="outline"
+                aria-label={buttonLabel}
+                className="cursor-pointer">
                 <Settings className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="start" className="w-56">
               <DropdownMenuSub>
-                <DropdownMenuSubTrigger className="hover:cursor-pointer">
+                <DropdownMenuSubTrigger className="cursor-pointer">
                   <Database className="mr-2 h-4 w-4" />
-                  Database
+
+                  {menuLabel}
                 </DropdownMenuSubTrigger>
 
                 <DropdownMenuSubContent>
-                  {DATABASE_OPTIONS.map((option) => (
-                    <DropdownMenuItem
-                      key={option.value}
-                      onClick={() => field.onChange(option.value)}
-                      className="flex justify-between items-center hover:cursor-pointer">
-                      {option.label}
-                      {field.value === option.value && (
-                        <Check className="ml-2 h-4 w-4" />
-                      )}
-                    </DropdownMenuItem>
-                  ))}
+                  {options.map((option) => {
+                    const isSelected = String(field.value) === option.value;
+
+                    return (
+                      <DropdownMenuItem
+                        key={option.value}
+                        onSelect={() => field.onChange(option.value)}
+                        className="flex cursor-pointer items-center justify-between">
+                        <span>{option.label}</span>
+
+                        {isSelected && <Check className="ml-2 h-4 w-4" />}
+                      </DropdownMenuItem>
+                    );
+                  })}
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
             </DropdownMenuContent>

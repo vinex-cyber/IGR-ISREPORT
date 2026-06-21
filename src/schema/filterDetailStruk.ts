@@ -1,6 +1,8 @@
 // File: src/type/filterdetailstruk.ts
+import { DATABASE_OPTIONS } from "@/configs/database-options";
 import { z } from "zod";
 
+const DATABASE_VALUES = new Set(DATABASE_OPTIONS.map((option) => option.value));
 // Skema validasi filter menggunakan Zod
 export const FilterDetailStrukSchema = z.object({
   startDate: z.string().optional(),
@@ -47,7 +49,13 @@ export const FilterDetailStrukSchema = z.object({
   monitoringSupplier: z.string().optional(),
   strukSupplier: z.string().optional(),
   selectedReport: z.string().optional(),
-  branch: z.enum(["IGRCPG", "ICMCPG", "SPICPG1I", "SPICPG4L"]).optional(),
+  branch: z
+    .string()
+    .trim()
+    .min(1, "Database wajib dipilih")
+    .refine((value) => DATABASE_VALUES.has(value), {
+      message: "Database tidak valid",
+    }),
 });
 
 export type FilterDetailStrukInput = z.infer<typeof FilterDetailStrukSchema>;

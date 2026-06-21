@@ -348,8 +348,8 @@ const StrukViewModal = ({
           {!isLoading && !error && content && (
             <div className="flex min-w-max justify-center">
               {/* Kertas struk */}
-              <div className="w-[120mm] rounded bg-white p-2 shadow dark:bg-slate-800 dark:text-black">
-                <pre className="flex justify-center whitespace-pre-wrap bg-gray-100 p-2 rounded">
+              <div className="w-[120mm] rounded bg-gray-100 p-2 shadow dark:bg-slate-800 dark:text-black">
+                <pre className="flex justify-center items-center whitespace-pre bg-gray-200 p-2 rounded">
                   {content}
                 </pre>
               </div>

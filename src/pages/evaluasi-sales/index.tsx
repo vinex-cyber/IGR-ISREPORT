@@ -12,8 +12,9 @@ import { useRouter } from "next/router";
 import { toast } from "sonner";
 import { FormatTanggal } from "@/utils/formatTanggal";
 import { Button } from "@/components/ui/button";
-import SettingsEvaluasiSales from "@/components/Settings/Settings";
 import { ArrowRightIcon } from "lucide-react";
+import SettingsDatabase from "@/components/Settings/Settings";
+import { DATABASE_OPTIONS } from "@/configs/database-options";
 
 // ✅ Dynamic import (hindari error SSR)
 const PeriodeSales = dynamic(
@@ -111,7 +112,11 @@ const EvaluasiSales = () => {
               {methods.watch("branch")}
             </h1>
 
-            <SettingsEvaluasiSales control={methods.control} />
+            <SettingsDatabase
+              control={methods.control}
+              name="branch"
+              options={DATABASE_OPTIONS}
+            />
           </div>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
             <div className="space-y-4">

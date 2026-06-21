@@ -1,8 +1,10 @@
 // src/hooks/useLookupData.ts
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type Mode = "client" | "server";
+
+type ExtraParamValue = string | number | boolean;
 
 interface UseLookupDataProps {
   endpoint: string;
@@ -10,9 +12,8 @@ interface UseLookupDataProps {
   page: number;
   pageSize: number;
   search: string;
-
-  extraParams?: Record<string, string | number | boolean>; // 🔥 tambahan
-  minSearch?: number; // 🔥 tambahan
+  extraParams?: Record<string, ExtraParamValue>;
+  minSearch?: number;
 }
 
 interface ApiResult<T> {
@@ -26,171 +27,140 @@ export function useLookupData<T>({
   page,
   pageSize,
   search,
-  extraParams = {},
+  extraParams,
   minSearch = 0,
 }: UseLookupDataProps) {
   const [data, setData] = useState<T[]>([]);
-  const [total, setTotal] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  // 🔥 cache sederhana
   const cacheRef = useRef<Map<string, ApiResult<T>>>(new Map());
 
-  const fetchData = async (url: string, controller: AbortController) => {
-    // ✅ cek cache dulu
-    if (cacheRef.current.has(url)) {
-      const cached = cacheRef.current.get(url)!;
-      setData(cached.data ?? []);
-      setTotal(cached.total ?? cached.data?.length ?? 0);
-      return;
-    }
+  /*
+   * Membuat dependency primitive agar effect tidak
+   * dijalankan ulang hanya karena referensi objek berubah.
+   */
+  const extraParamsKey = Object.entries(extraParams ?? {})
+    .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+    .map(
+      ([key, value]) =>
+        `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`,
+    )
+    .join("&");
 
-    setLoading(true);
+  const fetchData = useCallback(
+    async (url: string, controller: AbortController): Promise<void> => {
+      const cachedData = cacheRef.current.get(url);
 
-    try {
-      const res = await fetch(url, { signal: controller.signal });
-      const json = (await res.json()) as ApiResult<T>;
-
-      // simpan cache
-      cacheRef.current.set(url, json);
-
-      setData(json.data ?? []);
-      setTotal(json.total ?? json.data?.length ?? 0);
-    } catch (err) {
-      if ((err as Error).name !== "AbortError") {
-        console.error("Lookup fetch error:", err);
+      if (cachedData) {
+        setData(cachedData.data ?? []);
+        setTotal(cachedData.total ?? cachedData.data?.length ?? 0);
+        setLoading(false);
+        return;
       }
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  // =========================
-  // 🔥 CLIENT MODE
-  // =========================
+      setLoading(true);
+
+      try {
+        const response = await fetch(url, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Request gagal dengan status ${response.status}`);
+        }
+
+        const result = (await response.json()) as ApiResult<T>;
+
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        cacheRef.current.set(url, result);
+
+        setData(result.data ?? []);
+        setTotal(result.total ?? result.data?.length ?? 0);
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          return;
+        }
+
+        console.error("Lookup fetch error:", error);
+
+        setData([]);
+        setTotal(0);
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    },
+    [],
+  );
+
   useEffect(() => {
-    if (mode !== "client") return;
-
-    const controller = new AbortController();
-    fetchData(endpoint, controller);
-
-    return () => controller.abort();
-  }, [endpoint, mode]);
-
-  // =========================
-  // 🔥 SERVER MODE
-  // =========================
-  useEffect(() => {
-    if (mode !== "server") return;
-
-    // 🚫 skip kalau search belum cukup
-    if (search.length < minSearch) {
+    if (!endpoint) {
       setData([]);
       setTotal(0);
+      setLoading(false);
+      return;
+    }
+
+    if (mode === "server" && search.trim().length < minSearch) {
+      setData([]);
+      setTotal(0);
+      setLoading(false);
       return;
     }
 
     const controller = new AbortController();
+
+    if (mode === "client") {
+      void fetchData(endpoint, controller);
+
+      return () => {
+        controller.abort();
+      };
+    }
 
     const params = new URLSearchParams({
       page: String(page),
       pageSize: String(pageSize),
       search,
-      ...Object.fromEntries(
-        Object.entries(extraParams).map(([k, v]) => [k, String(v)]),
-      ),
+    });
+
+    /*
+     * extraParams dimasukkan terakhir sehingga tetap
+     * mengikuti perilaku kode sebelumnya.
+     */
+    Object.entries(extraParams ?? {}).forEach(([key, value]) => {
+      params.set(key, String(value));
     });
 
     const separator = endpoint.includes("?") ? "&" : "?";
 
     const url = `${endpoint}${separator}${params.toString()}`;
 
-    fetchData(url, controller);
+    void fetchData(url, controller);
 
-    return () => controller.abort();
-  }, [endpoint, mode, page, pageSize, search, extraParams, minSearch]);
+    return () => {
+      controller.abort();
+    };
+  }, [
+    endpoint,
+    mode,
+    page,
+    pageSize,
+    search,
+    minSearch,
+    extraParamsKey,
+    fetchData,
+    extraParams,
+  ]);
 
-  return { data, total, loading };
+  return {
+    data,
+    total,
+    loading,
+  };
 }
-
-// import { useEffect, useState } from "react";
-
-// type Mode = "client" | "server";
-
-// interface UseLookupDataProps {
-//     endpoint: string;
-//     mode?: Mode;
-//     page: number;
-//     pageSize: number;
-//     search: string;
-// }
-
-// interface ApiResult<T> {
-//     data: T[];
-//     total?: number;
-// }
-
-// export function useLookupData<T>({
-//     endpoint,
-//     mode = "client",
-//     page,
-//     pageSize,
-//     search,
-// }: UseLookupDataProps) {
-//     const [data, setData] = useState<T[]>([]);
-//     const [total, setTotal] = useState<number>(0);
-//     const [loading, setLoading] = useState<boolean>(false);
-
-//     // 🔥 function fetch reusable
-//     const fetchData = async (url: string, controller: AbortController) => {
-//         setLoading(true);
-//         try {
-//             const res = await fetch(url, { signal: controller.signal });
-//             const json = (await res.json()) as ApiResult<T>;
-
-//             setData(json.data ?? []);
-//             setTotal(json.total ?? json.data?.length ?? 0);
-//         } catch (err) {
-//             if ((err as Error).name !== "AbortError") {
-//                 console.error("Lookup fetch error:", err);
-//             }
-//         } finally {
-//             setLoading(false);
-//         }
-//     };
-
-//     // =========================
-//     // 🔥 CLIENT MODE (fetch sekali)
-//     // =========================
-//     useEffect(() => {
-//         if (mode !== "client") return;
-
-//         const controller = new AbortController();
-//         fetchData(endpoint, controller);
-
-//         return () => controller.abort();
-//     }, [endpoint, mode]);
-
-//     // =========================
-//     // 🔥 SERVER MODE (depend on page/search)
-//     // =========================
-//     useEffect(() => {
-//         if (mode !== "server") return;
-
-//         const controller = new AbortController();
-
-//         const params = new URLSearchParams({
-//             page: String(page),
-//             pageSize: String(pageSize),
-//             search,
-//         });
-
-//         const url = `${endpoint}?${params.toString()}`;
-
-//         fetchData(url, controller);
-
-//         return () => controller.abort();
-//     }, [endpoint, mode, page, pageSize, search]);
-
-//     return { data, total, loading };
-// }

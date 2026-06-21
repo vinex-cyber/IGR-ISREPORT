@@ -50,7 +50,7 @@ interface StrukErrorResponse {
 type StrukResponse = StrukSuccessResponse | StrukErrorResponse;
 
 const STRUK_DIRECTORY =
-  process.env.STRUK_DIRECTORY ?? "\\\\192.168.226.194\\d\\GROSIR\\STRUK";
+  process.env.STRUK_DIRECTORY_IGR ?? "\\\\192.168.226.194\\d\\GROSIR\\STRUK";
 
 export default async function handler(
   req: NextApiRequest,
