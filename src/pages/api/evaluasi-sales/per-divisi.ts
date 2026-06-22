@@ -42,7 +42,7 @@ export default async function handler(
         FROM
             (${DetailStruk(conditions, params)}) as dtl
         GROUP BY dtl_k_div, dtl_nama_div
-        HAVING count(dtl_netto) > 0
+        having coalesce(SUM(dtl_netto),0) <> 0
         ORDER BY dtl_k_div
         `;
 

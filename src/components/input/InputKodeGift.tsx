@@ -1,49 +1,82 @@
+// src/components/input/InputKodeGift.tsx
 
-import { Search } from "lucide-react";
 import { useState } from "react";
+import { Search } from "lucide-react";
+
+import type { FieldPathByValue, FieldValues } from "react-hook-form";
+
 import FormInput from "../FormInput";
 import InputGiftModal from "../modal/InputGiftModal";
 
-/**
- * =========================================
- * 🧩 COMPONENT: Inputkodegift
- * =========================================
- * 
- * 📍 Path: src/components/input/Inputkodegift.tsx
- * 🧩 Type: Client Component (interactive)
- * 🏷️  CSS Class: inputkodegift
- * 
- * 📌 Tips:
- * - "use client" wajib untuk useState, useEffect, onClick, dll
- * - Gunakan clsx/tailwind-merge untuk conditional classes
- * - Extract logic kompleks ke custom hooks
- */
+type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
+  TFieldValues,
+  string | undefined
+>;
 
-// 🔥 Props Interface
+interface InputKodeGiftProps<TFieldValues extends FieldValues> {
+  /**
+   * Field kode gift.
+   *
+   * Contoh: "kodeGift"
+   */
+  name: StringFieldName<TFieldValues>;
 
-/**
- * Inputkodegift Component
- */
-const InputKodeGift = () => {
-  // 🔥 Contoh: state untuk interaktivitas
-  // const [isActive, setIsActive] = React.useState(false);
+  /**
+   * Field database.
+   *
+   * Contoh: "branch"
+   */
+  branchName: StringFieldName<TFieldValues>;
+
+  /**
+   * Field tanggal awal yang akan diisi
+   * berdasarkan periode gift.
+   */
+  startDateName?: StringFieldName<TFieldValues>;
+
+  /**
+   * Field tanggal akhir yang akan diisi
+   * berdasarkan periode gift.
+   */
+  endDateName?: StringFieldName<TFieldValues>;
+
+  placeholder?: string;
+}
+
+export default function InputKodeGift<TFieldValues extends FieldValues>({
+  name,
+  branchName,
+  startDateName,
+  endDateName,
+  placeholder = "Kode Gift",
+}: InputKodeGiftProps<TFieldValues>) {
   const [show, setShow] = useState(false);
 
-  const handleShow = () => {
-    setShow(!show);
+  const handleOpen = () => {
+    setShow(true);
+  };
+
+  const handleClose = () => {
+    setShow(false);
   };
 
   return (
     <>
       <FormInput
-        name="kodeGift"
-        placeholder="Kode Gift"
-        iconRight={<Search className="w-4 h-4" />}
-        onIconClick={handleShow}
+        name={name}
+        placeholder={placeholder}
+        iconRight={<Search className="h-4 w-4" />}
+        onIconClick={handleOpen}
       />
-      <InputGiftModal show={show} onClose={handleShow} kodeGift />
+
+      <InputGiftModal<TFieldValues>
+        show={show}
+        onClose={handleClose}
+        name={name}
+        branchName={branchName}
+        startDateName={startDateName}
+        endDateName={endDateName}
+      />
     </>
   );
-};
-
-export default InputKodeGift;
+}

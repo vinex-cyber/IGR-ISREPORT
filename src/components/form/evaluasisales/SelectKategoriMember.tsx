@@ -1,54 +1,79 @@
+// src/components/form/shared/SelectKategoriMember.tsx
+
+import type { Control, FieldPathByValue, FieldValues } from "react-hook-form";
 
 import { DependentSelectWrapper } from "@/components/DependentSelectWrapper";
-import { FilterDetailStrukInput } from "@/schema/filterDetailStruk";
-import { Control } from "react-hook-form";
 
-/**
- * =========================================
- * 🧩 COMPONENT: SelectKategoriMember
- * =========================================
- * 
- * 📍 Path: src/components/form/evaluasisales/SelectKategoriMember.tsx
- * 🧩 Type: Client Component (interactive)
- * 🏷️  CSS Class: select-kategori-member
- * 
- * 📌 Tips:
- * - "use client" wajib untuk useState, useEffect, onClick, dll
- * - Gunakan clsx/tailwind-merge untuk conditional classes
- * - Extract logic kompleks ke custom hooks
- */
-
-// 🔥 Props Interface
-
-export interface SelectKategoriMember {
+export interface KategoriMember {
   grp_idgroupkat: string;
   grp_group: string;
   grp_kategori: string;
   grp_subkategori: string;
 }
 
-interface SelectKategoriMemberProps {
-  control: Control<FilterDetailStrukInput>;
+type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
+  TFieldValues,
+  string | undefined
+>;
+
+interface SelectKategoriMemberProps<TFieldValues extends FieldValues> {
+  /**
+   * Control dari React Hook Form.
+   */
+  control: Control<TFieldValues>;
+
+  /**
+   * Nama field untuk menyimpan ID kategori member.
+   *
+   * Contoh:
+   * name="katMember"
+   */
+  name: StringFieldName<TFieldValues>;
+
+  /**
+   * Placeholder select.
+   *
+   * @default "All Kategori"
+   */
   placeholder?: string;
+
+  /**
+   * Endpoint pengambilan kategori member.
+   *
+   * @default "/select-kategori-member"
+   */
+  endpoint?: string;
 }
 
+const getGroupKey = (item: KategoriMember): string => {
+  return `${item.grp_group} - ${item.grp_kategori}`;
+};
 
-export const SelectKategoriMember = ({ control, placeholder = "All Kategori" }: SelectKategoriMemberProps) => {
+const getOption = (item: KategoriMember) => ({
+  label: item.grp_subkategori,
+  value: item.grp_idgroupkat,
+});
 
-  const getGroupKey = (d: SelectKategoriMember) => `${d.grp_group} - ${d.grp_kategori}`;
+export function SelectKategoriMember<TFieldValues extends FieldValues>({
+  control,
+  name,
+  placeholder = "All Kategori",
+  endpoint = "/select-kategori-member",
+}: SelectKategoriMemberProps<TFieldValues>) {
   return (
-    <DependentSelectWrapper<SelectKategoriMember, FilterDetailStrukInput>
+    <DependentSelectWrapper<KategoriMember, TFieldValues>
       control={control}
-      name="katMember"
-      endpoint="/select-kategori-member"
+      name={name}
+      endpoint={endpoint}
       labelAll={placeholder}
       placeholder={placeholder}
       getGroupKey={getGroupKey}
-      getOption={(d) => ({
-        label: `${d.grp_subkategori}`,
-        value: d.grp_idgroupkat,
-      })}
+      getOption={getOption}
       enableSearch
+      sortGroups
+      sortOptions
     />
   );
-};
+}
+
+export default SelectKategoriMember;

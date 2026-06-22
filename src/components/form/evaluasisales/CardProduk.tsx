@@ -7,14 +7,14 @@ import {
 import FormInput from "@/components/FormInput";
 import { Control } from "react-hook-form";
 import { FilterDetailStrukInput } from "@/schema/filterDetailStruk";
-import SelectDivisi from "./SelectDivisi";
-import SelectDepartement from "@/components/form/evaluasisales/SelectDepartement";
-import Selectkategori from "./Selectkategori";
-import SelectTag from "./SelectTag";
+import SelectDivisi from "@/components/form/shared/SelectDivisi";
+import SelectDepartement from "@/components/form/shared/SelectDepartement";
+import Selectkategori from "../shared/Selectkategori";
+import SelectTag from "../shared/SelectTag";
 import InputProdukPlu from "@/components/input/InputProdukPlu";
 import InputNamaProduk from "@/components/input/InputNamaProduk";
 import InputMonitoringPlu from "@/components/input/InputMonitoringPlu";
-import SelectNonPromo from "./SelectNonPromo";
+import SelectNonPromo from "../shared/SelectNonPromo";
 
 type CardProdukProps = {
   control: Control<FilterDetailStrukInput>;
@@ -31,11 +31,11 @@ const CardProduk = ({ control }: CardProdukProps) => {
         <InputNamaProduk />
         <FormInput name="barcode" placeholder="Barcode" />
         <InputMonitoringPlu />
-        <SelectDivisi control={control} />
-        <SelectDepartement control={control} />
-        <Selectkategori control={control} />
-        <SelectTag control={control} />
-        <SelectNonPromo control={control} />
+        <SelectDivisi control={control} name="div" />
+        <SelectDepartement control={control} name="dept" parentName="div" />
+        <Selectkategori control={control} name="kat" parentName="dept" />
+        <SelectTag control={control} name="tag" />
+        <SelectNonPromo control={control} name="pluLarangan" />
       </CardContent>
     </CardFieldset>
   );

@@ -46,7 +46,7 @@ export default async function handler(
         FROM
             (${DetailStruk(conditions, params)}) as dtl
         GROUP BY to_char(dtl_tanggal, 'yyyymm'), to_char(dtl_tanggal, 'MM-yyyy'), to_char(dtl_tanggal, 'Month YYYY')
-        HAVING count(dtl_netto) > 0
+        having coalesce(SUM(dtl_netto),0) <> 0
         ORDER BY to_char(dtl_tanggal, 'yyyymm')
         `;
 

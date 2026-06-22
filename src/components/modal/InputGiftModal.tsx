@@ -1,139 +1,136 @@
 // src/components/modal/InputGiftModal.tsx
 
-import { daftarGiftColumns, DaftarGiftRows } from "@/configs/input/daftar-giftConfig";
-import { useFormContext } from "react-hook-form";
+import {
+  daftarGiftColumns,
+  type DaftarGiftRows,
+} from "@/configs/input/daftar-giftConfig";
+
+import {
+  useFormContext,
+  type FieldPathByValue,
+  type FieldPathValue,
+  type FieldValues,
+} from "react-hook-form";
+
 import { GenericLookupModal } from "./GenericLookupModal";
 
-interface Props {
+type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
+  TFieldValues,
+  string | undefined
+>;
+
+interface InputGiftModalProps<TFieldValues extends FieldValues> {
   show: boolean;
   onClose: () => void;
-  kodeGift?: boolean;
+
+  /**
+   * Field untuk menyimpan kode gift.
+   *
+   * Contoh: "kodeGift"
+   */
+  name: StringFieldName<TFieldValues>;
+
+  /**
+   * Field database/branch.
+   *
+   * Contoh: "branch"
+   */
+  branchName: StringFieldName<TFieldValues>;
+
+  /**
+   * Field tanggal awal.
+   * Opsional, boleh tidak diberikan.
+   *
+   * Contoh: "startDate"
+   */
+  startDateName?: StringFieldName<TFieldValues>;
+
+  /**
+   * Field tanggal akhir.
+   * Opsional, boleh tidak diberikan.
+   *
+   * Contoh: "endDate"
+   */
+  endDateName?: StringFieldName<TFieldValues>;
 }
 
-export default function InputGiftModal({ show, onClose, kodeGift }: Props) {
-  const { setValue, watch } = useFormContext();
-  // 🔥 ambil branch dari form
-  const branch = watch("branch");
+function formatDate(value: string | Date | null | undefined): string {
+  if (!value) {
+    return "";
+  }
 
-  // 🔥 formatter tetap dipakai
-  const formatDate = (value: string | Date | null | undefined): string => {
-    if (!value) return "";
+  const stringValue = value.toString();
 
-    const str = value.toString();
+  // Format 20260401 menjadi 2026-04-01
+  if (/^\d{8}$/.test(stringValue)) {
+    return `${stringValue.slice(0, 4)}-${stringValue.slice(
+      4,
+      6,
+    )}-${stringValue.slice(6, 8)}`;
+  }
 
-    // format 20260401 → 2026-04-01
-    if (/^\d{8}$/.test(str)) {
-      return `${str.slice(0, 4)}-${str.slice(4, 6)}-${str.slice(6, 8)}`;
-    }
+  const date = new Date(value);
 
-    const date = new Date(value);
-    if (isNaN(date.getTime())) return "";
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
 
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
+  const year = date.getFullYear();
 
-    return `${y}-${m}-${d}`;
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+export default function InputGiftModal<TFieldValues extends FieldValues>({
+  show,
+  onClose,
+  name,
+  branchName,
+  startDateName,
+  endDateName,
+}: InputGiftModalProps<TFieldValues>) {
+  const { setValue, watch } = useFormContext<TFieldValues>();
+
+  const branchValue = watch(branchName);
+
+  const branch = typeof branchValue === "string" ? branchValue : "";
+
+  const setStringValue = <TName extends StringFieldName<TFieldValues>>(
+    fieldName: TName,
+    value: string,
+  ) => {
+    setValue(fieldName, value as FieldPathValue<TFieldValues, TName>, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
   };
 
-  const onSelect = (row: DaftarGiftRows) => {
-    if (kodeGift) {
-      setValue("kodeGift", row.gfh_kodepromosi);
-      setValue("startDate", formatDate(row.gfh_tglawal));
-      setValue("endDate", formatDate(row.gfh_tglakhir));
+  const handleSelect = (row: DaftarGiftRows) => {
+    setStringValue(name, row.gfh_kodepromosi);
+
+    if (startDateName) {
+      setStringValue(startDateName, formatDate(row.gfh_tglawal));
     }
+
+    if (endDateName) {
+      setStringValue(endDateName, formatDate(row.gfh_tglakhir));
+    }
+
+    onClose();
   };
 
   return (
     <GenericLookupModal<DaftarGiftRows>
       show={show}
       onClose={onClose}
-      endpoint={`/api/daftar-gift?branch=${branch}`}
+      endpoint={`/api/daftar-gift?branch=${encodeURIComponent(branch)}`}
       columns={daftarGiftColumns}
       title="Pilih Kode Gift"
-      onSelect={onSelect}
+      onSelect={handleSelect}
     />
   );
 }
-
-
-// import { daftarGiftColumns, DaftarGiftRows } from "@/configs/input/daftar-giftConfig";
-// import React from "react";
-// import { useFormContext } from "react-hook-form";
-// import { GenericLookupModal } from "./GenericLookupModal";
-
-// /**
-//  * =========================================
-//  * 🧩 COMPONENT: Inputgiftmodal
-//  * =========================================
-//  * 
-//  * 📍 Path: src/components/modal/Inputgiftmodal.tsx
-//  * 🧩 Type: Client Component (interactive)
-//  * 🏷️  CSS Class: inputgiftmodal
-//  * 
-//  * 📌 Tips:
-//  * - "use client" wajib untuk useState, useEffect, onClick, dll
-//  * - Gunakan clsx/tailwind-merge untuk conditional classes
-//  * - Extract logic kompleks ke custom hooks
-//  */
-
-// // 🔥 Props Interface
-// interface Props {
-//   show: boolean;
-//   onClose: () => void;
-//   kodeGift?: boolean;
-// }
-
-// export default function InputGiftModal({ show, onClose, kodeGift }: Props) {
-//   const { setValue } = useFormContext();
-
-//   const filterFn = (item: DaftarGiftRows, keyword: string) => {
-//     const kodeGift = item.gfh_kodepromosi?.toLowerCase() || "";
-//     const namaGift = item.gfh_namapromosi?.toLowerCase() || "";
-//     return kodeGift.includes(keyword) || namaGift.includes(keyword);
-//   }
-
-//   const formatDate = (value: string | Date | null | undefined) => {
-//     if (!value) return "";
-
-//     const str = value.toString();
-
-//     // kalau format 20260401 → ubah ke 2026-04-01
-//     if (/^\d{8}$/.test(str)) {
-//       return `${str.slice(0, 4)}-${str.slice(4, 6)}-${str.slice(6, 8)}`;
-//     }
-
-//     const date = new Date(value);
-//     if (isNaN(date.getTime())) return "";
-
-//     const y = date.getFullYear();
-//     const m = String(date.getMonth() + 1).padStart(2, "0");
-//     const d = String(date.getDate()).padStart(2, "0");
-
-//     return `${y}-${m}-${d}`;
-//   };
-
-//   const onSelect = (row: DaftarGiftRows) => {
-
-//     if (kodeGift) {
-//       setValue("kodeGift", row.gfh_kodepromosi);
-//       setValue("startDate", formatDate(row.gfh_tglawal));
-//       setValue("endDate", formatDate(row.gfh_tglakhir));
-//     }
-//   };
-
-//   return (
-//     <GenericLookupModal<DaftarGiftRows>
-//       show={show}
-//       onClose={onClose}
-//       endpoint="/daftar-gift"
-//       columns={daftarGiftColumns}
-//       title="Pilih Kode Gift"
-
-
-//       onSelect={onSelect}
-
-//       filterFn={filterFn}
-//     />
-//   );
-// }

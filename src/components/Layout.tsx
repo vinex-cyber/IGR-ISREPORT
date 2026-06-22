@@ -1,6 +1,6 @@
 // components/Layout.tsx
 import Head from "next/head";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/navbar";
 import { ReactNode } from "react";
 
 interface LayoutProps {

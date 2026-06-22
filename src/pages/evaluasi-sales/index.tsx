@@ -18,14 +18,9 @@ import {
 import { DATABASE_OPTIONS } from "@/configs/database-options";
 import { getFilterDetailStrukDefaultValues } from "@/configs/evaluasi-sales/filter-default-value";
 import { FormatTanggal } from "@/utils/formatTanggal";
+import PeriodeRange from "@/components/form/shared/PeriodeRange";
 
 // Dynamic import untuk menghindari masalah SSR
-const PeriodeSales = dynamic(
-  () => import("@/components/form/evaluasisales/PeriodeSales"),
-  {
-    ssr: false,
-  },
-);
 
 const SelectReport = dynamic(
   () => import("@/components/form/evaluasisales/SelectReport"),
@@ -162,7 +157,11 @@ const EvaluasiSales = () => {
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
             <div className="space-y-4">
-              <PeriodeSales control={control} />
+              <PeriodeRange
+                control={methods.control}
+                startDateName="startDate"
+                endDateName="endDate"
+              />
 
               <CardMember control={control} />
             </div>
@@ -190,12 +189,15 @@ const EvaluasiSales = () => {
                 type="button"
                 variant="outline"
                 onClick={handleReset}
-                className="gap-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white">
+                className="gap-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white hover:cursor-pointer">
                 <RotateCcw size={16} />
                 Reset
               </Button>
 
-              <Button type="submit" variant="outline">
+              <Button
+                type="submit"
+                variant="outline"
+                className="bg-blue-500 text-white hover:bg-green-500 border-blue-500 hover:cursor-pointer">
                 Submit
               </Button>
             </div>

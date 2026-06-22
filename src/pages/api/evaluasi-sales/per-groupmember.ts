@@ -45,7 +45,7 @@ export default async function handler(
             dtl_tipemember,
             dtl_outlet,
             dtl_suboutlet
-        HAVING count(dtl_netto) > 0
+        having coalesce(SUM(dtl_netto),0) <> 0
         ORDER BY dtl_tipemember, dtl_outlet, dtl_suboutlet
         `;
 

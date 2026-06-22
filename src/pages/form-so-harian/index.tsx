@@ -145,7 +145,10 @@ export default function FormSoHarian() {
         <form onSubmit={methods.handleSubmit(onSubmit)} className="flex gap-4">
           <InputProdukPlu />
 
-          <Button type="submit" variant="outline">
+          <Button
+            type="submit"
+            variant="outline"
+            className="bg-blue-500 border-none text-white hover:bg-green-500 hover:cursor-pointer">
             {loading ? "Loading..." : "Submit"}
           </Button>
 
