@@ -12,6 +12,8 @@ export const FilterProdukBaruSchema = z
     endDate: z.string().min(1, "Tanggal akhir wajib diisi"),
 
     div: z.string().optional(),
+    dept: z.string().optional(),
+    katb: z.string().optional(),
 
     branch: z
       .string()

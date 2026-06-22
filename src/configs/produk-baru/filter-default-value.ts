@@ -24,5 +24,7 @@ export const getFilterProdukBaruDefaultValues = (): FilterProdukBaruInput => ({
   startDate: getLocalDate(),
   endDate: getLocalDate(),
   div: "",
+  dept: "",
+  katb: "",
   branch: getDefaultBranch(),
 });
