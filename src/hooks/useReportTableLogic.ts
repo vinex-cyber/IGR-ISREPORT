@@ -1,32 +1,48 @@
 // hooks/useReportTableLogic.ts
+
+import { useRouter } from "next/router";
+
 import { useFilteredData } from "./useFilteredData";
 import { useTitleFromQuery } from "./useTitleFromQuery";
 import { useTotalRow } from "./useTotalRow";
+
 import { formatReportPeriod } from "@/utils/formatReportPeriode";
-import { useRouter } from "next/router";
 
 export const useReportTableLogic = <T extends object>(
-    data: T[] | undefined,
-    searchTerm: string,
-    excludeTotalFields: (keyof T)[],
-    totalFields: (keyof T)[],
-    allFields: (keyof T)[]
+  data: T[] | undefined,
+  searchTerm: string,
+  excludeTotalFields: (keyof T)[],
+  totalFields: (keyof T)[],
+  allFields: (keyof T)[],
+  reportTitle?: string,
 ) => {
-    const filteredData = useFilteredData(data ?? undefined, searchTerm);
-    const title = useTitleFromQuery();
-    const router = useRouter();
-    const query = router.query;
-    const periode = formatReportPeriod(
-        query.startDate as string,
-        query.endDate as string
-    );
+  const router = useRouter();
 
-    const totalRow = useTotalRow<T>(
-        filteredData,
-        excludeTotalFields,
-        totalFields,
-        allFields
-    );
+  const filteredData = useFilteredData(data ?? undefined, searchTerm);
 
-    return { filteredData, title, periode, totalRow };
+  const titleFromQuery = useTitleFromQuery();
+
+  const title = reportTitle?.trim() || titleFromQuery || "Laporan";
+
+  const startDate =
+    typeof router.query.startDate === "string" ? router.query.startDate : "";
+
+  const endDate =
+    typeof router.query.endDate === "string" ? router.query.endDate : "";
+
+  const periode = formatReportPeriod(startDate, endDate);
+
+  const totalRow = useTotalRow<T>(
+    filteredData,
+    excludeTotalFields,
+    totalFields,
+    allFields,
+  );
+
+  return {
+    filteredData,
+    title,
+    periode,
+    totalRow,
+  };
 };

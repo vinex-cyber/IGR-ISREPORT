@@ -113,6 +113,14 @@ interface UseReportPageOptions<T> {
   reportType?: string;
 
   /**
+   * Judul laporan.
+   *
+   * @example
+   * reportTitle: "Laporan Penjualan"
+   * */
+  reportTitle?: string;
+
+  /**
    * Daftar field yang digunakan untuk pencarian global.
    *
    * @example
@@ -250,6 +258,7 @@ export function useReportPage<T extends object>(
     endpoint: fixedEndpoint,
     basePath,
     reportType,
+    reportTitle,
     searchableFields,
     numericFields,
     headers,
@@ -308,6 +317,7 @@ export function useReportPage<T extends object>(
     searchableFields,
     numericFields,
     allFields,
+    reportTitle,
   );
 
   const columns = allFields.map((field, index) => ({

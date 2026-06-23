@@ -7,24 +7,6 @@ export const FilterDetailStruk = (filters: FilterDetailStrukInput) => {
   const conditions = [];
   const params = [];
 
-  // Filter untuk tanggal (startDate dan endDate)
-  if (filters.startDate && filters.endDate) {
-    conditions.push(`
-        dtl_tanggal >= $${params.length + 1}
-        AND dtl_tanggal < $${params.length + 2}
-    `);
-
-    params.push(`${filters.startDate} 00:00:00`, `${filters.endDate} 23:59:59`);
-  } else {
-    if (filters.startDate) {
-      conditions.push(`dtl_tanggal >= $${params.length + 1}`);
-      params.push(`${filters.startDate} 00:00:00`);
-    }
-    if (filters.endDate) {
-      conditions.push(`dtl_tanggal < $${params.length + 1}`);
-      params.push(`${filters.endDate} 23:59:59`);
-    }
-  }
   // Filter Kode Member
   if (filters.noMember && filters.noMember !== "") {
     conditions.push(`dtl_cusno = $${params.length + 1}`);

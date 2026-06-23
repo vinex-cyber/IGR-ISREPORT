@@ -23,40 +23,84 @@ import {
   CardFieldset,
   CardTitleLegend,
 } from "@/components/ui/card";
+import { useRouter } from "next/router";
+import { toast } from "sonner";
+import { FormatTanggal } from "@/utils/formatTanggal";
 
 export default function ProdukBaruPage() {
+  const router = useRouter();
   const methods = useForm<FilterProdukBaruInput>({
     resolver: zodResolver(FilterProdukBaruSchema),
     defaultValues: getFilterProdukBaruDefaultValues(),
   });
 
-  const onSubmit = (data: FilterProdukBaruInput) => {
-    console.log(data);
+  const { control, reset, clearErrors, watch, handleSubmit } = methods;
+
+  const onSubmit = async (data: FilterProdukBaruInput) => {
+    try {
+      const params = new URLSearchParams();
+
+      Object.entries(data).forEach(([key, value]) => {
+        if (value === undefined || value === null || value === "") {
+          return;
+        }
+
+        if (Array.isArray(value)) {
+          value.forEach((item) => {
+            if (item !== "") {
+              params.append(key, String(item));
+            }
+          });
+
+          return;
+        }
+
+        params.append(key, String(value));
+      });
+
+      await router.push(
+        `/inventory/produk-baru/table-produk-baru?${params.toString()}`,
+      );
+
+      toast.success(`Laporan produk-baru sedang diproses`, {
+        duration: 2000,
+        position: "top-right",
+        description: `Periode: ${FormatTanggal(
+          data.startDate ?? "",
+        )} - ${FormatTanggal(data.endDate ?? "")}`,
+        icon: "📊",
+        closeButton: true,
+      });
+    } catch (error) {
+      console.error("Submit error:", error);
+
+      toast.error("Terjadi kesalahan saat submit");
+    }
   };
 
   const handleReset = () => {
-    methods.reset(getFilterProdukBaruDefaultValues());
+    reset(getFilterProdukBaruDefaultValues());
 
-    methods.clearErrors();
+    clearErrors();
   };
 
   return (
     <Layout title="Produk Baru">
       <Form {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="flex justify-between gap-4">
             <h1 className="text-2xl font-bold text-blue-500">
-              Produk Baru {methods.watch("branch")}
+              Produk Baru {watch("branch")}
             </h1>
             <SettingsDatabase
-              control={methods.control}
+              control={control}
               name="branch"
               options={DATABASE_OPTIONS}
             />
           </div>
           <div className="flex justify-around gap-4">
             <PeriodeRange
-              control={methods.control}
+              control={control}
               startDateName="startDate"
               endDateName="endDate"
             />
@@ -66,14 +110,14 @@ export default function ProdukBaruPage() {
                 Divisi
               </CardTitleLegend>
               <CardContent className="space-y-2">
-                <SelectDivisi control={methods.control} name="div" />
+                <SelectDivisi control={control} name="div" />
                 <SelectDepartement
-                  control={methods.control}
+                  control={control}
                   name="dept"
                   parentName="div"
                 />
                 <SelectKategori
-                  control={methods.control}
+                  control={control}
                   name="katb"
                   parentName="dept"
                 />

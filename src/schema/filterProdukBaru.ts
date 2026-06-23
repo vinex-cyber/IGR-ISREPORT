@@ -5,15 +5,21 @@ import { DATABASE_OPTIONS } from "@/configs/database-options";
 
 const DATABASE_VALUES = new Set(DATABASE_OPTIONS.map((option) => option.value));
 
+const dateSchema = z
+  .string()
+  .trim()
+  .min(1, "Tanggal wajib diisi")
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Format tanggal harus YYYY-MM-DD");
+
 export const FilterProdukBaruSchema = z
   .object({
-    startDate: z.string().min(1, "Tanggal awal wajib diisi"),
+    startDate: dateSchema,
 
-    endDate: z.string().min(1, "Tanggal akhir wajib diisi"),
+    endDate: dateSchema,
 
-    div: z.string().optional(),
-    dept: z.string().optional(),
-    katb: z.string().optional(),
+    div: z.string().trim().optional(),
+    dept: z.string().trim().optional(),
+    katb: z.string().trim().optional(),
 
     branch: z
       .string()
