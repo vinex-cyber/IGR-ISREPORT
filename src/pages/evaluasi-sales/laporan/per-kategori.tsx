@@ -140,6 +140,7 @@ const PerKategoriPage = () => {
 
             {/* Modal Produk Per Tanggal */}
             <ProdukTanggalModal
+              branch={query.branch as string}
               show={showProdukTanggalModal}
               onClose={() => setShowProdukTanggalModal(false)}
               startDate={query.startDate as string}
@@ -155,6 +156,7 @@ const PerKategoriPage = () => {
             />
             {/* Modal Produk */}
             <ProdukModal
+              branch={query.branch as string}
               show={showProdukModal}
               onClose={() => setShowProdukModal(false)}
               startDate={query.startDate as string}
@@ -171,6 +173,7 @@ const PerKategoriPage = () => {
 
             {/* Modal Struk */}
             <StrukModal
+              branch={query.branch as string}
               show={showStrukModal}
               onClose={() => setShowStrukModal(false)}
               startDate={query.startDate as string}

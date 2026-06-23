@@ -121,6 +121,7 @@ const PerProdukTanggalPage = () => {
 
             {/* Modal Struk */}
             <StrukModal
+              branch={query.branch as string}
               show={showStrukModal}
               onClose={() => setShowStrukModal(false)}
               startDate={query.startDate as string}

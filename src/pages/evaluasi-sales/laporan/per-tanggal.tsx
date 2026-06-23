@@ -20,6 +20,7 @@ import {
 const PerTanggalPage = () => {
   const config = buildReport<PerTanggalRows>(perTanggalColumns);
   const {
+    query,
     searchTerm,
     setSearchTerm,
     filteredData,
@@ -138,6 +139,7 @@ const PerTanggalPage = () => {
 
             {/* Modal Produk Per Tanggal */}
             <ProdukTanggalModal
+              branch={query.branch as string}
               show={showProdukTanggalModal}
               onClose={() => setShowProdukTanggalModal(false)}
               startDate={
@@ -153,6 +155,7 @@ const PerTanggalPage = () => {
             />
 
             <ProdukModal
+              branch={query.branch as string}
               show={showProdukModal}
               onClose={() => setShowProdukModal(false)}
               startDate={
@@ -169,6 +172,7 @@ const PerTanggalPage = () => {
 
             {/* Modal Struk */}
             <StrukModal
+              branch={query.branch as string}
               show={showStrukModal}
               onClose={() => setShowStrukModal(false)}
               startDate={

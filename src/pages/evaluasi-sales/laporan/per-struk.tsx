@@ -147,6 +147,7 @@ const PerProdukPage = () => {
             />
 
             <StrukViewModal
+              branch={query.branch as string}
               show={showStrukModal}
               onClose={handleCloseStrukModal}
               tanggal={selectedRow?.tanggal ?? ""}

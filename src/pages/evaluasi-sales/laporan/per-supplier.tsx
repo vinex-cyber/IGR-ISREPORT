@@ -133,6 +133,7 @@ const PerSupplierPage = () => {
 
             {/* Modal detail */}
             <ProdukModal
+              branch={query.branch as string}
               show={showProdukModal}
               onClose={() => setShowProdukModal(false)}
               startDate={query.startDate as string}
@@ -142,6 +143,7 @@ const PerSupplierPage = () => {
 
             {/* Modal Struk */}
             <StrukModal
+              branch={query.branch as string}
               show={showStrukModal}
               onClose={() => setShowStrukModal(false)}
               startDate={query.startDate as string}

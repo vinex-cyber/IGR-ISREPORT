@@ -120,6 +120,7 @@ const PerMemberPage = () => {
             )}
 
             <ProdukModal
+              branch={query.branch as string}
               show={showProdukModal && !!selectedRow}
               onClose={() => setShowProdukModal(false)}
               startDate={query.startDate as string}
