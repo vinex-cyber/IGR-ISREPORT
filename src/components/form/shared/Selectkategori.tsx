@@ -34,6 +34,7 @@ interface SelectKategoriProps<TFieldValues extends FieldValues> {
   parentName: FieldPathByValue<TFieldValues, string | undefined>;
 
   placeholder?: string;
+  disabled?: boolean;
 }
 
 const getGroupKey = (kategori: Kategori): string => {
@@ -50,9 +51,11 @@ export default function SelectKategori<TFieldValues extends FieldValues>({
   name,
   parentName,
   placeholder = "All Kategori",
+  disabled = false,
 }: SelectKategoriProps<TFieldValues>) {
   return (
     <DependentSelectWrapper<Kategori, TFieldValues>
+      disabled={disabled}
       control={control}
       name={name}
       parentName={parentName}

@@ -1,68 +1,83 @@
-import { Controller, useFormContext } from "react-hook-form"
-import { Input } from "@/components/ui/input"
-import { ReactNode } from "react"
-import { cn } from "@/lib/utils"
+import type { ReactNode } from "react";
+import {
+  Controller,
+  useFormContext,
+  type FieldPathByValue,
+  type FieldValues,
+} from "react-hook-form";
 
-type FormInputProps = {
-    name: string
-    placeholder?: string
-    onBlur?: (value: string) => void
-    required?: boolean
-    onInvalid?: () => void
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
-    // 🔥 tambahan
-    iconRight?: ReactNode
-    onIconClick?: () => void
-}
+type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
+  TFieldValues,
+  string | undefined
+>;
 
-const FormInput = ({
-    name,
-    placeholder,
-    onBlur,
-    required,
-    onInvalid,
-    iconRight,
-    onIconClick,
-}: FormInputProps) => {
-    const { control } = useFormContext()
+type FormInputProps<TFieldValues extends FieldValues> = {
+  name: StringFieldName<TFieldValues>;
+  placeholder?: string;
+  onBlur?: (value: string) => void;
+  required?: boolean;
+  onInvalid?: () => void;
+  iconRight?: ReactNode;
+  onIconClick?: () => void;
+  disabled?: boolean;
+};
 
-    return (
-        <Controller
-            control={control}
-            name={name}
-            render={({ field }) => (
-                <div className="relative">
-                    <Input
-                        {...field}
-                        placeholder={placeholder}
-                        required={required}
-                        className={cn(iconRight && "pr-10")} // 🔥 kasih space kanan
-                        onInvalid={() => {
-                            if (required) {
-                                onInvalid?.()
-                            }
-                        }}
-                        onBlur={(e) => {
-                            field.onBlur()
+const FormInput = <TFieldValues extends FieldValues>({
+  name,
+  placeholder,
+  onBlur,
+  required = false,
+  onInvalid,
+  iconRight,
+  onIconClick,
+  disabled = false,
+}: FormInputProps<TFieldValues>) => {
+  const { control } = useFormContext<TFieldValues>();
 
-                            if (onBlur) {
-                                onBlur(e.target.value)
-                            }
-                        }}
-                    />
+  return (
+    <Controller
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <div className="relative">
+          <Input
+            {...field}
+            value={field.value ?? ""}
+            placeholder={placeholder}
+            required={required}
+            disabled={disabled}
+            className={cn(iconRight && "pr-10")}
+            onInvalid={() => {
+              if (required) {
+                onInvalid?.();
+              }
+            }}
+            onBlur={(event) => {
+              field.onBlur();
+              onBlur?.(event.target.value);
+            }}
+          />
 
-                    {iconRight && (
-                        <div
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-black"
-                            onClick={onIconClick}
-                        >
-                            {iconRight}
-                        </div>
-                    )}
-                </div>
-            )}
-        />
-    )
-}
+          {iconRight && (
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={onIconClick}
+              className={cn(
+                "absolute right-3 top-1/2 -translate-y-1/2",
+                "text-gray-400 hover:text-black",
+                disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
+              )}>
+              {iconRight}
+            </button>
+          )}
+        </div>
+      )}
+    />
+  );
+};
 
-export default FormInput
+export default FormInput;

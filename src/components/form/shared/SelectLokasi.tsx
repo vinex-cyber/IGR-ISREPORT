@@ -4,12 +4,12 @@ import type { Control, FieldPathByValue, FieldValues } from "react-hook-form";
 
 import { DependentSelectWrapper } from "@/components/DependentSelectWrapper";
 
-interface Divisi {
-  div_kodedivisi: string;
-  div_namadivisi: string;
+interface Lokasi {
+  st_lokasi: string;
+  nama_lokasi: string;
 }
 
-interface SelectDivisiProps<TFieldValues extends FieldValues> {
+interface SelectLokasiProps<TFieldValues extends FieldValues> {
   /**
    * Control dari React Hook Form.
    *
@@ -24,36 +24,33 @@ interface SelectDivisiProps<TFieldValues extends FieldValues> {
    * Field harus bertipe string atau string | undefined.
    *
    * @example
-   * name="div"
+   * name="lokasi"
    */
   name: FieldPathByValue<TFieldValues, string | undefined>;
 
   /**
    * Teks ketika belum ada divisi yang dipilih.
    *
-   * @default "All Divisi"
+   * @default "Barang Baik"
    */
   placeholder?: string;
-  disabled?: boolean;
 }
 
-export default function SelectDivisi<TFieldValues extends FieldValues>({
+export default function SelectLokasi<TFieldValues extends FieldValues>({
   control,
   name,
-  placeholder = "All Divisi",
-  disabled = false,
-}: SelectDivisiProps<TFieldValues>) {
+  placeholder = "All Lokasi",
+}: SelectLokasiProps<TFieldValues>) {
   return (
-    <DependentSelectWrapper<Divisi, TFieldValues>
-      disabled={disabled}
+    <DependentSelectWrapper<Lokasi, TFieldValues>
       control={control}
       name={name}
-      endpoint="/select-divisi"
+      endpoint="/daftar-lokasi"
       labelAll={placeholder}
       placeholder={placeholder}
-      getOption={(divisi) => ({
-        label: `${divisi.div_kodedivisi} - ${divisi.div_namadivisi}`,
-        value: divisi.div_kodedivisi,
+      getOption={(lokasi) => ({
+        label: `${lokasi.nama_lokasi}`,
+        value: lokasi.st_lokasi,
       })}
       enableSearch
     />

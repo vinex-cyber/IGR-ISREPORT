@@ -29,6 +29,7 @@ interface SelectTagProps<TFieldValues extends FieldValues> {
    * @default "All Tag"
    */
   placeholder?: string;
+  disabled?: boolean;
 }
 
 interface SelectOption {
@@ -45,9 +46,11 @@ export default function SelectTag<TFieldValues extends FieldValues>({
   control,
   name,
   placeholder = "All Tag",
+  disabled = false,
 }: SelectTagProps<TFieldValues>) {
   return (
     <DependentSelectWrapper<Tag, TFieldValues>
+      disabled={disabled}
       control={control}
       name={name}
       endpoint="/select-tag"

@@ -1,46 +1,109 @@
-import { Search } from "lucide-react";
+// src/components/input/InputKodeKasir.tsx
+
 import { useState } from "react";
-import FormInput from "../FormInput";
+import { Search } from "lucide-react";
+import {
+  Controller,
+  useFormContext,
+  type FieldPathByValue,
+  type FieldValues,
+} from "react-hook-form";
+
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import InputKodeKasirModal from "../modal/InputKodeKasirModal";
 
-/**
- * =========================================
- * 🧩 COMPONENT: Inputkodekasir
- * =========================================
- *
- * 📍 Path: src/components/input/Inputkodekasir.tsx
- * 🧩 Type: Client Component (interactive)
- * 🏷️  CSS Class: inputkodekasir
- *
- * 📌 Tips:
- * - "use client" wajib untuk useState, useEffect, onClick, dll
- * - Gunakan clsx/tailwind-merge untuk conditional classes
- * - Extract logic kompleks ke custom hooks
- */
+type KasirFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
+  TFieldValues,
+  string | string[] | undefined
+>;
 
-// 🔥 Props Interface
+interface InputKodeKasirProps<TFieldValues extends FieldValues> {
+  name: KasirFieldName<TFieldValues>;
+  placeholder?: string;
+  disabled?: boolean;
 
-/**
- * Inputkodekasir Component
- */
-const InputKodeKasir = () => {
-  // 🔥 Contoh: state untuk interaktivitas
-  // const [isActive, setIsActive] = React.useState(false);
+  /**
+   * true jika field form bertipe string[].
+   *
+   * Contoh:
+   * kasir: z.array(z.string()).optional()
+   */
+  multiple?: boolean;
+}
+
+const InputKodeKasir = <TFieldValues extends FieldValues>({
+  name,
+  placeholder = "Kode Kasir",
+  disabled = false,
+  multiple = false,
+}: InputKodeKasirProps<TFieldValues>) => {
   const [show, setShow] = useState(false);
 
+  const { control } = useFormContext<TFieldValues>();
+
   const handleShow = () => {
-    setShow(!show);
+    if (disabled) return;
+
+    setShow((previous) => !previous);
   };
 
   return (
     <>
-      <FormInput
-        name="kasir"
-        placeholder="Kode Kasir"
-        iconRight={<Search className="w-4 h-4" />}
-        onIconClick={handleShow}
+      <Controller
+        control={control}
+        name={name}
+        render={({ field }) => {
+          const displayValue = Array.isArray(field.value)
+            ? field.value.join(",")
+            : String(field.value ?? "");
+
+          return (
+            <div className="relative">
+              <Input
+                ref={field.ref}
+                name={field.name}
+                value={displayValue}
+                placeholder={placeholder}
+                disabled={disabled}
+                className="pr-10"
+                onBlur={field.onBlur}
+                onChange={(event) => {
+                  const value = event.target.value;
+
+                  if (multiple) {
+                    const values = value
+                      .split(",")
+                      .map((item) => item.trim())
+                      .filter(Boolean);
+
+                    field.onChange(values);
+                    return;
+                  }
+
+                  field.onChange(value);
+                }}
+              />
+
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={handleShow}
+                className={cn(
+                  "absolute right-3 top-1/2 -translate-y-1/2",
+                  "text-gray-400 hover:text-black",
+                  disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
+                )}>
+                <Search className="h-4 w-4" />
+              </button>
+            </div>
+          );
+        }}
       />
-      <InputKodeKasirModal show={show} onClose={handleShow} kasir />
+
+      {!disabled && (
+        <InputKodeKasirModal show={show} onClose={handleShow} kasir />
+      )}
     </>
   );
 };

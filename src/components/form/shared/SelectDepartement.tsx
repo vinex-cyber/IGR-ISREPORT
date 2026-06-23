@@ -34,6 +34,7 @@ interface SelectDepartementProps<TFieldValues extends FieldValues> {
   parentName: FieldPathByValue<TFieldValues, string | undefined>;
 
   placeholder?: string;
+  disabled?: boolean;
 }
 
 const getGroupKey = (departement: Departement): string => {
@@ -50,9 +51,11 @@ export default function SelectDepartement<TFieldValues extends FieldValues>({
   name,
   parentName,
   placeholder = "All Departement",
+  disabled = false,
 }: SelectDepartementProps<TFieldValues>) {
   return (
     <DependentSelectWrapper<Departement, TFieldValues>
+      disabled={disabled}
       control={control}
       name={name}
       parentName={parentName}

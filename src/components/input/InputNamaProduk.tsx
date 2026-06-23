@@ -1,43 +1,70 @@
-
 import { useState } from "react";
-import FormInput from "../FormInput";
+import type { FieldPathByValue, FieldValues } from "react-hook-form";
 import { Search } from "lucide-react";
+
+import FormInput from "../FormInput";
 import InputProdukModal from "../modal/InputProdukModal";
 
 /**
  * =========================================
  * 🧩 COMPONENT: InputNamaProduk
  * =========================================
- * 
+ *
  * 📍 Path: src/components/input/InputNamaProduk.tsx
  * 🧩 Type: Client Component (interactive)
  * 🏷️  CSS Class: input-nama-produk
- * 
+ *
  * 📌 Tips:
  * - "use client" wajib untuk useState, useEffect, onClick, dll
  * - Gunakan clsx/tailwind-merge untuk conditional classes
  * - Extract logic kompleks ke custom hooks
  */
 
+// src/components/input/InputNamaProduk.tsx
 
-const InputNamaProduk = () => {
+type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
+  TFieldValues,
+  string | undefined
+>;
+
+interface InputNamaProdukProps<TFieldValues extends FieldValues> {
+  name: StringFieldName<TFieldValues>;
+  placeholder?: string;
+  disabled?: boolean;
+}
+
+const InputNamaProduk = <TFieldValues extends FieldValues>({
+  name,
+  placeholder = "Nama Produk",
+  disabled = false,
+}: InputNamaProdukProps<TFieldValues>) => {
   const [produkModal, setProdukModal] = useState(false);
+
   const handleProdukModal = () => {
-    setProdukModal(!produkModal);
-  }
+    if (disabled) return;
+
+    setProdukModal((previous) => !previous);
+  };
 
   return (
     <>
-      <FormInput
-        name="namaBarang"
-        placeholder="Nama Produk"
-        iconRight={<Search className="w-4 h-4" />}
+      <FormInput<TFieldValues>
+        name={name}
+        placeholder={placeholder}
+        disabled={disabled}
+        iconRight={<Search className="h-4 w-4" />}
         onIconClick={handleProdukModal}
       />
 
-      <InputProdukModal show={produkModal} onClose={handleProdukModal} namaBarang />
+      {!disabled && (
+        <InputProdukModal
+          show={produkModal}
+          onClose={handleProdukModal}
+          namaBarang
+        />
+      )}
     </>
-  )
-}
+  );
+};
 
-export default InputNamaProduk
+export default InputNamaProduk;

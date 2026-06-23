@@ -38,6 +38,7 @@ interface SelectNonPromoProps<TFieldValues extends FieldValues> {
    * @default "Item Promo/Non Promo"
    */
   placeholder?: string;
+  disabled?: boolean;
 }
 
 const NON_PROMO_OPTIONS: NonPromoOption[] = [
@@ -56,9 +57,11 @@ export default function SelectNonPromo<TFieldValues extends FieldValues>({
   name,
   labelAll = "All",
   placeholder = "Item Promo/Non Promo",
+  disabled = false,
 }: SelectNonPromoProps<TFieldValues>) {
   return (
     <DependentSelectWrapper<NonPromoOption, TFieldValues>
+      disabled={disabled}
       control={control}
       name={name}
       staticData={NON_PROMO_OPTIONS}

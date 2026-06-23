@@ -19,6 +19,8 @@ import { DATABASE_OPTIONS } from "@/configs/database-options";
 import { getFilterDetailStrukDefaultValues } from "@/configs/evaluasi-sales/filter-default-value";
 import { FormatTanggal } from "@/utils/formatTanggal";
 import PeriodeRange from "@/components/form/shared/PeriodeRange";
+import CardProduk from "@/components/form/shared/CardProduk";
+import CardKasir from "@/components/form/shared/CardKasir";
 
 // Dynamic import untuk menghindari masalah SSR
 
@@ -36,13 +38,6 @@ const CardMember = dynamic(
   },
 );
 
-const CardProduk = dynamic(
-  () => import("@/components/form/evaluasisales/CardProduk"),
-  {
-    ssr: false,
-  },
-);
-
 const CardSupplier = dynamic(
   () => import("@/components/form/evaluasisales/CardSupplier"),
   {
@@ -52,13 +47,6 @@ const CardSupplier = dynamic(
 
 const CardPromo = dynamic(
   () => import("@/components/form/evaluasisales/CardPromo"),
-  {
-    ssr: false,
-  },
-);
-
-const CardKasir = dynamic(
-  () => import("@/components/form/evaluasisales/CardKasir"),
   {
     ssr: false,
   },
@@ -167,13 +155,62 @@ const EvaluasiSales = () => {
             </div>
 
             <div className="space-y-4">
-              <CardProduk control={control} />
+              <CardProduk
+                control={control}
+                fields={{
+                  plu: { name: "prdcd" },
+                  namaProduk: { name: "namaBarang" },
+                  barcode: {
+                    name: "barcode",
+                    placeholder: "Barcode",
+                  },
+                  monitoringPlu: { name: "kodeMonitoringPlu" },
+                  divisi: { name: "div" },
+                  departement: {
+                    name: "dept",
+                    parentName: "div",
+                  },
+                  kategori: {
+                    name: "kat",
+                    parentName: "dept",
+                  },
+                  tag: { name: "tag" },
+                  nonPromo: { name: "pluLarangan" },
+                }}
+              />
             </div>
 
             <div className="space-y-4">
               <CardPromo />
 
-              <CardKasir control={control} />
+              <CardKasir
+                control={control}
+                fields={{
+                  kodeKasir: {
+                    name: "kasir",
+                    placeholder: "Kode Kasir",
+                    multiple: true,
+                  },
+
+                  station: {
+                    name: "station",
+                    placeholder: "Station",
+                  },
+
+                  noTrans: {
+                    name: "noTrans",
+                    placeholder: "No Transaksi",
+                  },
+
+                  kassa: {
+                    name: "kasirType",
+                  },
+
+                  methode: {
+                    name: "methodType",
+                  },
+                }}
+              />
             </div>
 
             <div className="space-y-4">

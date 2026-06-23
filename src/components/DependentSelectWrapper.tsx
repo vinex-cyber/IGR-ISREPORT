@@ -1,5 +1,7 @@
 // src/components/DependentSelectWrapper.tsx
-import { Control, FieldValues, FieldPath } from "react-hook-form";
+
+import type { Control, FieldPath, FieldValues } from "react-hook-form";
+
 import { useQueryData } from "@/hooks/useQueryData";
 import { useDependentSelect } from "@/hooks/useDependentSelect";
 import SelectTypeWrapper from "@/components/SelectTypeWrapper";
@@ -7,7 +9,6 @@ import SelectTypeWrapper from "@/components/SelectTypeWrapper";
 interface DependentSelectWrapperProps<T, FormType extends FieldValues> {
   control: Control<FormType>;
 
-  // 🔥 pakai FieldPath (bukan keyof)
   name: FieldPath<FormType>;
   parentName?: FieldPath<FormType>;
 
@@ -30,6 +31,9 @@ interface DependentSelectWrapperProps<T, FormType extends FieldValues> {
   sortOptions?: boolean;
 
   enableSearch?: boolean;
+
+  // Tambahkan ini
+  disabled?: boolean;
 }
 
 export function DependentSelectWrapper<T, FormType extends FieldValues>({
@@ -50,6 +54,9 @@ export function DependentSelectWrapper<T, FormType extends FieldValues>({
   sortOptions = true,
 
   enableSearch = false,
+
+  // Tambahkan ini
+  disabled = false,
 }: DependentSelectWrapperProps<T, FormType>) {
   const {
     data: queryData,
@@ -57,7 +64,7 @@ export function DependentSelectWrapper<T, FormType extends FieldValues>({
     isLoading,
   } = useQueryData<T[]>({
     endpoint: endpoint ?? "",
-    enabled: !!endpoint, // hanya fetch jika endpoint diberikan
+    enabled: Boolean(endpoint) && !disabled,
   });
 
   const data = endpoint ? queryData : (staticData ?? []);
@@ -82,10 +89,11 @@ export function DependentSelectWrapper<T, FormType extends FieldValues>({
   return (
     <SelectTypeWrapper<FormType>
       control={control}
-      name={name} // ✅ no any
+      name={name}
       data={options}
       loading={isLoading}
-      error={!!error}
+      error={Boolean(error)}
+      disabled={disabled}
       placeholder={
         parentName
           ? parentValue
@@ -93,7 +101,7 @@ export function DependentSelectWrapper<T, FormType extends FieldValues>({
             : labelAll
           : (placeholder ?? labelAll)
       }
-      valueKeyTransform={(val) => (val === "__ALL__" ? "" : val)}
+      valueKeyTransform={(value) => (value === "__ALL__" ? "" : value)}
       enableSearch={enableSearch}
     />
   );

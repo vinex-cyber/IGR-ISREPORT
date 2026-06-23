@@ -1,18 +1,19 @@
-
 import { useState } from "react";
-import FormInput from "../FormInput";
+import type { FieldPathByValue, FieldValues } from "react-hook-form";
 import { Search } from "lucide-react";
+
+import FormInput from "../FormInput";
 import InputMonitoringPluModal from "../modal/InputMonitoringPluModal";
 
 /**
  * =========================================
  * 🧩 COMPONENT: Inputmonitoringplu
  * =========================================
- * 
+ *
  * 📍 Path: src/components/input/Inputmonitoringplu.tsx
  * 🧩 Type: Client Component (interactive)
  * 🏷️  CSS Class: inputmonitoringplu
- * 
+ *
  * 📌 Tips:
  * - "use client" wajib untuk useState, useEffect, onClick, dll
  * - Gunakan clsx/tailwind-merge untuk conditional classes
@@ -20,25 +21,51 @@ import InputMonitoringPluModal from "../modal/InputMonitoringPluModal";
  */
 
 // 🔥 Props Interface
+// src/components/input/InputMonitoringPlu.tsx
 
-const InputMonitoringPlu = () => {
+type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
+  TFieldValues,
+  string | undefined
+>;
+
+interface InputMonitoringPluProps<TFieldValues extends FieldValues> {
+  name: StringFieldName<TFieldValues>;
+  placeholder?: string;
+  disabled?: boolean;
+}
+
+const InputMonitoringPlu = <TFieldValues extends FieldValues>({
+  name,
+  placeholder = "Kode Monitoring PLU",
+  disabled = false,
+}: InputMonitoringPluProps<TFieldValues>) => {
   const [show, setShow] = useState(false);
 
   const handleShow = () => {
-    setShow(!show);
+    if (disabled) return;
+
+    setShow((previous) => !previous);
   };
 
   return (
     <>
-      <FormInput
-        name="kodeMonitoringPlu"
-        placeholder="Kode Monitoring PLU"
-        iconRight={<Search className="w-4 h-4" />}
+      <FormInput<TFieldValues>
+        name={name}
+        placeholder={placeholder}
+        disabled={disabled}
+        iconRight={<Search className="h-4 w-4" />}
         onIconClick={handleShow}
       />
-      <InputMonitoringPluModal show={show} onClose={handleShow} kodeMonitoringPlu />
+
+      {!disabled && (
+        <InputMonitoringPluModal
+          show={show}
+          onClose={handleShow}
+          kodeMonitoringPlu
+        />
+      )}
     </>
   );
-}
+};
 
-export default InputMonitoringPlu
+export default InputMonitoringPlu;
