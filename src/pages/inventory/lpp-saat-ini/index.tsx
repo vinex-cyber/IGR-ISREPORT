@@ -47,9 +47,7 @@ export default function LppSaatIniPage() {
         params.append(key, String(value));
       });
 
-      await router.push(
-        `/inventory/lpp-saat-ini/table-lpp-saat-ini?${params.toString()}`,
-      );
+      await router.push(`/inventory/lpp-saat-ini/laporan?${params.toString()}`);
     } catch (error) {
       console.log(error);
     }

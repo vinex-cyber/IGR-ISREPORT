@@ -1,0 +1,314 @@
+// src/components/form/shared/CardMember.tsx
+
+import type { ChangeEvent } from "react";
+
+import {
+  Controller,
+  type Control,
+  type FieldPathByValue,
+  type FieldValues,
+} from "react-hook-form";
+
+import {
+  CardContent,
+  CardFieldset,
+  CardTitleLegend,
+} from "@/components/ui/card";
+
+import { Input } from "@/components/ui/input";
+import FormInput from "@/components/FormInput";
+
+import SelectOutletMember from "@/components/form/shared/SelectOutletMember";
+import SelectMemberKhusus from "@/components/form/shared/SelectMemberKhusus";
+import SelectSubOutletMember from "@/components/form/shared/SelectSubOutletMember";
+import SelectKategoriMember from "@/components/form/shared/SelectKategoriMember";
+
+import { cn } from "@/lib/utils";
+
+/**
+ * Field yang hanya menerima:
+ * - string
+ * - undefined
+ */
+type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
+  TFieldValues,
+  string | undefined
+>;
+
+/**
+ * Field yang menerima:
+ * - string
+ * - string[]
+ * - undefined
+ *
+ * Digunakan untuk field noMember.
+ */
+type StringOrArrayFieldName<TFieldValues extends FieldValues> =
+  FieldPathByValue<TFieldValues, string | string[] | undefined>;
+
+export interface StringFieldConfig<TFieldValues extends FieldValues> {
+  name: StringFieldName<TFieldValues>;
+  placeholder?: string;
+  disabled?: boolean;
+}
+
+export interface StringOrArrayFieldConfig<TFieldValues extends FieldValues> {
+  name: StringOrArrayFieldName<TFieldValues>;
+  placeholder?: string;
+  disabled?: boolean;
+
+  /**
+   * false:
+   * nilai disimpan sebagai string.
+   *
+   * true:
+   * nilai dipisahkan berdasarkan separator
+   * lalu disimpan sebagai string[].
+   *
+   * @default false
+   */
+  multiple?: boolean;
+
+  /**
+   * Pemisah untuk mode multiple.
+   *
+   * @default ","
+   */
+  separator?: string;
+}
+
+export interface DependentFieldConfig<
+  TFieldValues extends FieldValues,
+> extends StringFieldConfig<TFieldValues> {
+  /**
+   * Field parent.
+   *
+   * Contoh:
+   * subOutlet bergantung pada outlet.
+   */
+  parentName: StringFieldName<TFieldValues>;
+}
+
+export interface CardMemberFields<TFieldValues extends FieldValues> {
+  /**
+   * Field nama member.
+   */
+  namaMember?: StringFieldConfig<TFieldValues> | false;
+
+  /**
+   * Field nomor member.
+   *
+   * Mendukung string dan string[].
+   */
+  noMember?: StringOrArrayFieldConfig<TFieldValues> | false;
+
+  /**
+   * Field kode monitoring member.
+   */
+  monitoringMember?: StringFieldConfig<TFieldValues> | false;
+
+  /**
+   * Field member biru/merah.
+   */
+  memberKhusus?: StringFieldConfig<TFieldValues> | false;
+
+  /**
+   * Field outlet.
+   */
+  outlet?: StringFieldConfig<TFieldValues> | false;
+
+  /**
+   * Field sub-outlet.
+   */
+  subOutlet?: DependentFieldConfig<TFieldValues> | false;
+
+  /**
+   * Field kategori member.
+   */
+  kategoriMember?: StringFieldConfig<TFieldValues> | false;
+}
+
+export interface CardMemberProps<TFieldValues extends FieldValues> {
+  /**
+   * Control milik React Hook Form.
+   */
+  control: Control<TFieldValues>;
+
+  /**
+   * Konfigurasi field yang akan ditampilkan.
+   */
+  fields: CardMemberFields<TFieldValues>;
+
+  /**
+   * Judul card.
+   *
+   * @default "Member"
+   */
+  title?: string;
+
+  /**
+   * Class tambahan untuk CardFieldset.
+   */
+  className?: string;
+
+  /**
+   * Class tambahan untuk CardContent.
+   *
+   * @default "space-y-2"
+   */
+  contentClassName?: string;
+}
+
+interface MemberCodeInputProps<TFieldValues extends FieldValues> {
+  control: Control<TFieldValues>;
+  name: StringOrArrayFieldName<TFieldValues>;
+  placeholder?: string;
+  disabled?: boolean;
+  multiple?: boolean;
+  separator?: string;
+}
+
+/**
+ * Input khusus nomor member.
+ *
+ * Mendukung nilai:
+ * - string
+ * - string[]
+ */
+function MemberCodeInput<TFieldValues extends FieldValues>({
+  control,
+  name,
+  placeholder = "Kode Member",
+  disabled = false,
+  multiple = false,
+  separator = ",",
+}: MemberCodeInputProps<TFieldValues>) {
+  return (
+    <Controller<TFieldValues, StringOrArrayFieldName<TFieldValues>>
+      control={control}
+      name={name}
+      render={({ field }) => {
+        const displayValue = Array.isArray(field.value)
+          ? field.value.join(`${separator} `)
+          : typeof field.value === "string"
+            ? field.value
+            : "";
+
+        const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+          const inputValue = event.target.value;
+
+          if (!multiple) {
+            field.onChange(inputValue);
+            return;
+          }
+
+          const memberCodes = inputValue
+            .split(separator)
+            .map((value) => value.trim())
+            .filter(Boolean);
+
+          field.onChange(memberCodes);
+        };
+
+        return (
+          <Input
+            ref={field.ref}
+            name={field.name}
+            value={displayValue}
+            placeholder={placeholder}
+            disabled={disabled}
+            onBlur={field.onBlur}
+            onChange={handleChange}
+          />
+        );
+      }}
+    />
+  );
+}
+
+export default function CardMember<TFieldValues extends FieldValues>({
+  control,
+  fields,
+  title = "Member",
+  className,
+  contentClassName,
+}: CardMemberProps<TFieldValues>) {
+  return (
+    <CardFieldset
+      className={cn("relative rounded-lg border shadow", className)}>
+      {title && (
+        <CardTitleLegend className="mx-6 px-2 text-md font-semibold">
+          {title}
+        </CardTitleLegend>
+      )}
+
+      <CardContent className={cn("space-y-2", contentClassName)}>
+        {fields.namaMember && (
+          <FormInput<TFieldValues>
+            name={fields.namaMember.name}
+            placeholder={fields.namaMember.placeholder ?? "Nama Member"}
+            disabled={fields.namaMember.disabled}
+          />
+        )}
+
+        {fields.noMember && (
+          <MemberCodeInput<TFieldValues>
+            control={control}
+            name={fields.noMember.name}
+            placeholder={fields.noMember.placeholder ?? "Kode Member"}
+            disabled={fields.noMember.disabled}
+            multiple={fields.noMember.multiple}
+            separator={fields.noMember.separator}
+          />
+        )}
+
+        {fields.monitoringMember && (
+          <FormInput<TFieldValues>
+            name={fields.monitoringMember.name}
+            placeholder={
+              fields.monitoringMember.placeholder ?? "Kode Monitoring Member"
+            }
+            disabled={fields.monitoringMember.disabled}
+          />
+        )}
+
+        {fields.memberKhusus && (
+          <SelectMemberKhusus<TFieldValues>
+            control={control}
+            name={fields.memberKhusus.name}
+            placeholder={fields.memberKhusus.placeholder ?? "All Member"}
+            disabled={fields.memberKhusus.disabled}
+          />
+        )}
+
+        {fields.outlet && (
+          <SelectOutletMember<TFieldValues>
+            control={control}
+            name={fields.outlet.name}
+            placeholder={fields.outlet.placeholder ?? "All Outlet"}
+            disabled={fields.outlet.disabled}
+          />
+        )}
+
+        {fields.subOutlet && (
+          <SelectSubOutletMember<TFieldValues>
+            control={control}
+            name={fields.subOutlet.name}
+            parentName={fields.subOutlet.parentName}
+            placeholder={fields.subOutlet.placeholder ?? "All Sub-Outlet"}
+            disabled={fields.subOutlet.disabled}
+          />
+        )}
+
+        {fields.kategoriMember && (
+          <SelectKategoriMember<TFieldValues>
+            control={control}
+            name={fields.kategoriMember.name}
+            placeholder={fields.kategoriMember.placeholder ?? "All Kategori"}
+            disabled={fields.kategoriMember.disabled}
+          />
+        )}
+      </CardContent>
+    </CardFieldset>
+  );
+}

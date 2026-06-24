@@ -1,41 +1,132 @@
+// src/components/SelectType.tsx
+
+import { useEffect, useMemo, useState } from "react";
+
 import {
   Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
-  SelectContent,
-  SelectItem,
-  SelectGroup,
-  SelectLabel,
 } from "@/components/ui/select";
-import { useEffect, useState } from "react";
-import { Input } from "./ui/input";
 
-interface Option {
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+
+export interface SelectOption {
   label: string;
   value: string;
-}
-
-interface GroupedOption {
-  groupLabel: string;
-  options: Option[];
-}
-
-interface SelectTypeProps {
-  label?: string;
-  placeholder?: string;
-  value: string;
-  onChange: (val: string) => void;
-  options: (Option | GroupedOption)[];
   disabled?: boolean;
-  enableSearch?: boolean;
 }
 
-/**
- * Komponen SelectType mendukung:
- * - mode flat (list biasa)
- * - mode grouped (pakai groupLabel)
- */
-const SelectType: React.FC<SelectTypeProps> = ({
+export interface GroupedSelectOption {
+  groupLabel: string;
+  options: SelectOption[];
+}
+
+export interface SelectTypeProps {
+  /**
+   * Label yang ditampilkan di atas select.
+   */
+  label?: string;
+
+  /**
+   * Placeholder ketika belum ada nilai.
+   *
+   * @default "Pilih Opsi"
+   */
+  placeholder?: string;
+
+  /**
+   * Nilai select aktif.
+   */
+  value: string;
+
+  /**
+   * Callback ketika nilai berubah.
+   */
+  onChange: (value: string) => void;
+
+  /**
+   * Data pilihan, mendukung flat dan grouped.
+   */
+  options: Array<SelectOption | GroupedSelectOption>;
+
+  /**
+   * Menonaktifkan select.
+   *
+   * @default false
+   */
+  disabled?: boolean;
+
+  /**
+   * Mengaktifkan input pencarian.
+   *
+   * @default false
+   */
+  enableSearch?: boolean;
+
+  /**
+   * Menandai select dalam kondisi error.
+   *
+   * @default false
+   */
+  error?: boolean;
+
+  /**
+   * Placeholder input pencarian.
+   *
+   * @default "Search..."
+   */
+  searchPlaceholder?: string;
+
+  /**
+   * Pesan saat data tidak ditemukan.
+   *
+   * @default "Data tidak ditemukan"
+   */
+  emptyMessage?: string;
+
+  /**
+   * Daftar value yang harus ditampilkan
+   * menggunakan warna placeholder.
+   *
+   * @default ["", "__all__", "__ALL__"]
+   */
+  placeholderValues?: readonly string[];
+
+  /**
+   * Class tambahan untuk container utama.
+   */
+  className?: string;
+
+  /**
+   * Class tambahan untuk trigger select.
+   */
+  triggerClassName?: string;
+
+  /**
+   * Class tambahan untuk select content.
+   */
+  contentClassName?: string;
+
+  /**
+   * Callback ketika select dibuka atau ditutup.
+   */
+  onOpenChange?: (open: boolean) => void;
+}
+
+const DEFAULT_PLACEHOLDER_VALUES = ["", "__all__", "__ALL__"] as const;
+
+function isGroupedOption(
+  item: SelectOption | GroupedSelectOption,
+): item is GroupedSelectOption {
+  return "groupLabel" in item;
+}
+
+export default function SelectType({
   label,
   placeholder = "Pilih Opsi",
   value,
@@ -43,105 +134,178 @@ const SelectType: React.FC<SelectTypeProps> = ({
   options = [],
   disabled = false,
   enableSearch = false,
-}) => {
+  error = false,
+  searchPlaceholder = "Search...",
+  emptyMessage = "Data tidak ditemukan",
+  placeholderValues = DEFAULT_PLACEHOLDER_VALUES,
+  className,
+  triggerClassName,
+  contentClassName,
+  onOpenChange,
+}: SelectTypeProps) {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
+  /**
+   * Nilai seperti "__all__" sebenarnya adalah pilihan,
+   * tetapi secara tampilan diperlakukan seperti placeholder.
+   */
+  const isPlaceholderValue = placeholderValues.includes(value);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(search.trim().toLowerCase());
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, [search]);
 
-  // 🔥 FILTER
-  const filteredOptions: (Option | GroupedOption)[] = options
-    .map((item) => {
-      if ("groupLabel" in item) {
-        const filtered = item.options.filter((opt) =>
-          opt.label.toLowerCase().includes(debouncedSearch.toLowerCase()),
-        );
+  const filteredOptions = useMemo<
+    Array<SelectOption | GroupedSelectOption>
+  >(() => {
+    if (!debouncedSearch) {
+      return options;
+    }
 
-        if (filtered.length === 0) return null;
+    return options
+      .map((item) => {
+        if (isGroupedOption(item)) {
+          const filteredGroupOptions = item.options.filter((option) =>
+            option.label.toLowerCase().includes(debouncedSearch),
+          );
 
-        return {
-          ...item,
-          options: filtered,
-        };
-      }
+          if (filteredGroupOptions.length === 0) {
+            return null;
+          }
 
-      if (item.label.toLowerCase().includes(debouncedSearch.toLowerCase())) {
-        return item;
-      }
+          return {
+            ...item,
+            options: filteredGroupOptions,
+          };
+        }
 
-      return null;
-    })
-    .filter((item): item is Option | GroupedOption => item !== null);
+        const isMatch = item.label.toLowerCase().includes(debouncedSearch);
 
-  const valueChange = (value: string) => {
+        return isMatch ? item : null;
+      })
+      .filter(
+        (item): item is SelectOption | GroupedSelectOption => item !== null,
+      );
+  }, [debouncedSearch, options]);
+
+  const handleValueChange = (selectedValue: string) => {
     setSearch("");
-    onChange(value);
+    setDebouncedSearch("");
+    onChange(selectedValue);
   };
-  return (
-    <div>
-      {label && <label className="block mb-1 font-medium">{label}</label>}
 
-      <Select value={value} onValueChange={valueChange} disabled={disabled}>
-        <SelectTrigger className="w-full">
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setSearch("");
+      setDebouncedSearch("");
+    }
+
+    onOpenChange?.(open);
+  };
+
+  return (
+    <div className={cn("w-full", className)}>
+      {label && (
+        <label className="mb-1 block text-sm font-medium">{label}</label>
+      )}
+
+      <Select
+        value={value}
+        onValueChange={handleValueChange}
+        onOpenChange={handleOpenChange}
+        disabled={disabled}>
+        <SelectTrigger
+          className={cn(
+            "w-full",
+
+            /**
+             * Membuat pilihan All terlihat seperti placeholder.
+             */
+            isPlaceholderValue && "text-muted-foreground",
+
+            error && "border-destructive focus:ring-destructive",
+
+            triggerClassName,
+          )}
+          aria-invalid={error}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
 
-        <SelectContent className="w-full p-0">
-          {/* 🔍 SEARCH (TIDAK IKUT SCROLL) */}
+        <SelectContent
+          className={cn(
+            "w-[var(--radix-select-trigger-width)] p-0",
+            contentClassName,
+          )}>
           {enableSearch && (
-            <div className="p-2 border-b bg-background sticky top-0 z-10">
+            <div className="sticky top-0 z-10 border-b bg-background p-2">
               <Input
                 type="text"
-                placeholder="Search..."
-                className="w-full my-2 bg-background text-foreground border-border"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                placeholder={searchPlaceholder}
+                className="w-full"
+                autoComplete="off"
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                }}
+                onKeyDown={(event) => {
+                  /*
+                   * Mencegah keyboard event diterima
+                   * oleh Radix Select saat mengetik.
+                   */
+                  event.stopPropagation();
+                }}
               />
             </div>
           )}
 
-          {/* 🔥 LIST YANG SCROLL */}
-          <div className="max-h-64 overflow-y-auto">
-            {filteredOptions.map((item) => {
-              if ("groupLabel" in item) {
+          <div className="max-h-64 overflow-y-auto p-1">
+            {filteredOptions.length === 0 ? (
+              <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                {emptyMessage}
+              </div>
+            ) : (
+              filteredOptions.map((item) => {
+                if (isGroupedOption(item)) {
+                  return (
+                    <SelectGroup key={item.groupLabel}>
+                      <SelectLabel className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                        {item.groupLabel}
+                      </SelectLabel>
+
+                      {item.options.map((option) => (
+                        <SelectItem
+                          key={`${item.groupLabel}-${option.value}`}
+                          value={option.value}
+                          disabled={option.disabled}
+                          className="pl-6 text-sm">
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  );
+                }
+
                 return (
-                  <SelectGroup key={item.groupLabel}>
-                    <SelectLabel className="text-xs font-bold text-gray-500 px-2 py-1">
-                      {item.groupLabel}
-                    </SelectLabel>
-
-                    {(item.options ?? []).map((opt) => (
-                      <SelectItem
-                        key={opt.value}
-                        value={opt.value}
-                        className="pl-6 text-sm">
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
+                  <SelectItem
+                    key={item.value}
+                    value={item.value}
+                    disabled={item.disabled}
+                    className="text-sm font-medium">
+                    {item.label}
+                  </SelectItem>
                 );
-              }
-
-              return (
-                <SelectItem
-                  key={item.value}
-                  value={item.value}
-                  className="font-medium">
-                  {item.label}
-                </SelectItem>
-              );
-            })}
+              })
+            )}
           </div>
         </SelectContent>
       </Select>
     </div>
   );
-};
-
-export default SelectType;
+}

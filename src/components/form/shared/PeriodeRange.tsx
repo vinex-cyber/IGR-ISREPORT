@@ -1,6 +1,13 @@
 // src/components/form/shared/PeriodeRange.tsx
 
 import {
+  useController,
+  type Control,
+  type FieldPathByValue,
+  type FieldValues,
+} from "react-hook-form";
+
+import {
   CardContent,
   CardFieldset,
   CardTitleLegend,
@@ -8,44 +15,65 @@ import {
 
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 
-import {
-  useController,
-  type Control,
-  type FieldPathByValue,
-  type FieldValues,
-} from "react-hook-form";
-
 type DateFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
   TFieldValues,
   string | undefined
 >;
 
-interface PeriodeRangeProps<
-  TFieldValues extends FieldValues,
-  TContext,
-  TTransformedValues,
-> {
-  control: Control<TFieldValues, TContext, TTransformedValues>;
+export interface PeriodeRangeProps<TFieldValues extends FieldValues> {
+  /**
+   * Control milik React Hook Form.
+   */
+  control: Control<TFieldValues>;
 
+  /**
+   * Field yang menyimpan tanggal awal
+   * dalam format YYYY-MM-DD.
+   *
+   * @example
+   * startDateName="startDate"
+   */
   startDateName: DateFieldName<TFieldValues>;
 
+  /**
+   * Field yang menyimpan tanggal akhir
+   * dalam format YYYY-MM-DD.
+   *
+   * @example
+   * endDateName="endDate"
+   */
   endDateName: DateFieldName<TFieldValues>;
 
+  /**
+   * Judul card periode.
+   *
+   * @default "Periode"
+   */
   title?: string;
 }
 
 /**
  * Mengubah string YYYY-MM-DD menjadi Date lokal.
- * Tidak memakai UTC agar tanggal tidak bergeser.
+ * Tidak menggunakan UTC agar tanggal tidak bergeser.
  */
 function parseLocalDate(value: string | undefined): Date | undefined {
   if (!value) {
     return undefined;
   }
 
-  const [year, month, day] = value.split("-").map(Number);
+  const parts = value.split("-");
 
-  if (!year || !month || !day) {
+  if (parts.length !== 3) {
+    return undefined;
+  }
+
+  const [year, month, day] = parts.map(Number);
+
+  if (
+    !Number.isInteger(year) ||
+    !Number.isInteger(month) ||
+    !Number.isInteger(day)
+  ) {
     return undefined;
   }
 
@@ -77,20 +105,15 @@ function formatLocalDate(date: Date | undefined): string {
   return `${year}-${month}-${day}`;
 }
 
-export default function PeriodeRange<
-  TFieldValues extends FieldValues,
-  TContext,
-  TTransformedValues,
->({
+export default function PeriodeRange<TFieldValues extends FieldValues>({
   control,
   startDateName,
   endDateName,
   title = "Periode",
-}: PeriodeRangeProps<TFieldValues, TContext, TTransformedValues>) {
+}: PeriodeRangeProps<TFieldValues>) {
   const { field: startField } = useController<
     TFieldValues,
-    DateFieldName<TFieldValues>,
-    TTransformedValues
+    DateFieldName<TFieldValues>
   >({
     control,
     name: startDateName,
@@ -98,8 +121,7 @@ export default function PeriodeRange<
 
   const { field: endField } = useController<
     TFieldValues,
-    DateFieldName<TFieldValues>,
-    TTransformedValues
+    DateFieldName<TFieldValues>
   >({
     control,
     name: endDateName,
@@ -115,6 +137,19 @@ export default function PeriodeRange<
       ? parseLocalDate(endField.value)
       : undefined;
 
+  const handleRangeChange = (
+    range:
+      | {
+          from?: Date;
+          to?: Date;
+        }
+      | undefined,
+  ) => {
+    startField.onChange(formatLocalDate(range?.from));
+
+    endField.onChange(formatLocalDate(range?.to));
+  };
+
   return (
     <CardFieldset className="relative rounded-lg border shadow">
       <CardTitleLegend className="mx-6 px-2 text-md font-semibold">
@@ -127,11 +162,7 @@ export default function PeriodeRange<
             from: startDate,
             to: endDate,
           }}
-          onChange={(range) => {
-            startField.onChange(formatLocalDate(range?.from));
-
-            endField.onChange(formatLocalDate(range?.to));
-          }}
+          onChange={handleRangeChange}
         />
       </CardContent>
     </CardFieldset>

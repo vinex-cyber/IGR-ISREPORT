@@ -8,7 +8,7 @@ export const DetailStruk = (
 
   const buildDateFilter = (alias: string): string => {
     if (startDate && endDate) {
-      return `${alias} >= '${startDate}' AND  ${alias} < '${endDate}'`;
+      return `${alias} >= '${startDate}' AND  ${alias} <= '${endDate}'`;
     } else if (startDate) {
       return `date_trunc('day', ${alias}) >= '${startDate}'`;
     } else if (endDate) {
@@ -242,7 +242,7 @@ trjd_noinvoice1::text as trjd_noinvoice1,
 trjd_noinvoice2::text as trjd_noinvoice2,
 p_qty
 from tbtr_jualdetail
-${jualdetailDateFilter ? `where ${jualdetailDateFilter}` : ""}
+${jualdetailDateFilter ? `where ${jualdetailDateFilter}` : `where date_trunc('day', trjd_create_dt) = date_trunc('day', now())`}
 union all
 select distinct
 trjd_kodeigr,
@@ -274,7 +274,7 @@ trjd_noinvoice1::text as trjd_noinvoice1,
 trjd_noinvoice2::text as trjd_noinvoice2,
 p_qty
 from tbtr_jualdetail_interface
-${jualdetailDateFilter ? `where ${jualdetailDateFilter}` : ""})s)trjd
+${jualdetailDateFilter ? `where ${jualdetailDateFilter}` : `where date_trunc('day', trjd_create_dt) = date_trunc('day', now())`})s)trjd
     left join tbmaster_prodmast on trjd_prdcd = prd_prdcd
     left join tbmaster_tokoigr on trjd_cus_kodemember = tko_kodecustomer
     left join tbmaster_customer on trjd_cus_kodemember = cus_kodemember
@@ -296,14 +296,14 @@ and m.hgb_recordid is null)gb on dtl_prdcd_ctn=hgb_prdcd
         coalesce( min(date(cus_tglmulai)), min(date(trjd_transactiondate)) ) as dtl_tglmulai,
         max(date(trjd_transactiondate)) as dtl_tglakhir
          from
-         (select trjd_cus_kodemember, trjd_transactiondate from tbtr_jualdetail
+         (select distinct trjd_cus_kodemember, trjd_transactiondate from tbtr_jualdetail
             
          union all
-         select trjd_cus_kodemember, trjd_transactiondate from tbtr_jualdetail_interface
+         select distinct trjd_cus_kodemember, trjd_transactiondate from tbtr_jualdetail_interface
             )tra
          left join tbmaster_customer on trjd_cus_kodemember = cus_kodemember
         group by trjd_cus_kodemember)akr on kdmem = dtl_cusno
-    left join (SELECT
+    left join (SELECT DISTINCT
     to_char(vir_transactiondate, 'yyyymmdd') || vir_create_by || vir_transactionno || vir_transactiontype AS key_vir,
     string_agg(vir_type||' - '||vir_amount,' + ') as vir_type,
     coalesce(vir_method,'-') as dtl_method,
@@ -312,7 +312,7 @@ and m.hgb_recordid is null)gb on dtl_prdcd_ctn=hgb_prdcd
         TBTR_VIRTUAL
     where
         vir_transactiontype = 'S'
-        ${virtualDateFilter ? `AND ${virtualDateFilter}` : ""}
+        ${virtualDateFilter ? `AND ${virtualDateFilter}` : `where date_trunc('day', vir_transactiondate) = current_date`}
     GROUP BY
     vir_transactiondate, vir_create_by, vir_transactionno, vir_transactiontype,
     to_char(vir_transactiondate, 'yyyymmdd') || vir_create_by || vir_cashierstation || vir_transactionno || vir_transactiontype,

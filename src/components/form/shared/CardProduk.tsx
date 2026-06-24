@@ -125,6 +125,7 @@ const CardProduk = <TFieldValues extends FieldValues>({
             name={fields.departement.name}
             parentName={fields.departement.parentName}
             disabled={fields.departement.disabled}
+            disableWhenParentEmpty={false}
           />
         )}
 
@@ -134,6 +135,7 @@ const CardProduk = <TFieldValues extends FieldValues>({
             name={fields.kategori.name}
             parentName={fields.kategori.parentName}
             disabled={fields.kategori.disabled}
+            disableWhenParentEmpty={false}
           />
         )}
 
@@ -150,6 +152,7 @@ const CardProduk = <TFieldValues extends FieldValues>({
             control={control}
             name={fields.nonPromo.name}
             disabled={fields.nonPromo.disabled}
+            labelAll={fields.nonPromo.placeholder ?? "All"}
           />
         )}
       </CardContent>

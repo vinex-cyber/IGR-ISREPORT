@@ -21,32 +21,15 @@ import { FormatTanggal } from "@/utils/formatTanggal";
 import PeriodeRange from "@/components/form/shared/PeriodeRange";
 import CardProduk from "@/components/form/shared/CardProduk";
 import CardKasir from "@/components/form/shared/CardKasir";
+import CardMember from "@/components/form/shared/CardMember";
+import SelectReport from "@/components/form/evaluasisales/SelectReport";
+import { EVALUASI_SALES_REPORT_OPTIONS } from "@/configs/evaluasi-sales/report-options";
+import CardPromo from "@/components/form/evaluasisales/CardPromo";
 
 // Dynamic import untuk menghindari masalah SSR
 
-const SelectReport = dynamic(
-  () => import("@/components/form/evaluasisales/SelectReport"),
-  {
-    ssr: false,
-  },
-);
-
-const CardMember = dynamic(
-  () => import("@/components/form/evaluasisales/CardMember"),
-  {
-    ssr: false,
-  },
-);
-
 const CardSupplier = dynamic(
   () => import("@/components/form/evaluasisales/CardSupplier"),
-  {
-    ssr: false,
-  },
-);
-
-const CardPromo = dynamic(
-  () => import("@/components/form/evaluasisales/CardPromo"),
   {
     ssr: false,
   },
@@ -151,7 +134,33 @@ const EvaluasiSales = () => {
                 endDateName="endDate"
               />
 
-              <CardMember control={control} />
+              <CardMember<FilterDetailStrukInput>
+                control={control}
+                fields={{
+                  namaMember: {
+                    name: "namaMember",
+                  },
+                  noMember: {
+                    name: "noMember",
+                  },
+                  monitoringMember: {
+                    name: "monitoringMember",
+                  },
+                  memberKhusus: {
+                    name: "memberKhusus",
+                  },
+                  outlet: {
+                    name: "outlet",
+                  },
+                  subOutlet: {
+                    name: "subOutlet",
+                    parentName: "outlet",
+                  },
+                  kategoriMember: {
+                    name: "katMember",
+                  },
+                }}
+              />
             </div>
 
             <div className="space-y-4">
@@ -175,13 +184,32 @@ const EvaluasiSales = () => {
                     parentName: "dept",
                   },
                   tag: { name: "tag" },
-                  nonPromo: { name: "pluLarangan" },
+                  nonPromo: {
+                    name: "pluLarangan",
+                    placeholder: "Larangan/Non Larangan",
+                  },
                 }}
               />
             </div>
 
             <div className="space-y-4">
-              <CardPromo />
+              <CardPromo<FilterDetailStrukInput>
+                branchName="branch"
+                startDateName="startDate"
+                endDateName="endDate"
+                fields={{
+                  gift: {
+                    name: "kodeGift",
+                    placeholder: "Kode Gift",
+                    multiple: true,
+                  },
+                  cashback: {
+                    name: "cashback",
+                    placeholder: "Kode Cashback",
+                    multiple: true,
+                  },
+                }}
+              />
 
               <CardKasir
                 control={control}
@@ -216,7 +244,11 @@ const EvaluasiSales = () => {
             <div className="space-y-4">
               <CardSupplier />
 
-              <SelectReport control={control} />
+              <SelectReport
+                control={control}
+                name="selectedReport"
+                options={EVALUASI_SALES_REPORT_OPTIONS}
+              />
             </div>
           </div>
 

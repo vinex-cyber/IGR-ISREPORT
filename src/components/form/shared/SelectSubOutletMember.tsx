@@ -35,36 +35,48 @@ type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
 >;
 
 interface SelectSubOutletMemberProps<TFieldValues extends FieldValues> {
+  /**
+   * Control dari React Hook Form.
+   */
   control: Control<TFieldValues>;
 
   /**
-   * Field untuk menyimpan sub-outlet.
+   * Field untuk menyimpan kode sub-outlet.
    *
-   * Contoh: "subOutlet"
+   * Contoh:
+   * name="subOutlet"
    */
   name: StringFieldName<TFieldValues>;
 
   /**
-   * Field outlet sebagai parent.
+   * Field outlet yang menjadi parent.
    *
-   * Contoh: "outlet"
+   * Contoh:
+   * parentName="outlet"
    */
   parentName: StringFieldName<TFieldValues>;
 
+  /**
+   * Teks pilihan semua sub-outlet.
+   *
+   * @default "All Sub-Outlet"
+   */
   placeholder?: string;
 
+  /**
+   * Endpoint daftar sub-outlet.
+   *
+   * @default "/select-suboutlet-member"
+   */
   endpoint?: string;
-}
 
-const DEFAULT_GROUP: SelectOptionGroup = {
-  groupLabel: "Umum",
-  options: [
-    {
-      label: "All Sub-Outlet",
-      value: "__all__",
-    },
-  ],
-};
+  /**
+   * Menonaktifkan select.
+   *
+   * @default false
+   */
+  disabled?: boolean;
+}
 
 export default function SelectSubOutletMember<
   TFieldValues extends FieldValues,
@@ -74,6 +86,7 @@ export default function SelectSubOutletMember<
   parentName,
   placeholder = "All Sub-Outlet",
   endpoint = "/select-suboutlet-member",
+  disabled = false,
 }: SelectSubOutletMemberProps<TFieldValues>) {
   const watchedOutlet = useWatch({
     control,
@@ -84,17 +97,29 @@ export default function SelectSubOutletMember<
 
   const { data, error, loading } = useFetchData<SubOutletMember[]>({
     endpoint,
+
     queryParams: selectedOutlet
       ? {
           kodeoutlet: selectedOutlet,
         }
       : undefined,
-    enabled: true,
+
+    enabled: Boolean(endpoint) && !disabled,
   });
 
   const groupedOptions = useMemo<SelectOptionGroup[]>(() => {
+    const defaultGroup: SelectOptionGroup = {
+      groupLabel: "Umum",
+      options: [
+        {
+          label: placeholder,
+          value: "__all__",
+        },
+      ],
+    };
+
     if (!data || data.length === 0) {
-      return [DEFAULT_GROUP];
+      return [defaultGroup];
     }
 
     const groupedData = data.reduce<Record<string, SubOutletMember[]>>(
@@ -110,9 +135,10 @@ export default function SelectSubOutletMember<
       {},
     );
 
-    const groups = Object.entries(groupedData).map(
+    const groups: SelectOptionGroup[] = Object.entries(groupedData).map(
       ([kodeOutlet, subOutlets]) => ({
         groupLabel: `${kodeOutlet} - ${subOutlets[0]?.out_namaoutlet ?? ""}`,
+
         options: subOutlets.map((subOutlet) => ({
           label: `${subOutlet.sub_kodesuboutlet} - ${subOutlet.sub_namasuboutlet}`,
           value: subOutlet.sub_kodesuboutlet,
@@ -120,8 +146,8 @@ export default function SelectSubOutletMember<
       }),
     );
 
-    return [DEFAULT_GROUP, ...groups];
-  }, [data]);
+    return [defaultGroup, ...groups];
+  }, [data, placeholder]);
 
   return (
     <SelectTypeWrapper<TFieldValues>
@@ -131,7 +157,9 @@ export default function SelectSubOutletMember<
       loading={loading}
       error={Boolean(error)}
       placeholder={placeholder}
+      disabled={disabled}
       valueKeyTransform={(value) => (value === "__all__" ? "" : value)}
+      enableSearch
     />
   );
 }

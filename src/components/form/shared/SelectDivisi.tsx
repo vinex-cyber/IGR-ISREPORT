@@ -1,61 +1,116 @@
-// src/components/form/evaluasisales/SelectDivisi.tsx
+// src/components/form/shared/SelectDivisi.tsx
 
 import type { Control, FieldPathByValue, FieldValues } from "react-hook-form";
 
 import { DependentSelectWrapper } from "@/components/DependentSelectWrapper";
 
-interface Divisi {
+export interface Divisi {
   div_kodedivisi: string;
   div_namadivisi: string;
 }
 
-interface SelectDivisiProps<TFieldValues extends FieldValues> {
+type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
+  TFieldValues,
+  string | undefined
+>;
+
+export interface SelectDivisiProps<TFieldValues extends FieldValues> {
   /**
    * Control dari React Hook Form.
-   *
-   * @example
-   * control={methods.control}
    */
   control: Control<TFieldValues>;
 
   /**
-   * Nama field yang akan menyimpan kode divisi.
+   * Nama field yang menyimpan kode divisi.
    *
-   * Field harus bertipe string atau string | undefined.
-   *
-   * @example
-   * name="div"
+   * Field wajib bertipe string atau string | undefined.
    */
-  name: FieldPathByValue<TFieldValues, string | undefined>;
+  name: StringFieldName<TFieldValues>;
 
   /**
-   * Teks ketika belum ada divisi yang dipilih.
+   * Label untuk pilihan semua divisi.
    *
    * @default "All Divisi"
    */
+  labelAll?: string;
+
+  /**
+   * Placeholder yang tampil pada select.
+   *
+   * @default mengikuti labelAll
+   */
   placeholder?: string;
+
+  /**
+   * Endpoint API daftar divisi.
+   *
+   * @default "/select-divisi"
+   */
+  endpoint?: string;
+
+  /**
+   * Data divisi statis.
+   *
+   * Jika diberikan, request endpoint tidak dijalankan.
+   */
+  staticData?: Divisi[];
+
+  /**
+   * Menonaktifkan select.
+   *
+   * @default false
+   */
   disabled?: boolean;
+
+  /**
+   * Mengaktifkan pencarian.
+   *
+   * @default true
+   */
+  enableSearch?: boolean;
+
+  /**
+   * Mengurutkan pilihan.
+   *@example
+   * [
+   *   { label: "A", value: "A" },
+   *   { label: "B", value: "B" },
+   ]
+   * @default true
+   */
+  sortOptions?: boolean;
 }
+
+const getDivisiOption = (divisi: Divisi) => ({
+  label: `${divisi.div_kodedivisi} - ${divisi.div_namadivisi}`,
+  value: divisi.div_kodedivisi,
+});
 
 export default function SelectDivisi<TFieldValues extends FieldValues>({
   control,
   name,
-  placeholder = "All Divisi",
+  labelAll = "All Divisi",
+  placeholder,
+  endpoint = "/select-divisi",
+  staticData,
   disabled = false,
+  enableSearch = true,
+  sortOptions = true,
 }: SelectDivisiProps<TFieldValues>) {
+  const resolvedEndpoint = staticData !== undefined ? undefined : endpoint;
+
   return (
     <DependentSelectWrapper<Divisi, TFieldValues>
-      disabled={disabled}
       control={control}
       name={name}
-      endpoint="/select-divisi"
-      labelAll={placeholder}
-      placeholder={placeholder}
-      getOption={(divisi) => ({
-        label: `${divisi.div_kodedivisi} - ${divisi.div_namadivisi}`,
-        value: divisi.div_kodedivisi,
-      })}
-      enableSearch
+      endpoint={resolvedEndpoint}
+      staticData={staticData}
+      labelAll={labelAll}
+      placeholder={placeholder ?? labelAll}
+      disabled={disabled}
+      getOption={getDivisiOption}
+      enableSearch={enableSearch}
+      sortOptions={sortOptions}
     />
   );
 }

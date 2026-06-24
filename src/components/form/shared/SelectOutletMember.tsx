@@ -22,69 +22,70 @@ type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
   string | undefined
 >;
 
-interface SelectOutletMemberProps<
-  TFieldValues extends FieldValues,
-  TName extends StringFieldName<TFieldValues>,
-> {
+interface SelectOutletMemberProps<TFieldValues extends FieldValues> {
   /**
    * Control dari React Hook Form.
    */
   control: Control<TFieldValues>;
 
   /**
-   * Nama field untuk menyimpan kode outlet.
+   * Field form untuk menyimpan kode outlet.
    *
-   * Contoh:
-   * name="outlet"
+   * Field harus bertipe string atau string | undefined.
    */
-  name: TName;
+  name: StringFieldName<TFieldValues>;
 
   /**
-   * Placeholder select.
+   * Teks pilihan semua outlet.
    *
    * @default "All Outlet"
    */
   placeholder?: string;
 
   /**
-   * Endpoint untuk mengambil daftar outlet.
+   * Endpoint daftar outlet.
    *
    * @default "/select-outlet-member"
    */
   endpoint?: string;
+
+  /**
+   * Menonaktifkan select.
+   *
+   * @default false
+   */
+  disabled?: boolean;
 }
 
-const ALL_OUTLET_OPTION: OutletOption = {
-  label: "All Outlet",
-  value: "__ALL__",
-};
-
-export default function SelectOutletMember<
-  TFieldValues extends FieldValues,
-  TName extends StringFieldName<TFieldValues>,
->({
+export default function SelectOutletMember<TFieldValues extends FieldValues>({
   control,
   name,
   placeholder = "All Outlet",
   endpoint = "/select-outlet-member",
-}: SelectOutletMemberProps<TFieldValues, TName>) {
+  disabled = false,
+}: SelectOutletMemberProps<TFieldValues>) {
   const { data, error, loading } = useFetchData<OutletMember[]>({
     endpoint,
   });
 
   const options = useMemo<OutletOption[]>(() => {
+    const allOutletOption: OutletOption = {
+      label: placeholder,
+      value: "__ALL__",
+    };
+
     if (!data || data.length === 0) {
-      return [ALL_OUTLET_OPTION];
+      return [allOutletOption];
     }
 
     return [
-      ALL_OUTLET_OPTION,
+      allOutletOption,
       ...data.map((outlet) => ({
         label: `${outlet.out_kodeoutlet} - ${outlet.out_namaoutlet}`,
         value: outlet.out_kodeoutlet,
       })),
     ];
-  }, [data]);
+  }, [data, placeholder]);
 
   return (
     <SelectTypeWrapper<TFieldValues>
@@ -94,7 +95,9 @@ export default function SelectOutletMember<
       loading={loading}
       error={Boolean(error)}
       placeholder={placeholder}
-      valueKeyTransform={(value: string) => (value === "__ALL__" ? "" : value)}
+      disabled={disabled}
+      valueKeyTransform={(value) => (value === "__ALL__" ? "" : value)}
+      enableSearch
     />
   );
 }

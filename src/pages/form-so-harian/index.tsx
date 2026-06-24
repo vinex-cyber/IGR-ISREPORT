@@ -143,7 +143,7 @@ export default function FormSoHarian() {
       {/* 🔥 FORM */}
       <Form {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)} className="flex gap-4">
-          <InputProdukPlu />
+          <InputProdukPlu name="prdcd" />
 
           <Button
             type="submit"

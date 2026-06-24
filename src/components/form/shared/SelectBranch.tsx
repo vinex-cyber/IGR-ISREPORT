@@ -20,24 +20,39 @@ import {
 
 import { DATABASE_OPTIONS } from "@/configs/database-options";
 
+export interface BranchOption {
+  label: string;
+  value: string;
+  disabled?: boolean;
+}
+
 type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
   TFieldValues,
   string | undefined
 >;
 
-interface SelectBranchProps<TFieldValues extends FieldValues> {
+export interface SelectBranchProps<TFieldValues extends FieldValues> {
   /**
-   * Control dari React Hook Form.
+   * Control milik React Hook Form.
    */
   control: Control<TFieldValues>;
 
   /**
-   * Nama field yang menyimpan branch.
+   * Nama field yang menyimpan kode branch.
    *
-   * Contoh:
+   * Field harus bertipe string atau string | undefined.
+   *
+   * @example
    * name="branch"
    */
   name: StringFieldName<TFieldValues>;
+
+  /**
+   * Daftar pilihan branch.
+   *
+   * Secara default menggunakan DATABASE_OPTIONS.
+   */
+  options?: readonly BranchOption[];
 
   /**
    * Label input.
@@ -47,16 +62,31 @@ interface SelectBranchProps<TFieldValues extends FieldValues> {
   label?: string;
 
   /**
-   * Placeholder input.
+   * Menampilkan atau menyembunyikan label.
+   *
+   * Berguna ketika komponen digunakan di dalam card
+   * yang sudah memiliki label sendiri.
+   *
+   * @default true
+   */
+  showLabel?: boolean;
+
+  /**
+   * Placeholder ketika branch belum dipilih.
    *
    * @default "Pilih Branch"
    */
   placeholder?: string;
 
   /**
-   * Lebar select.
+   * Class untuk FormItem.
+   */
+  formItemClassName?: string;
+
+  /**
+   * Class untuk SelectTrigger.
    *
-   * @default "w-[200px]"
+   * @default "w-full"
    */
   className?: string;
 
@@ -66,41 +96,61 @@ interface SelectBranchProps<TFieldValues extends FieldValues> {
    * @default false
    */
   disabled?: boolean;
+
+  /**
+   * Callback tambahan ketika branch berubah.
+   */
+  onValueChange?: (value: string) => void;
 }
 
 export default function SelectBranch<TFieldValues extends FieldValues>({
   control,
   name,
+  options = DATABASE_OPTIONS,
   label = "Branch",
+  showLabel = true,
   placeholder = "Pilih Branch",
-  className = "w-[200px]",
+  formItemClassName,
+  className = "w-full",
   disabled = false,
+  onValueChange,
 }: SelectBranchProps<TFieldValues>) {
   return (
-    <FormField
+    <FormField<TFieldValues, StringFieldName<TFieldValues>>
       control={control}
       name={name}
       render={({ field }) => {
         const selectedValue =
           typeof field.value === "string" ? field.value : "";
 
+        const handleValueChange = (value: string) => {
+          field.onChange(value);
+          onValueChange?.(value);
+        };
+
         return (
-          <FormItem>
-            <FormLabel>{label}</FormLabel>
+          <FormItem className={formItemClassName}>
+            {showLabel && label && <FormLabel>{label}</FormLabel>}
 
             <Select
               value={selectedValue}
-              onValueChange={field.onChange}
+              onValueChange={handleValueChange}
               disabled={disabled}>
               <FormControl>
-                <SelectTrigger className={className}>
+                <SelectTrigger
+                  className={className}
+                  onBlur={field.onBlur}
+                  aria-label={!showLabel ? label : undefined}>
                   <SelectValue placeholder={placeholder} />
                 </SelectTrigger>
               </FormControl>
 
               <SelectContent>
-                {DATABASE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
+                {options.map((option) => (
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    disabled={option.disabled}>
                     {option.label}
                   </SelectItem>
                 ))}

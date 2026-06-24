@@ -4,61 +4,73 @@ import type { Control, FieldPathByValue, FieldValues } from "react-hook-form";
 
 import { DependentSelectWrapper } from "@/components/DependentSelectWrapper";
 
-interface Tag {
+export interface Tag {
   tag_kodetag: string;
   tag_keterangan: string;
 }
 
-interface SelectTagProps<TFieldValues extends FieldValues> {
-  /**
-   * Control dari React Hook Form.
-   */
-  control: Control<TFieldValues>;
-
-  /**
-   * Nama field yang menyimpan kode tag.
-   *
-   * Contoh:
-   * name="tag"
-   */
-  name: FieldPathByValue<TFieldValues, string | undefined>;
-
-  /**
-   * Teks yang ditampilkan saat belum ada tag dipilih.
-   *
-   * @default "All Tag"
-   */
-  placeholder?: string;
-  disabled?: boolean;
-}
-
-interface SelectOption {
+export interface SelectOption {
   label: string;
   value: string;
 }
 
-const getOption = (tag: Tag): SelectOption => ({
-  label: `${tag.tag_kodetag} - ${tag.tag_keterangan}`,
-  value: tag.tag_kodetag,
-});
+type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
+  TFieldValues,
+  string | undefined
+>;
+
+export interface SelectTagProps<TFieldValues extends FieldValues> {
+  control: Control<TFieldValues>;
+  name: StringFieldName<TFieldValues>;
+  labelAll?: string;
+  placeholder?: string;
+  endpoint?: string;
+  staticData?: Tag[];
+  disabled?: boolean;
+  enableSearch?: boolean;
+  sortOptions?: boolean;
+}
+
+const getTagOption = (tag: Tag): SelectOption => {
+  const kodeTag = tag.tag_kodetag?.trim();
+  const keterangan = tag.tag_keterangan?.trim();
+
+  return {
+    label:
+      kodeTag && keterangan
+        ? `${kodeTag} - ${keterangan}`
+        : kodeTag || keterangan || "-",
+    value: kodeTag,
+  };
+};
 
 export default function SelectTag<TFieldValues extends FieldValues>({
   control,
   name,
-  placeholder = "All Tag",
+  labelAll = "All Tag",
+  placeholder,
+  endpoint = "/select-tag",
+  staticData,
   disabled = false,
+  enableSearch = true,
+  sortOptions = true,
 }: SelectTagProps<TFieldValues>) {
+  const resolvedEndpoint = staticData !== undefined ? undefined : endpoint;
+
+  const resolvedPlaceholder = placeholder ?? labelAll;
+
   return (
     <DependentSelectWrapper<Tag, TFieldValues>
-      disabled={disabled}
       control={control}
       name={name}
-      endpoint="/select-tag"
-      labelAll={placeholder}
-      placeholder={placeholder}
-      getOption={getOption}
-      enableSearch
-      sortOptions
+      endpoint={resolvedEndpoint}
+      staticData={staticData}
+      labelAll={labelAll}
+      placeholder={resolvedPlaceholder}
+      disabled={disabled}
+      getOption={getTagOption}
+      enableSearch={enableSearch}
+      sortOptions={sortOptions}
     />
   );
 }

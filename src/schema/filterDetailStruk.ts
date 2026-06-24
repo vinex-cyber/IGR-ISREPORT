@@ -9,6 +9,7 @@ export const FilterDetailStrukSchema = z.object({
   endDate: z.string().optional(),
   noMember: z.union([z.string(), z.array(z.string())]).optional(),
   namaMember: z.string().optional(),
+  monitoringMember: z.string().optional(),
   div: z.string().optional(),
   dept: z.string().optional(),
   kat: z.string().optional(),

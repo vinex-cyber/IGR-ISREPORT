@@ -5,131 +5,117 @@ import {
   type DaftarGiftRows,
 } from "@/configs/input/daftar-giftConfig";
 
-import {
-  useFormContext,
-  type FieldPathByValue,
-  type FieldPathValue,
-  type FieldValues,
-} from "react-hook-form";
+import { GenericLookupModal } from "@/components/modal/GenericLookupModal";
 
-import { GenericLookupModal } from "./GenericLookupModal";
+/**
+ * Tipe nilai tanggal yang mungkin berasal
+ * dari API atau database.
+ */
+export type GiftDateValue = string | Date | null | undefined;
 
-type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
-  TFieldValues,
-  string | undefined
->;
+/**
+ * Bentuk data gift yang dikirim kepada
+ * komponen InputKodeGift.
+ *
+ * Modal tidak lagi mengubah nilai form secara langsung.
+ */
+export interface GiftSelection {
+  /**
+   * Kode promosi gift.
+   */
+  code: string;
 
-interface InputGiftModalProps<TFieldValues extends FieldValues> {
+  /**
+   * Tanggal awal periode gift.
+   */
+  startDate?: GiftDateValue;
+
+  /**
+   * Tanggal akhir periode gift.
+   */
+  endDate?: GiftDateValue;
+
+  /**
+   * Data asli yang dipilih dari modal.
+   *
+   * Dapat digunakan apabila komponen induk
+   * membutuhkan informasi lain dari row.
+   */
+  row: DaftarGiftRows;
+}
+
+export interface InputGiftModalProps {
+  /**
+   * Menampilkan atau menyembunyikan modal.
+   */
   show: boolean;
+
+  /**
+   * Callback untuk menutup modal.
+   */
   onClose: () => void;
 
   /**
-   * Field untuk menyimpan kode gift.
-   *
-   * Contoh: "kodeGift"
+   * Branch/database yang digunakan
+   * dalam request API.
    */
-  name: StringFieldName<TFieldValues>;
+  branch: string;
 
   /**
-   * Field database/branch.
-   *
-   * Contoh: "branch"
+   * Callback ketika row gift dipilih.
    */
-  branchName: StringFieldName<TFieldValues>;
+  onSelect: (gift: GiftSelection) => void;
 
   /**
-   * Field tanggal awal.
-   * Opsional, boleh tidak diberikan.
+   * Judul modal.
    *
-   * Contoh: "startDate"
+   * @default "Pilih Kode Gift"
    */
-  startDateName?: StringFieldName<TFieldValues>;
+  title?: string;
 
   /**
-   * Field tanggal akhir.
-   * Opsional, boleh tidak diberikan.
+   * Endpoint API daftar gift.
    *
-   * Contoh: "endDate"
+   * Query parameter branch akan ditambahkan
+   * secara otomatis.
+   *
+   * @default "/api/daftar-gift"
    */
-  endDateName?: StringFieldName<TFieldValues>;
+  endpoint?: string;
 }
 
-function formatDate(value: string | Date | null | undefined): string {
-  if (!value) {
-    return "";
-  }
-
-  const stringValue = value.toString();
-
-  // Format 20260401 menjadi 2026-04-01
-  if (/^\d{8}$/.test(stringValue)) {
-    return `${stringValue.slice(0, 4)}-${stringValue.slice(
-      4,
-      6,
-    )}-${stringValue.slice(6, 8)}`;
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  const year = date.getFullYear();
-
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
-
-export default function InputGiftModal<TFieldValues extends FieldValues>({
+export default function InputGiftModal({
   show,
   onClose,
-  name,
-  branchName,
-  startDateName,
-  endDateName,
-}: InputGiftModalProps<TFieldValues>) {
-  const { setValue, watch } = useFormContext<TFieldValues>();
-
-  const branchValue = watch(branchName);
-
-  const branch = typeof branchValue === "string" ? branchValue : "";
-
-  const setStringValue = <TName extends StringFieldName<TFieldValues>>(
-    fieldName: TName,
-    value: string,
-  ) => {
-    setValue(fieldName, value as FieldPathValue<TFieldValues, TName>, {
-      shouldDirty: true,
-      shouldTouch: true,
-      shouldValidate: true,
-    });
-  };
+  branch,
+  onSelect,
+  title = "Pilih Kode Gift",
+  endpoint = "/api/daftar-gift",
+}: InputGiftModalProps) {
+  const resolvedEndpoint = `${endpoint}?branch=${encodeURIComponent(branch)}`;
 
   const handleSelect = (row: DaftarGiftRows) => {
-    setStringValue(name, row.gfh_kodepromosi);
+    const code = String(row.gfh_kodepromosi ?? "").trim();
 
-    if (startDateName) {
-      setStringValue(startDateName, formatDate(row.gfh_tglawal));
+    if (!code) {
+      return;
     }
 
-    if (endDateName) {
-      setStringValue(endDateName, formatDate(row.gfh_tglakhir));
-    }
-
-    onClose();
+    onSelect({
+      code,
+      startDate: row.gfh_tglawal,
+      endDate: row.gfh_tglakhir,
+      row,
+    });
   };
 
   return (
     <GenericLookupModal<DaftarGiftRows>
       show={show}
       onClose={onClose}
-      endpoint={`/api/daftar-gift?branch=${encodeURIComponent(branch)}`}
+      endpoint={resolvedEndpoint}
       columns={daftarGiftColumns}
-      title="Pilih Kode Gift"
+      title={title}
       onSelect={handleSelect}
     />
   );

@@ -9,71 +9,131 @@ import {
 
 import SelectType from "@/components/SelectType";
 
+export interface KassaOption {
+  label: string;
+  value: string;
+}
+
 type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
   TFieldValues,
   string | undefined
 >;
 
-interface SelectKassaProps<TFieldValues extends FieldValues> {
+export interface SelectKassaProps<TFieldValues extends FieldValues> {
+  /**
+   * Control milik React Hook Form.
+   */
   control: Control<TFieldValues>;
 
   /**
-   * Nama field form yang menyimpan pilihan jenis kassa.
+   * Nama field yang menyimpan jenis kassa.
    *
-   * Contoh:
+   * Field harus bertipe string atau string | undefined.
+   *
+   * @example
    * name="kasirType"
    */
   name: StringFieldName<TFieldValues>;
 
+  /**
+   * Daftar pilihan jenis kassa.
+   *
+   * Secara default menggunakan DEFAULT_KASSA_OPTIONS.
+   */
+  options?: KassaOption[];
+
+  /**
+   * Label pilihan semua kassa.
+   *
+   * @default "All Kassa"
+   */
+  labelAll?: string;
+
+  /**
+   * Placeholder select.
+   *
+   * Jika tidak diberikan, nilainya mengikuti labelAll.
+   */
   placeholder?: string;
+
+  /**
+   * Menonaktifkan select.
+   *
+   * @default false
+   */
   disabled?: boolean;
+
+  /**
+   * Callback tambahan ketika nilai berubah.
+   */
+  onValueChange?: (value: string) => void;
 }
 
-const kassaOptions = [
+export const DEFAULT_KASSA_OPTIONS: KassaOption[] = [
   {
     label: "All Kassa",
     value: "__all__",
   },
   {
-    label: "Non Kss",
+    label: "Non KSS",
     value: "non-kss",
   },
   {
-    label: "Only Kss",
+    label: "Only KSS",
     value: "only-kss",
   },
 ];
 
-const SelectKassa = <TFieldValues extends FieldValues>({
+export default function SelectKassa<TFieldValues extends FieldValues>({
   control,
   name,
-  placeholder = "All Kassa",
+  options = DEFAULT_KASSA_OPTIONS,
+  labelAll = "All Kassa",
+  placeholder,
   disabled = false,
-}: SelectKassaProps<TFieldValues>) => {
+  onValueChange,
+}: SelectKassaProps<TFieldValues>) {
+  const resolvedPlaceholder = placeholder ?? labelAll;
+
+  const resolvedOptions = options.map((option) => {
+    if (option.value !== "__all__") {
+      return option;
+    }
+
+    return {
+      ...option,
+      label: labelAll,
+    };
+  });
+
   return (
     <Controller
       control={control}
       name={name}
-      render={({ field }) => {
+      render={({ field, fieldState }) => {
         const selectedValue =
-          typeof field.value === "string" && field.value
+          typeof field.value === "string" && field.value !== ""
             ? field.value
             : "__all__";
+
+        const handleValueChange = (value: string) => {
+          const formValue = value === "__all__" ? "" : value;
+
+          field.onChange(formValue);
+          onValueChange?.(formValue);
+        };
 
         return (
           <SelectType
             value={selectedValue}
-            onChange={(value) => {
-              field.onChange(value === "__all__" ? "" : value);
-            }}
-            options={kassaOptions}
-            placeholder={placeholder}
+            onChange={handleValueChange}
+            options={resolvedOptions}
+            placeholder={resolvedPlaceholder}
             disabled={disabled}
+            error={Boolean(fieldState.error)}
           />
         );
       }}
     />
   );
-};
-
-export default SelectKassa;
+}

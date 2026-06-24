@@ -34,41 +34,24 @@ type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
   string | undefined
 >;
 
-interface SelectMemberKhususProps<
-  TFieldValues extends FieldValues,
-  TName extends StringFieldName<TFieldValues>,
-> {
-  /**
-   * Control dari React Hook Form.
-   */
+interface SelectMemberKhususProps<TFieldValues extends FieldValues> {
   control: Control<TFieldValues>;
 
-  /**
-   * Nama field yang menyimpan pilihan member.
-   *
-   * Contoh:
-   * name="memberKhusus"
-   */
-  name: TName;
+  name: StringFieldName<TFieldValues>;
 
-  /**
-   * Placeholder select.
-   *
-   * @default "All Member"
-   */
   placeholder?: string;
+
+  disabled?: boolean;
 }
 
-export default function SelectMemberKhusus<
-  TFieldValues extends FieldValues,
-  TName extends StringFieldName<TFieldValues>,
->({
+export default function SelectMemberKhusus<TFieldValues extends FieldValues>({
   control,
   name,
   placeholder = "All Member",
-}: SelectMemberKhususProps<TFieldValues, TName>) {
+  disabled = false,
+}: SelectMemberKhususProps<TFieldValues>) {
   return (
-    <Controller<TFieldValues, TName>
+    <Controller
       control={control}
       name={name}
       render={({ field }) => {
@@ -85,6 +68,7 @@ export default function SelectMemberKhusus<
             }}
             options={MEMBER_OPTIONS}
             placeholder={placeholder}
+            disabled={disabled}
           />
         );
       }}
