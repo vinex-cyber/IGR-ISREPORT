@@ -1,34 +1,62 @@
-// components/Layout.tsx
+// src/components/Layout.tsx
+
 import Head from "next/head";
+import type { ReactNode } from "react";
+
 import Navbar from "@/components/navbar";
-import { ReactNode } from "react";
+
+import { getBranchLogo, getBranchPageBackground } from "@/utils/getBranchTheme";
 
 interface LayoutProps {
   children: ReactNode;
   title?: string;
-  description?: string; // Tambahkan props description
+  description?: string;
+
+  /**
+   * Branch aktif dari watch("branch").
+   */
+  branch?: string;
 }
 
-const appName = process.env.NEXT_PUBLIC_APP_NAME || "App Default";
+const defaultAppName = process.env.NEXT_PUBLIC_APP_NAME ?? "App Default";
 
 export default function Layout({
   children,
   title = "Dashboard",
-  description = "Selamat datang di aplikasi kami.", // default desc
+  description = "Selamat datang di aplikasi kami.",
+  branch,
 }: LayoutProps) {
-  const fullTitle = `${appName} | ${title}`;
+  const activeBranch = branch?.trim() || defaultAppName;
+
+  const fullTitle = `${activeBranch} | ${title}`;
+
+  const pageBackground = getBranchPageBackground(activeBranch);
+
+  const logoSrc = getBranchLogo(activeBranch);
 
   return (
     <>
       <Head>
         <title>{fullTitle}</title>
+
         <meta name="description" content={description} />
+
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/images/logo.png" />
+
+        <link
+          rel="icon"
+          type="image/png"
+          href={logoSrc}
+          key={logoSrc}
+          className="max-h-[60px]"
+        />
       </Head>
-      <Navbar />
-      <main className="min-h-screen bg-blue-100 px-4 pt-28 dark:bg-slate-900">
-        <div className="mx-auto max-w-6xl">{children}</div>
+
+      <Navbar branch={activeBranch} logoSrc={logoSrc} />
+
+      <main
+        className={`min-h-screen px-4 pb-8 pt-28 transition-colors duration-300 dark:bg-slate-900 ${pageBackground}`}>
+        <div className="mx-auto w-full max-w-6xl">{children}</div>
       </main>
     </>
   );

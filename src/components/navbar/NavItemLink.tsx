@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { NavigationMenuLink } from "@/components/ui/navigation-menu";
+
 import {
   Tooltip,
   TooltipContent,
@@ -21,7 +22,7 @@ const linkClassName =
   "focus:bg-accent focus:text-accent-foreground focus:outline-none";
 
 export default function NavItemLink({ item }: NavItemLinkProps) {
-  const linkElement = item.external ? (
+  const menuLink = item.external ? (
     <a
       href={item.href}
       target="_blank"
@@ -40,9 +41,7 @@ export default function NavItemLink({ item }: NavItemLinkProps) {
       {item.description ? (
         <Tooltip>
           <TooltipTrigger asChild>
-            <div>
-              <NavigationMenuLink asChild>{linkElement}</NavigationMenuLink>
-            </div>
+            <NavigationMenuLink asChild>{menuLink}</NavigationMenuLink>
           </TooltipTrigger>
 
           <TooltipContent
@@ -54,7 +53,7 @@ export default function NavItemLink({ item }: NavItemLinkProps) {
           </TooltipContent>
         </Tooltip>
       ) : (
-        <NavigationMenuLink asChild>{linkElement}</NavigationMenuLink>
+        <NavigationMenuLink asChild>{menuLink}</NavigationMenuLink>
       )}
     </li>
   );
