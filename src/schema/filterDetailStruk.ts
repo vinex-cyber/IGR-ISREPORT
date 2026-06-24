@@ -1,8 +1,7 @@
 // File: src/type/filterdetailstruk.ts
-import { DATABASE_OPTIONS } from "@/configs/database-options";
 import { z } from "zod";
+import { isDatabaseBranch } from "@/configs/database-options";
 
-const DATABASE_VALUES = new Set(DATABASE_OPTIONS.map((option) => option.value));
 // Skema validasi filter menggunakan Zod
 export const FilterDetailStrukSchema = z.object({
   startDate: z.string().optional(),
@@ -53,9 +52,9 @@ export const FilterDetailStrukSchema = z.object({
   branch: z
     .string()
     .trim()
-    .min(1, "Database wajib dipilih")
-    .refine((value) => DATABASE_VALUES.has(value), {
-      message: "Database tidak valid",
+    .min(1, "Branch wajib dipilih")
+    .refine(isDatabaseBranch, {
+      message: "Branch tidak valid",
     }),
 });
 

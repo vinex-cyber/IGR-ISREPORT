@@ -1,13 +1,9 @@
-// components/Settings/SettingsDatabase.tsx
+// src/components/Settings/SettingsDatabase.tsx
 
-import type {
-  Control,
-  FieldPath,
-  FieldPathValue,
-  FieldValues,
-} from "react-hook-form";
+import type { Control, FieldPathByValue, FieldValues } from "react-hook-form";
 
 import { FormField, FormItem } from "@/components/ui/form";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,46 +13,43 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import { Button } from "@/components/ui/button";
+
 import { Check, Database, Settings } from "lucide-react";
 
-type StringFieldValue<
-  TFieldValues extends FieldValues,
-  TName extends FieldPath<TFieldValues>,
-> = Extract<FieldPathValue<TFieldValues, TName>, string>;
+import type { DatabaseOption } from "@/configs/database-options";
 
-export interface DatabaseOption<TValue extends string = string> {
-  label: string;
-  value: TValue;
-}
+/**
+ * Hanya menerima nama field yang nilainya:
+ * - string
+ * - string | undefined
+ */
+type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
+  TFieldValues,
+  string | undefined
+>;
 
-interface SettingsDatabaseProps<
-  TFieldValues extends FieldValues,
-  TName extends FieldPath<TFieldValues>,
-> {
+export interface SettingsDatabaseProps<TFieldValues extends FieldValues> {
   /**
-   * Control dari React Hook Form.
-   *
-   * @example
-   * control={form.control}
+   * Control milik React Hook Form.
    */
   control: Control<TFieldValues>;
 
   /**
-   * Nama field form yang menyimpan pilihan database.
+   * Nama field yang menyimpan branch/database.
+   *
+   * Field harus bertipe string.
    *
    * @example
    * name="branch"
-   *
-   * @example
-   * name="database"
    */
-  name: TName;
+  name: StringFieldName<TFieldValues>;
 
   /**
-   * Daftar database yang ditampilkan.
+   * Daftar pilihan database.
    */
-  options: readonly DatabaseOption<StringFieldValue<TFieldValues, TName>>[];
+  options: readonly DatabaseOption[];
 
   /**
    * Judul submenu.
@@ -71,64 +64,81 @@ interface SettingsDatabaseProps<
    * @default "Pilih database"
    */
   buttonLabel?: string;
+
+  /**
+   * Menonaktifkan tombol dan pilihan database.
+   *
+   * @default false
+   */
+  disabled?: boolean;
 }
 
-export default function SettingsDatabase<
-  TFieldValues extends FieldValues,
-  TName extends FieldPath<TFieldValues>,
->({
+export default function SettingsDatabase<TFieldValues extends FieldValues>({
   control,
   name,
   options,
   menuLabel = "Database",
   buttonLabel = "Pilih database",
-}: SettingsDatabaseProps<TFieldValues, TName>) {
+  disabled = false,
+}: SettingsDatabaseProps<TFieldValues>) {
   return (
-    <FormField<TFieldValues, TName>
+    <FormField<TFieldValues, StringFieldName<TFieldValues>>
       control={control}
       name={name}
-      render={({ field }) => (
-        <FormItem>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                aria-label={buttonLabel}
-                className="cursor-pointer">
-                <Settings className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
+      render={({ field }) => {
+        const selectedValue =
+          typeof field.value === "string" ? field.value : "";
 
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger className="cursor-pointer">
-                  <Database className="mr-2 h-4 w-4" />
+        return (
+          <FormItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  aria-label={buttonLabel}
+                  title={buttonLabel}
+                  disabled={disabled}
+                  className="cursor-pointer">
+                  <Settings className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
 
-                  {menuLabel}
-                </DropdownMenuSubTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger
+                    disabled={disabled}
+                    className="cursor-pointer">
+                    <Database className="mr-2 h-4 w-4" />
 
-                <DropdownMenuSubContent>
-                  {options.map((option) => {
-                    const isSelected = String(field.value) === option.value;
+                    {menuLabel}
+                  </DropdownMenuSubTrigger>
 
-                    return (
-                      <DropdownMenuItem
-                        key={option.value}
-                        onSelect={() => field.onChange(option.value)}
-                        className="flex cursor-pointer items-center justify-between">
-                        <span>{option.label}</span>
+                  <DropdownMenuSubContent>
+                    {options.map((option) => {
+                      const isSelected = selectedValue === option.value;
 
-                        {isSelected && <Check className="ml-2 h-4 w-4" />}
-                      </DropdownMenuItem>
-                    );
-                  })}
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </FormItem>
-      )}
+                      return (
+                        <DropdownMenuItem
+                          key={option.value}
+                          disabled={disabled}
+                          onSelect={() => {
+                            field.onChange(option.value);
+                          }}
+                          className="flex cursor-pointer items-center justify-between">
+                          <span>{option.label}</span>
+
+                          {isSelected && <Check className="ml-2 h-4 w-4" />}
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </FormItem>
+        );
+      }}
     />
   );
 }

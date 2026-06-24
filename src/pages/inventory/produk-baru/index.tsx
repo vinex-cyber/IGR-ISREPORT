@@ -1,40 +1,87 @@
-import SelectDivisi from "@/components/form/shared/SelectDivisi";
-import SettingsDatabase from "@/components/Settings/Settings";
+// src/pages/inventory/produk-baru/index.tsx
+
+import type { GetServerSideProps } from "next";
+import { useRouter } from "next/router";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { toast } from "sonner";
+
 import Layout from "@/components/Layout";
+import SettingsDatabase from "@/components/Settings/Settings";
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 
 import {
-  FilterProdukBaruInput,
-  FilterProdukBaruSchema,
-} from "@/schema/filterProdukBaru";
-
-import { getFilterProdukBaruDefaultValues } from "@/configs/produk-baru/filter-default-value";
-import { DATABASE_OPTIONS } from "@/configs/database-options";
-
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import PeriodeRange from "@/components/form/shared/PeriodeRange";
-import SelectDepartement from "@/components/form/shared/SelectDepartement";
-import SelectKategori from "@/components/form/shared/Selectkategori";
-import {
   CardContent,
   CardFieldset,
   CardTitleLegend,
 } from "@/components/ui/card";
-import { useRouter } from "next/router";
-import { toast } from "sonner";
+
+import PeriodeRange from "@/components/form/shared/PeriodeRange";
+import SelectDivisi from "@/components/form/shared/SelectDivisi";
+import SelectDepartement from "@/components/form/shared/SelectDepartement";
+import SelectKategori from "@/components/form/shared/Selectkategori";
+
+import {
+  FilterProdukBaruSchema,
+  type FilterProdukBaruInput,
+} from "@/schema/filterProdukBaru";
+
+import { DATABASE_OPTIONS } from "@/configs/database-options";
+
+import { getFilterProdukBaruDefaultValues } from "@/configs/produk-baru/filter-default-value";
+
+import { getBranchFromRequest } from "@/utils/server/getBranchFomRequest";
 import { FormatTanggal } from "@/utils/formatTanggal";
 
-export default function ProdukBaruPage() {
+interface ProdukBaruPageProps {
+  /**
+   * Branch awal berdasarkan IP client.
+   *
+   * Apabila IP tidak cocok dengan mapping jaringan,
+   * nilainya akan fallback ke NEXT_PUBLIC_APP_NAME.
+   */
+  defaultBranch: string;
+}
+
+/**
+ * Dijalankan pada server setiap halaman dibuka.
+ *
+ * IP client dibaca dari:
+ * - X-Real-IP
+ * - X-Forwarded-For
+ * - req.socket.remoteAddress
+ */
+export const getServerSideProps: GetServerSideProps<
+  ProdukBaruPageProps
+> = async ({ req }) => {
+  const defaultBranch = getBranchFromRequest(req);
+
+  return {
+    props: {
+      defaultBranch,
+    },
+  };
+};
+
+export default function ProdukBaruPage({ defaultBranch }: ProdukBaruPageProps) {
   const router = useRouter();
+
   const methods = useForm<FilterProdukBaruInput>({
     resolver: zodResolver(FilterProdukBaruSchema),
-    defaultValues: getFilterProdukBaruDefaultValues(),
+
+    /**
+     * Branch diisi berdasarkan IP client.
+     */
+    defaultValues: getFilterProdukBaruDefaultValues(defaultBranch),
   });
 
   const { control, reset, clearErrors, watch, handleSubmit } = methods;
+
+  const selectedBranch = watch("branch");
 
   const onSubmit = async (data: FilterProdukBaruInput) => {
     try {
@@ -62,7 +109,7 @@ export default function ProdukBaruPage() {
         `/inventory/produk-baru/table-produk-baru?${params.toString()}`,
       );
 
-      toast.success(`Laporan produk-baru sedang diproses`, {
+      toast.success("Laporan produk baru sedang diproses", {
         duration: 2000,
         position: "top-right",
         description: `Periode: ${FormatTanggal(
@@ -74,59 +121,89 @@ export default function ProdukBaruPage() {
     } catch (error) {
       console.error("Submit error:", error);
 
-      toast.error("Terjadi kesalahan saat submit");
+      toast.error("Terjadi kesalahan saat submit", {
+        position: "top-right",
+      });
     }
   };
 
   const handleReset = () => {
-    reset(getFilterProdukBaruDefaultValues());
+    /**
+     * Branch kembali ke hasil deteksi IP client.
+     * Tanggal dihitung ulang menggunakan tanggal hari ini.
+     */
+    reset(getFilterProdukBaruDefaultValues(defaultBranch));
 
     clearErrors();
+
+    toast.success("Filter berhasil direset", {
+      duration: 1500,
+      position: "top-right",
+    });
   };
 
   return (
     <Layout title="Produk Baru">
       <Form {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="flex justify-between gap-4">
+          <div className="flex items-center justify-between gap-4">
             <h1 className="text-2xl font-bold text-blue-500">
-              Produk Baru {watch("branch")}
+              Produk Baru
+              {selectedBranch ? ` - ${selectedBranch}` : ""}
             </h1>
-            <SettingsDatabase
+
+            <SettingsDatabase<FilterProdukBaruInput>
               control={control}
               name="branch"
               options={DATABASE_OPTIONS}
             />
           </div>
-          <div className="flex justify-around gap-4">
-            <PeriodeRange
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <PeriodeRange<FilterProdukBaruInput>
               control={control}
               startDateName="startDate"
               endDateName="endDate"
             />
 
-            <CardFieldset className="space-y-2">
+            <CardFieldset className="relative rounded-lg border shadow">
               <CardTitleLegend className="mx-6 px-2 text-md font-semibold">
-                Divisi
+                Produk
               </CardTitleLegend>
+
               <CardContent className="space-y-2">
-                <SelectDivisi control={control} name="div" />
-                <SelectDepartement
+                <SelectDivisi<FilterProdukBaruInput>
+                  control={control}
+                  name="div"
+                />
+
+                <SelectDepartement<FilterProdukBaruInput>
                   control={control}
                   name="dept"
                   parentName="div"
+                  disableWhenParentEmpty={false}
+                  valueMode="division-department"
                 />
-                <SelectKategori
+
+                <SelectKategori<FilterProdukBaruInput>
                   control={control}
                   name="katb"
                   parentName="dept"
+                  parentValueMode="division-department"
+                  valueMode="department-category"
+                  disableWhenParentEmpty={false}
                 />
               </CardContent>
             </CardFieldset>
 
-            <CardFieldset className="justify-center space-y-2">
+            <CardFieldset className="relative rounded-lg border shadow">
+              <CardTitleLegend className="mx-6 px-2 text-md font-semibold">
+                Proses
+              </CardTitleLegend>
+
               <CardContent className="flex flex-col gap-2">
                 <Button type="submit">Tampilkan</Button>
+
                 <Button type="button" variant="outline" onClick={handleReset}>
                   Reset
                 </Button>

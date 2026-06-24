@@ -1,32 +1,56 @@
 // src/configs/evaluasi-sales/filter-default-values.ts
 
 import type { FilterDetailStrukInput } from "@/schema/filterDetailStruk";
-import { DATABASE_OPTIONS } from "@/configs/database-options";
 
-const getToday = (): string => {
+import { isDatabaseBranch } from "@/configs/database-options";
+import { getDefaultBranch } from "@/utils/getDefaultBranch";
+
+/**
+ * Mendapatkan tanggal hari ini dalam format YYYY-MM-DD
+ * berdasarkan zona waktu lokal perangkat/server.
+ */
+function getToday(): string {
   const date = new Date();
   const offset = date.getTimezoneOffset() * 60_000;
 
   return new Date(date.getTime() - offset).toISOString().split("T")[0];
-};
+}
 
-const getDefaultBranch = (): string => {
-  const envBranch = process.env.NEXT_PUBLIC_APP_NAME;
+/**
+ * Menentukan branch awal.
+ *
+ * Prioritas:
+ * 1. Branch yang dikirim dari server berdasarkan IP client
+ * 2. NEXT_PUBLIC_APP_NAME
+ * 3. Database pertama dari DATABASE_OPTIONS
+ */
+function resolveDefaultBranch(branch?: string): string {
+  const normalizedBranch = branch?.trim();
 
-  const branchFromEnv = DATABASE_OPTIONS.find(
-    (option) => option.value === envBranch,
-  );
+  if (isDatabaseBranch(normalizedBranch)) {
+    return normalizedBranch;
+  }
 
-  return branchFromEnv?.value ?? DATABASE_OPTIONS[0]?.value ?? "";
-};
+  return getDefaultBranch();
+}
 
-export const getFilterDetailStrukDefaultValues =
-  (): FilterDetailStrukInput => ({
-    startDate: getToday(),
-    endDate: getToday(),
+/**
+ * Menghasilkan seluruh nilai awal form Evaluasi Sales.
+ *
+ * @param branch Branch yang sudah dideteksi dari IP client.
+ */
+export function getFilterDetailStrukDefaultValues(
+  branch?: string,
+): FilterDetailStrukInput {
+  const today = getToday();
+
+  return {
+    startDate: today,
+    endDate: today,
 
     noMember: "",
     namaMember: "",
+    monitoringMember: "",
 
     div: "",
     dept: "",
@@ -53,6 +77,7 @@ export const getFilterDetailStrukDefaultValues =
     kodeGift: "",
 
     promo: [],
+
     kasir: [],
     noTrans: "",
     station: "",
@@ -67,5 +92,7 @@ export const getFilterDetailStrukDefaultValues =
     strukSupplier: "",
 
     selectedReport: "per-divisi",
-    branch: getDefaultBranch(),
-  });
+
+    branch: resolveDefaultBranch(branch),
+  };
+}

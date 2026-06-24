@@ -1,33 +1,47 @@
+// src/pages/evaluasi-sales/index.tsx
+
 import dynamic from "next/dynamic";
+import type { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+
 import { toast } from "sonner";
 import { ArrowRightIcon, RotateCcw } from "lucide-react";
 
 import Layout from "@/components/Layout";
+
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+
 import SettingsDatabase from "@/components/Settings/Settings";
 
 import {
-  FilterDetailStrukInput,
   FilterDetailStrukSchema,
+  type FilterDetailStrukInput,
 } from "@/schema/filterDetailStruk";
 
 import { DATABASE_OPTIONS } from "@/configs/database-options";
+
 import { getFilterDetailStrukDefaultValues } from "@/configs/evaluasi-sales/filter-default-value";
+
+import { EVALUASI_SALES_REPORT_OPTIONS } from "@/configs/evaluasi-sales/report-options";
+
+import { getBranchFromRequest } from "@/utils/server/getBranchFomRequest";
 import { FormatTanggal } from "@/utils/formatTanggal";
+
 import PeriodeRange from "@/components/form/shared/PeriodeRange";
 import CardProduk from "@/components/form/shared/CardProduk";
 import CardKasir from "@/components/form/shared/CardKasir";
 import CardMember from "@/components/form/shared/CardMember";
-import SelectReport from "@/components/form/evaluasisales/SelectReport";
-import { EVALUASI_SALES_REPORT_OPTIONS } from "@/configs/evaluasi-sales/report-options";
-import CardPromo from "@/components/form/evaluasisales/CardPromo";
+import CardPromo from "@/components/form/shared/CardPromo";
+import SelectReport from "@/components/form/shared/SelectReport";
 
-// Dynamic import untuk menghindari masalah SSR
-
+/**
+ * Dynamic import tetap boleh digunakan karena
+ * CardSupplier tidak sedang menerima generic form.
+ */
 const CardSupplier = dynamic(
   () => import("@/components/form/evaluasisales/CardSupplier"),
   {
@@ -35,19 +49,51 @@ const CardSupplier = dynamic(
   },
 );
 
-const EvaluasiSales = () => {
+interface EvaluasiSalesPageProps {
+  /**
+   * Branch awal berdasarkan IP client.
+   *
+   * Jika IP tidak cocok dengan mapping jaringan,
+   * nilainya akan fallback ke NEXT_PUBLIC_APP_NAME.
+   */
+  defaultBranch: string;
+}
+
+/**
+ * Dijalankan pada server setiap kali halaman dibuka.
+ *
+ * Request digunakan untuk membaca IP komputer client,
+ * kemudian menentukan branch berdasarkan segment IP.
+ */
+export const getServerSideProps: GetServerSideProps<
+  EvaluasiSalesPageProps
+> = async ({ req }) => {
+  const defaultBranch = getBranchFromRequest(req);
+
+  return {
+    props: {
+      defaultBranch,
+    },
+  };
+};
+
+export default function EvaluasiSales({
+  defaultBranch,
+}: EvaluasiSalesPageProps) {
   const router = useRouter();
 
   const methods = useForm<FilterDetailStrukInput>({
     resolver: zodResolver(FilterDetailStrukSchema),
 
-    /*
-     * Semua nilai awal diambil dari satu file.
+    /**
+     * Branch pertama diisi berdasarkan IP client.
      */
-    defaultValues: getFilterDetailStrukDefaultValues(),
+    defaultValues: getFilterDetailStrukDefaultValues(defaultBranch),
   });
 
   const { control, reset, clearErrors, watch, handleSubmit } = methods;
+
+  const selectedBranch = watch("branch");
 
   const onSubmit = async (data: FilterDetailStrukInput) => {
     try {
@@ -80,9 +126,11 @@ const EvaluasiSales = () => {
       toast.success(`Laporan ${reportType} sedang diproses`, {
         duration: 2000,
         position: "top-right",
+
         description: `Periode: ${FormatTanggal(
           data.startDate ?? "",
         )} - ${FormatTanggal(data.endDate ?? "")}`,
+
         icon: "📊",
         closeButton: true,
       });
@@ -94,11 +142,16 @@ const EvaluasiSales = () => {
   };
 
   const handleReset = () => {
-    /*
-     * Memanggil fungsi lagi agar tanggal kembali
-     * menggunakan tanggal hari ini saat tombol diklik.
+    /**
+     * Reset kembali ke default values.
+     *
+     * Branch tetap memakai hasil deteksi IP client,
+     * bukan hanya nilai NEXT_PUBLIC_APP_NAME.
+     *
+     * Tanggal dihitung kembali agar selalu memakai
+     * tanggal ketika tombol reset ditekan.
      */
-    reset(getFilterDetailStrukDefaultValues());
+    reset(getFilterDetailStrukDefaultValues(defaultBranch));
 
     clearErrors();
 
@@ -116,10 +169,10 @@ const EvaluasiSales = () => {
             <h1 className="flex items-center gap-1 text-2xl font-bold text-blue-500">
               Evaluasi Sales
               <ArrowRightIcon size={22} />
-              {watch("branch")}
+              {selectedBranch}
             </h1>
 
-            <SettingsDatabase
+            <SettingsDatabase<FilterDetailStrukInput>
               control={control}
               name="branch"
               options={DATABASE_OPTIONS}
@@ -127,9 +180,10 @@ const EvaluasiSales = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {/* KOLOM PERTAMA */}
             <div className="space-y-4">
-              <PeriodeRange
-                control={methods.control}
+              <PeriodeRange<FilterDetailStrukInput>
+                control={control}
                 startDateName="startDate"
                 endDateName="endDate"
               />
@@ -140,22 +194,29 @@ const EvaluasiSales = () => {
                   namaMember: {
                     name: "namaMember",
                   },
+
                   noMember: {
                     name: "noMember",
+                    multiple: false,
                   },
+
                   monitoringMember: {
                     name: "monitoringMember",
                   },
+
                   memberKhusus: {
                     name: "memberKhusus",
                   },
+
                   outlet: {
                     name: "outlet",
                   },
+
                   subOutlet: {
                     name: "subOutlet",
                     parentName: "outlet",
                   },
+
                   kategoriMember: {
                     name: "katMember",
                   },
@@ -163,27 +224,46 @@ const EvaluasiSales = () => {
               />
             </div>
 
+            {/* KOLOM KEDUA */}
             <div className="space-y-4">
-              <CardProduk
+              <CardProduk<FilterDetailStrukInput>
                 control={control}
                 fields={{
-                  plu: { name: "prdcd" },
-                  namaProduk: { name: "namaBarang" },
+                  plu: {
+                    name: "prdcd",
+                  },
+
+                  namaProduk: {
+                    name: "namaBarang",
+                  },
+
                   barcode: {
                     name: "barcode",
                     placeholder: "Barcode",
                   },
-                  monitoringPlu: { name: "kodeMonitoringPlu" },
-                  divisi: { name: "div" },
+
+                  monitoringPlu: {
+                    name: "kodeMonitoringPlu",
+                  },
+
+                  divisi: {
+                    name: "div",
+                  },
+
                   departement: {
                     name: "dept",
                     parentName: "div",
                   },
+
                   kategori: {
                     name: "kat",
                     parentName: "dept",
                   },
-                  tag: { name: "tag" },
+
+                  tag: {
+                    name: "tag",
+                  },
+
                   nonPromo: {
                     name: "pluLarangan",
                     placeholder: "Larangan/Non Larangan",
@@ -192,6 +272,7 @@ const EvaluasiSales = () => {
               />
             </div>
 
+            {/* KOLOM KETIGA */}
             <div className="space-y-4">
               <CardPromo<FilterDetailStrukInput>
                 branchName="branch"
@@ -203,6 +284,7 @@ const EvaluasiSales = () => {
                     placeholder: "Kode Gift",
                     multiple: true,
                   },
+
                   cashback: {
                     name: "cashback",
                     placeholder: "Kode Cashback",
@@ -211,7 +293,7 @@ const EvaluasiSales = () => {
                 }}
               />
 
-              <CardKasir
+              <CardKasir<FilterDetailStrukInput>
                 control={control}
                 fields={{
                   kodeKasir: {
@@ -241,10 +323,11 @@ const EvaluasiSales = () => {
               />
             </div>
 
+            {/* KOLOM KEEMPAT */}
             <div className="space-y-4">
               <CardSupplier />
 
-              <SelectReport
+              <SelectReport<FilterDetailStrukInput>
                 control={control}
                 name="selectedReport"
                 options={EVALUASI_SALES_REPORT_OPTIONS}
@@ -258,7 +341,7 @@ const EvaluasiSales = () => {
                 type="button"
                 variant="outline"
                 onClick={handleReset}
-                className="gap-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white hover:cursor-pointer">
+                className="gap-2 border-red-500 text-red-500 hover:cursor-pointer hover:bg-red-500 hover:text-white">
                 <RotateCcw size={16} />
                 Reset
               </Button>
@@ -266,7 +349,7 @@ const EvaluasiSales = () => {
               <Button
                 type="submit"
                 variant="outline"
-                className="bg-blue-500 text-white hover:bg-green-500 border-blue-500 hover:cursor-pointer">
+                className="border-blue-500 bg-blue-500 text-white hover:cursor-pointer hover:bg-green-500">
                 Submit
               </Button>
             </div>
@@ -275,6 +358,4 @@ const EvaluasiSales = () => {
       </Form>
     </Layout>
   );
-};
-
-export default EvaluasiSales;
+}

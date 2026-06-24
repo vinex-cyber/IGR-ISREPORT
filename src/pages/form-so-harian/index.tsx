@@ -24,7 +24,7 @@ import { RiFilePdf2Fill } from "react-icons/ri";
 import InputProdukPlu from "@/components/input/InputProdukPlu";
 import SettingsDatabase from "@/components/Settings/Settings";
 import { DATABASE_OPTIONS } from "@/configs/database-options";
-import { getDefaultDatabase } from "@/utils/getDefaultDatabase";
+import { getDefaultBranch } from "@/utils/getDefaultBranch";
 
 export default function FormSoHarian() {
   const router = useRouter();
@@ -54,7 +54,7 @@ export default function FormSoHarian() {
     resolver: zodResolver(FilterFormSoHarianSchema),
     defaultValues: {
       prdcd: "",
-      branch: getDefaultDatabase(),
+      branch: getDefaultBranch(),
     },
   });
 

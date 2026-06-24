@@ -1,11 +1,15 @@
-// configs/database-options.ts
+// src/configs/database-options.ts
 
 export interface DatabaseOption {
-  label: string;
-  value: string;
+  readonly label: string;
+  readonly value: string;
 }
 
-const isDatabaseOption = (value: unknown): value is DatabaseOption => {
+/**
+ * Memeriksa apakah sebuah nilai merupakan
+ * object DatabaseOption yang valid.
+ */
+function isDatabaseOption(value: unknown): value is DatabaseOption {
   if (typeof value !== "object" || value === null) {
     return false;
   }
@@ -18,9 +22,19 @@ const isDatabaseOption = (value: unknown): value is DatabaseOption => {
     typeof option.value === "string" &&
     option.value.trim().length > 0
   );
-};
+}
 
-const parseDatabaseOptions = (): readonly DatabaseOption[] => {
+/**
+ * Membaca daftar database dari environment variable.
+ *
+ * Contoh isi .env:
+ *
+ * NEXT_PUBLIC_DATABASE_OPTIONS=[
+ *   {"label":"IGR - CPG","value":"IGRCPG"},
+ *   {"label":"ICM - CPG","value":"ICMCPG"}
+ * ]
+ */
+function parseDatabaseOptions(): readonly DatabaseOption[] {
   const rawOptions = process.env.NEXT_PUBLIC_DATABASE_OPTIONS;
 
   if (!rawOptions) {
@@ -34,29 +48,54 @@ const parseDatabaseOptions = (): readonly DatabaseOption[] => {
       throw new Error("Format harus berupa array JSON");
     }
 
-    const options = parsed.filter(isDatabaseOption);
-
-    if (options.length === 0) {
+    if (parsed.length === 0) {
       throw new Error("Daftar database tidak boleh kosong");
     }
 
-    if (options.length !== parsed.length) {
+    if (!parsed.every(isDatabaseOption)) {
       throw new Error("Terdapat label atau value database yang tidak valid");
     }
 
-    return options;
+    const normalizedOptions = parsed.map((option) => ({
+      label: option.label.trim(),
+      value: option.value.trim(),
+    }));
+
+    const uniqueValues = new Set(
+      normalizedOptions.map((option) => option.value),
+    );
+
+    if (uniqueValues.size !== normalizedOptions.length) {
+      throw new Error("Terdapat value database yang duplikat");
+    }
+
+    return normalizedOptions;
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Format tidak diketahui";
 
     throw new Error(`NEXT_PUBLIC_DATABASE_OPTIONS tidak valid: ${message}`);
   }
-};
+}
 
 export const DATABASE_OPTIONS = parseDatabaseOptions();
 
 /**
- * Karena nilainya berasal dari environment variable
- * saat aplikasi dijalankan/build, tipenya menjadi string.
+ * Karena nilai berasal dari environment variable,
+ * TypeScript hanya dapat mengetahui tipenya sebagai string.
  */
 export type DatabaseBranch = (typeof DATABASE_OPTIONS)[number]["value"];
+
+/**
+ * Memeriksa apakah value tersedia
+ * di dalam DATABASE_OPTIONS.
+ */
+export function isDatabaseBranch(value: unknown): value is DatabaseBranch {
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  const normalizedValue = value.trim();
+
+  return DATABASE_OPTIONS.some((option) => option.value === normalizedValue);
+}

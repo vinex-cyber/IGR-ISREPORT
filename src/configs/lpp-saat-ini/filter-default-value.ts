@@ -1,32 +1,57 @@
-// src/configs/produk-baru/filter-default-value.ts
+// src/configs/lpp-saat-ini/filter-default-value.ts
 
 import type { FilterLppSaatIniInput } from "@/schema/filterLppSaatIni";
-import { DATABASE_OPTIONS } from "@/configs/database-options";
 
-const getDefaultBranch = (): string => {
-  const envBranch = process.env.NEXT_PUBLIC_APP_NAME;
+import { isDatabaseBranch } from "@/configs/database-options";
+import { getDefaultBranch } from "@/utils/getDefaultBranch";
 
-  const selectedBranch = DATABASE_OPTIONS.find(
-    (option) => option.value === envBranch,
-  );
+/**
+ * Menentukan branch awal.
+ *
+ * Prioritas:
+ * 1. Branch berdasarkan IP client
+ * 2. NEXT_PUBLIC_APP_NAME
+ * 3. Database pertama pada DATABASE_OPTIONS
+ */
+function resolveDefaultBranch(branch?: string): string {
+  const normalizedBranch = branch?.trim();
 
-  return selectedBranch?.value ?? DATABASE_OPTIONS[0]?.value ?? "";
-};
+  if (isDatabaseBranch(normalizedBranch)) {
+    return normalizedBranch;
+  }
 
-export const getFilterLppSaatIniDefaultValues = (): FilterLppSaatIniInput => ({
-  div: "",
-  dept: "",
-  katb: "",
-  tag: "",
-  prdcd: "",
-  namaBarang: "",
-  kodeMonitoringPlu: "",
-  kodeSupplier: [],
-  namaSupplier: "",
-  statusTag: "",
-  statusQty: "",
-  lokasi: "",
-  groupSales: "",
-  selectedReport: "per-divisi",
-  branch: getDefaultBranch(),
-});
+  return getDefaultBranch();
+}
+
+/**
+ * Default values form LPP Saat Ini.
+ *
+ * @param branch Branch hasil deteksi IP client.
+ */
+export function getFilterLppSaatIniDefaultValues(
+  branch?: string,
+): FilterLppSaatIniInput {
+  return {
+    div: "",
+    dept: "",
+    katb: "",
+    tag: "",
+
+    prdcd: "",
+    namaBarang: "",
+    kodeMonitoringPlu: "",
+
+    kodeSupplier: [],
+    namaSupplier: "",
+
+    statusTag: "",
+    statusQty: "",
+
+    lokasi: "",
+    groupSales: "",
+
+    selectedReport: "per-divisi",
+
+    branch: resolveDefaultBranch(branch),
+  };
+}
