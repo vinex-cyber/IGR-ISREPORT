@@ -28,6 +28,11 @@ import { DATABASE_OPTIONS } from "@/configs/database-options";
 import { getFilterLppSaatIniDefaultValues } from "@/configs/lpp-saat-ini/filter-default-value";
 
 import { getBranchFromRequest } from "@/utils/server/getBranchFomRequest";
+import {
+  CardContent,
+  CardFieldset,
+  CardTitleLegend,
+} from "@/components/ui/card";
 
 interface LppSaatIniPageProps {
   /**
@@ -134,50 +139,108 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div className="space-y-4">
-              <SelectLokasi<FilterLppSaatIniInput>
-                control={control}
-                name="lokasi"
-                labelAll="All Lokasi"
-                placeholder="All Lokasi"
-              />
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+            <div>
+              <CardFieldset className={`relative rounded-lg border shadow`}>
+                <CardTitleLegend className="mx-6 px-2 text-md font-semibold">
+                  Lokasi
+                </CardTitleLegend>
+
+                <CardContent>
+                  <SelectLokasi<FilterLppSaatIniInput>
+                    control={control}
+                    name="lokasi"
+                    labelAll="All Lokasi"
+                    placeholder="All Lokasi"
+                  />
+                </CardContent>
+              </CardFieldset>
+
+              <CardFieldset className={`relative rounded-lg border shadow`}>
+                <CardTitleLegend className="mx-6 px-2 text-md font-semibold">
+                  Group Sales
+                </CardTitleLegend>
+
+                <CardContent>
+                  <SelectLokasi<FilterLppSaatIniInput>
+                    control={control}
+                    name="lokasi"
+                    labelAll="All Lokasi"
+                    placeholder="All Lokasi"
+                  />
+                </CardContent>
+              </CardFieldset>
+
+              <CardFieldset className={`relative rounded-lg border shadow`}>
+                <CardTitleLegend className="mx-6 px-2 text-md font-semibold">
+                  Status Tag
+                </CardTitleLegend>
+
+                <CardContent>
+                  <SelectLokasi<FilterLppSaatIniInput>
+                    control={control}
+                    name="lokasi"
+                    labelAll="All Lokasi"
+                    placeholder="All Lokasi"
+                  />
+                  <span className="px-3 text-xs text-muted-foreground">
+                    Discontinue: ARNHOTX
+                  </span>
+                </CardContent>
+              </CardFieldset>
+
+              <CardFieldset className={`relative rounded-lg border shadow`}>
+                <CardTitleLegend className="mx-6 px-2 text-md font-semibold">
+                  Status Qty
+                </CardTitleLegend>
+
+                <CardContent>
+                  <SelectLokasi<FilterLppSaatIniInput>
+                    control={control}
+                    name="lokasi"
+                    labelAll="All Lokasi"
+                    placeholder="All Lokasi"
+                  />
+                </CardContent>
+              </CardFieldset>
             </div>
 
-            <CardProduk<FilterLppSaatIniInput>
-              control={control}
-              fields={{
-                plu: {
-                  name: "prdcd",
-                },
+            <div>
+              <CardProduk<FilterLppSaatIniInput>
+                control={control}
+                fields={{
+                  plu: {
+                    name: "prdcd",
+                  },
 
-                namaProduk: {
-                  name: "namaBarang",
-                },
+                  namaProduk: {
+                    name: "namaBarang",
+                  },
 
-                monitoringPlu: {
-                  name: "kodeMonitoringPlu",
-                },
+                  monitoringPlu: {
+                    name: "kodeMonitoringPlu",
+                  },
 
-                divisi: {
-                  name: "div",
-                },
+                  divisi: {
+                    name: "div",
+                  },
 
-                departement: {
-                  name: "dept",
-                  parentName: "div",
-                },
+                  departement: {
+                    name: "dept",
+                    parentName: "div",
+                  },
 
-                kategori: {
-                  name: "katb",
-                  parentName: "dept",
-                },
+                  kategori: {
+                    name: "katb",
+                    parentName: "dept",
+                  },
 
-                tag: {
-                  name: "tag",
-                },
-              }}
-            />
+                  tag: {
+                    name: "tag",
+                  },
+                }}
+              />
+            </div>
           </div>
 
           <div className="border-t border-slate-200 pt-4 dark:border-slate-800">

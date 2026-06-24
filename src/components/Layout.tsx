@@ -23,10 +23,11 @@ export default function Layout({
       <Head>
         <title>{fullTitle}</title>
         <meta name="description" content={description} />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/images/logo.png" />
       </Head>
       <Navbar />
-      <main className="min-h-screen bg-slate-50 px-4 pt-28 dark:bg-slate-950">
+      <main className="min-h-screen bg-blue-100 px-4 pt-28 dark:bg-slate-900">
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
     </>
