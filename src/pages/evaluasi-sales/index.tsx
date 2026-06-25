@@ -1,6 +1,4 @@
 // src/pages/evaluasi-sales/index.tsx
-
-import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 
 import { useForm } from "react-hook-form";
@@ -37,17 +35,7 @@ import CardPromo from "@/components/form/shared/CardPromo";
 import SelectReport from "@/components/form/shared/SelectReport";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
 import { InferGetServerSidePropsType } from "next";
-
-/**
- * Dynamic import tetap boleh digunakan karena
- * CardSupplier tidak sedang menerima generic form.
- */
-const CardSupplier = dynamic(
-  () => import("@/components/form/evaluasisales/CardSupplier"),
-  {
-    ssr: false,
-  },
-);
+import CardSupplier from "@/components/form/evaluasisales/CardSupplier";
 
 /**
  * Dijalankan pada server setiap kali halaman dibuka.
@@ -173,6 +161,7 @@ export default function EvaluasiSales({
 
               <CardMember<FilterDetailStrukInput>
                 control={control}
+                branch={selectedBranch}
                 fields={{
                   namaMember: {
                     name: "namaMember",
@@ -180,7 +169,9 @@ export default function EvaluasiSales({
 
                   noMember: {
                     name: "noMember",
-                    multiple: false,
+                    multiple: true,
+                    separator: ", ",
+                    allowManualInput: true,
                   },
 
                   monitoringMember: {
@@ -265,6 +256,7 @@ export default function EvaluasiSales({
                   gift: {
                     name: "kodeGift",
                     placeholder: "Kode Gift",
+                    allowManualInput: true,
                     multiple: true,
                   },
 
@@ -308,7 +300,22 @@ export default function EvaluasiSales({
 
             {/* KOLOM KEEMPAT */}
             <div className="space-y-4">
-              <CardSupplier />
+              <CardSupplier<FilterDetailStrukInput>
+                control={control}
+                branch={selectedBranch}
+                fields={{
+                  kodeSupplier: {
+                    name: "kodeSupplier",
+                    placeholder: "Kode Supplier",
+                    multiple: true,
+                  },
+
+                  namaSupplier: {
+                    name: "namaSupplier",
+                    placeholder: "Nama Supplier",
+                  },
+                }}
+              />
 
               <SelectReport<FilterDetailStrukInput>
                 control={control}
@@ -318,7 +325,7 @@ export default function EvaluasiSales({
             </div>
           </div>
 
-          <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-800">
+          <div className="mt-4 border-t border-black pt-4 dark:border-white">
             <div className="flex justify-end gap-2">
               <Button
                 type="button"

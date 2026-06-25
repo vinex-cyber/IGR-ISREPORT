@@ -1,3 +1,5 @@
+// src/pages/form-so-harian/index.tsx
+import type { InferGetServerSidePropsType } from "next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/router";
@@ -24,14 +26,31 @@ import { RiFilePdf2Fill } from "react-icons/ri";
 import InputProdukPlu from "@/components/input/InputProdukPlu";
 import SettingsDatabase from "@/components/Settings/Settings";
 import { DATABASE_OPTIONS } from "@/configs/database-options";
-import { getDefaultBranch } from "@/utils/getDefaultBranch";
 
-export default function FormSoHarian() {
+import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
+import {
+  CardContent,
+  CardFieldset,
+  CardTitleLegend,
+} from "@/components/ui/card";
+
+/**
+ * Membaca default branch berdasarkan IP client.
+ */
+export const getServerSideProps = getDefaultBranchServerSideProps;
+
+type FormSoHarianPageProps = InferGetServerSidePropsType<
+  typeof getServerSideProps
+>;
+
+export default function FormSoHarian({ defaultBranch }: FormSoHarianPageProps) {
   const router = useRouter();
 
   // 🔥 CONFIG TABLE (reuse system kamu)
   const config = buildReport<FormSoHarianRows>(formSoHarianColumns);
+
   const columns = formSoHarianColumns; // 🔥 langsung pakai config.columns jika tidak ada custom logic
+
   const displayColumns = columns.filter(
     (col) =>
       col.field !== "acost" &&
@@ -52,9 +71,14 @@ export default function FormSoHarian() {
   // 🔥 FORM
   const methods = useForm<FilterFormSoHarianInput>({
     resolver: zodResolver(FilterFormSoHarianSchema),
+
     defaultValues: {
       prdcd: "",
-      branch: getDefaultBranch(),
+
+      /**
+       * Branch awal berdasarkan IP client.
+       */
+      branch: defaultBranch,
     },
   });
 
@@ -76,7 +100,9 @@ export default function FormSoHarian() {
     return items
       .map((item) => {
         let formatted = item.padStart(7, "0");
+
         formatted = formatted.slice(0, 6) + "0";
+
         return formatted;
       })
       .join(",");
@@ -86,9 +112,14 @@ export default function FormSoHarian() {
   const onSubmit = (formData: FilterFormSoHarianInput) => {
     try {
       const formattedPlu = formatPluGrup(formData.prdcd || "");
+
       router.push({
         pathname: "/form-so-harian",
-        query: { prdcd: formattedPlu, branch: formData.branch },
+
+        query: {
+          prdcd: formattedPlu,
+          branch: formData.branch,
+        },
       });
     } catch (err) {
       if (err instanceof Error) {
@@ -99,21 +130,39 @@ export default function FormSoHarian() {
 
   // 🔥 FUNGSI RESET
   const handleReset = () => {
-    // Reset form values
-    methods.reset({ prdcd: "" });
-    methods.reset({ branch: "IGRCPG" });
+    /**
+     * Reset nilai form sekaligus.
+     *
+     * Branch kembali ke branch hasil deteksi IP,
+     * bukan hardcode IGRCPG.
+     */
+    methods.reset({
+      prdcd: "",
+      branch: defaultBranch,
+    });
+
     // Hapus query params dari URL
-    router.push("/form-so-harian", undefined, { shallow: true });
+    router.push("/form-so-harian", undefined, {
+      shallow: true,
+    });
   };
 
   const selectedBranch = methods.watch("branch");
 
   return (
     <Layout title="Form SO Harian" branch={selectedBranch}>
-      <h1 className="text-2xl font-bold mb-4">
-        Form SO Harian - {selectedBranch} :{" "}
-        {query.prdcd ? `PLU ${query.prdcd}` : ""}
-      </h1>
+      <div className="flex justify-between">
+        <h1 className="text-2xl font-bold mb-4">
+          Form SO Harian - {selectedBranch} :{" "}
+          {query.prdcd ? `PLU ${query.prdcd}` : ""}
+        </h1>
+
+        <SettingsDatabase<FilterFormSoHarianInput>
+          control={methods.control}
+          options={DATABASE_OPTIONS}
+          name="branch"
+        />
+      </div>
 
       <div className="flex gap-2 mb-2">
         {query.prdcd && (
@@ -121,13 +170,20 @@ export default function FormSoHarian() {
             variant="outline"
             onClick={() =>
               exportToPdf<FormSoHarianRows>({
-                title: `Form SO Harian ${filteredData?.slice(0, 1).map((row) => row.prdcd)[0] ?? query.prdcd} - ${filteredData?.slice(0, 1).map((row) => row.desk)[0] ?? ""}`,
+                title: `Form SO Harian ${
+                  filteredData?.slice(0, 1).map((row) => row.prdcd)[0] ??
+                  query.prdcd
+                } - ${
+                  filteredData?.slice(0, 1).map((row) => row.desk)[0] ?? ""
+                }`,
+
                 columns: displayColumns,
                 data: filteredData ?? [],
                 mode: "download",
               })
             }>
-            <RiFilePdf2Fill className="mr-2" /> PDF
+            <RiFilePdf2Fill className="mr-2" />
+            PDF
           </Button>
         )}
 
@@ -144,21 +200,31 @@ export default function FormSoHarian() {
 
       {/* 🔥 FORM */}
       <Form {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)} className="flex gap-4">
-          <InputProdukPlu name="prdcd" />
+        <form
+          onSubmit={methods.handleSubmit(onSubmit)}
+          className="flex items-center gap-4">
+          <CardFieldset className={`relative rounded-lg border shadow`}>
+            <CardTitleLegend className="mx-6 px-2 text-md font-semibold">
+              Input PLU
+            </CardTitleLegend>
+            <CardContent>
+              <InputProdukPlu name="prdcd" />
+            </CardContent>
+          </CardFieldset>
 
-          <Button
-            type="submit"
-            variant="outline"
-            className="bg-blue-500 border-none text-white hover:bg-green-500 hover:cursor-pointer">
-            {loading ? "Loading..." : "Submit"}
-          </Button>
-
-          <SettingsDatabase
-            control={methods.control}
-            options={DATABASE_OPTIONS}
-            name="branch"
-          />
+          <CardFieldset className={`relative rounded-lg border shadow`}>
+            <CardTitleLegend className="mx-6 px-2 text-md font-semibold">
+              Process
+            </CardTitleLegend>
+            <CardContent>
+              <Button
+                type="submit"
+                variant="outline"
+                className="bg-blue-500 border-none text-white hover:bg-green-500 hover:cursor-pointer">
+                {loading ? "Loading..." : "Submit"}
+              </Button>
+            </CardContent>
+          </CardFieldset>
         </form>
       </Form>
 
@@ -167,23 +233,29 @@ export default function FormSoHarian() {
 
       {/* 🔥 RESULT */}
       {query.prdcd && !loading && (
-        <div className="mt-6" id="print-area">
+        <div className="mt-6 bg-white dark:bg-slate-800" id="print-area">
           <ReportTable
             columns={displayColumns}
             data={filteredData ?? []}
             customFooter={(data) => {
               const lpp =
                 data.slice(0, 1).map((row) => Number(row.lpp ?? 0))[0] ?? 0;
+
               const plano_qty =
                 data.slice(0, 1).map((row) => Number(row.plano_qty ?? 0))[0] ??
                 0;
+
               const omi_recid4 =
                 data.slice(0, 1).map((row) => Number(row.omi_recid4 ?? 0))[0] ??
                 0;
+
               const qty_rom =
                 data.slice(0, 1).map((row) => Number(row.qty_rom ?? 0))[0] ?? 0;
+
               const sumPlano = plano_qty + omi_recid4 + qty_rom;
+
               const selisih = sumPlano - lpp;
+
               const keterangan = () => {
                 if (sumPlano > lpp) {
                   return "Plano > dari LPP";
@@ -193,48 +265,62 @@ export default function FormSoHarian() {
                   return "Plano = LPP";
                 }
               };
+
               const acost = data[0]?.acost ?? 0;
+
               const flag = data[0]?.flag ?? "-";
 
               return (
                 <>
-                  <tr className="bg-blue-400 font-semibold">
+                  <tr className="bg-blue-400 font-semibold dark:bg-gray-400">
                     <td className="border px-2 py-2">Acost</td>
+
                     <td colSpan={2} className="border px-2 py-2">
                       : {formatNumber(Number(acost))}
                     </td>
+
                     <td colSpan={2}>Plano Qty : {formatNumber(plano_qty)}</td>
+
                     <td>Omi Recid4 : {formatNumber(omi_recid4)}</td>
+
                     <td>Omi Retur : {formatNumber(qty_rom)}</td>
+
                     <td colSpan={1} className="border px-2 py-2 text-right">
                       {"Total Plano (a) :"}
                     </td>
+
                     <td className="border px-2 py-2 text-right">
                       {formatNumber(sumPlano)}
                     </td>
                   </tr>
 
-                  <tr className="bg-blue-400 font-semibold">
+                  <tr className="bg-blue-400 font-semibold dark:bg-gray-400">
                     <td className="border px-2 py-2">Flag</td>
+
                     <td colSpan={4} className="border px-2 py-2">
                       : {flag}
                     </td>
+
                     <td colSpan={3} className="border px-2 py-2 text-right">
                       {"LPP (b) :"}
                     </td>
+
                     <td className="border px-2 py-2 text-right">
                       {formatNumber(lpp)}
                     </td>
                   </tr>
 
-                  <tr className="bg-blue-400 font-semibold">
+                  <tr className="bg-blue-400 font-semibold dark:bg-gray-400">
                     <td className="border px-2 py-2">Keterangan</td>
+
                     <td colSpan={4} className="border px-2 py-2">
                       : {keterangan()}
                     </td>
+
                     <td colSpan={3} className="border px-2 py-2 text-right">
                       {"Selisih (a-b) :"}
                     </td>
+
                     <td className="border px-2 py-2 text-right">
                       {formatNumber(selisih)}
                     </td>

@@ -67,7 +67,7 @@ const PerSupplierPage = () => {
   ];
 
   return (
-    <Layout title={title}>
+    <Layout title={title} branch={query.branch}>
       <section className="space-y-4 p-4">
         {loading && !isRefreshing ? (
           <LoadingIgr />

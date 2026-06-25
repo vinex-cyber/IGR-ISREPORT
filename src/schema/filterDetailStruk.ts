@@ -36,7 +36,7 @@ export const FilterDetailStrukSchema = z.object({
   cbAktif: z.string().optional(),
   cbUc: z.string().optional(),
   cbredempoin: z.string().optional(),
-  kodeGift: z.string().optional(),
+  kodeGift: z.union([z.string(), z.array(z.string())]).optional(),
   promo: z.array(z.string()).optional(),
   kasir: z.union([z.string(), z.array(z.string())]).optional(),
   noTrans: z.string().optional(),

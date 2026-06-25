@@ -1,6 +1,10 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { getPool, BranchType } from "@/lib/db";
-import { DaftarMemberRows } from "@/configs/input/daftar-memberConfig";
+// src/pages/api/daftar-member.ts
+
+import type { NextApiRequest, NextApiResponse } from "next";
+
+import { getPool, type BranchType } from "@/lib/db";
+
+import type { DaftarMemberRows } from "@/configs/input/daftar-memberConfig";
 
 type ApiResponse<T> = {
   success: boolean;
@@ -10,11 +14,39 @@ type ApiResponse<T> = {
   error?: string;
 };
 
+const DEFAULT_PAGE = 1;
+const DEFAULT_PAGE_SIZE = 10;
+const MAX_PAGE_SIZE = 100;
+
+function getFirstQueryValue(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) {
+    return value[0]?.trim() ?? "";
+  }
+
+  return value?.trim() ?? "";
+}
+
+function parsePositiveInteger(
+  value: string | string[] | undefined,
+  defaultValue: number,
+): number {
+  const rawValue = getFirstQueryValue(value);
+  const parsedValue = Number(rawValue);
+
+  if (!Number.isInteger(parsedValue) || parsedValue < 1) {
+    return defaultValue;
+  }
+
+  return parsedValue;
+}
+
 export default async function daftarMemberHandler(
   req: NextApiRequest,
   res: NextApiResponse<ApiResponse<DaftarMemberRows[]>>,
 ) {
   if (req.method !== "GET") {
+    res.setHeader("Allow", ["GET"]);
+
     return res.status(405).json({
       success: false,
       message: "Method not allowed",
@@ -22,99 +54,182 @@ export default async function daftarMemberHandler(
   }
 
   try {
-    // 🔥 branch
-    const branch = (req.query.branch as BranchType) || "IGRCPG";
+    // Branch database
+    const branch =
+      (getFirstQueryValue(req.query.branch) as BranchType) || "IGRCPG";
 
-    // 🔥 database pool
     const pool = getPool(branch);
 
     // =========================
-    // 🔥 QUERY PARAM
+    // QUERY PARAM
     // =========================
-    const { page = "1", pageSize = "10", search = "" } = req.query;
+    const page = parsePositiveInteger(req.query.page, DEFAULT_PAGE);
 
-    const limit = Number(pageSize);
-    const offset = (Number(page) - 1) * limit;
+    const requestedPageSize = parsePositiveInteger(
+      req.query.pageSize,
+      DEFAULT_PAGE_SIZE,
+    );
 
-    const keyword = String(search).trim();
+    /**
+     * Maksimal data per halaman adalah 100.
+     *
+     * Contoh:
+     * pageSize=20     -> 20
+     * pageSize=100    -> 100
+     * pageSize=10000  -> 100
+     */
+    const pageSize = Math.min(requestedPageSize, MAX_PAGE_SIZE);
+
+    const offset = (page - 1) * pageSize;
+
+    const keyword = getFirstQueryValue(req.query.search);
+
+    const keywordLike = `%${keyword}%`;
 
     // =========================
-    // 🔥 DATA QUERY (HYBRID SEARCH)
+    // DATA QUERY
     // =========================
     const query = `
       SELECT
         cus_kodeigr,
         cus_kodemember,
         cus_namamember,
-        CASE
-            WHEN coalesce(cus_flagmemberkhusus,'N') = 'Y' THEN 'MERAH'
-            ELSE 'BIRU'
-        END             as jenis_member,
 
-        -- 🔥 ranking gabungan
+        CASE
+          WHEN COALESCE(
+            cus_flagmemberkhusus,
+            'N'
+          ) = 'Y'
+          THEN 'MERAH'
+          ELSE 'BIRU'
+        END AS jenis_member,
+
         (
-          ts_rank_cd(
-            to_tsvector('simple', cus_namamember),
-            plainto_tsquery('simple', $1)
+          TS_RANK_CD(
+            TO_TSVECTOR(
+              'simple',
+              COALESCE(
+                cus_namamember,
+                ''
+              )
+            ),
+            PLAINTO_TSQUERY(
+              'simple',
+              $1
+            )
           )
           +
-          CASE 
-            WHEN cus_kodemember ILIKE $2 THEN 5.0  -- boost kalau match kode
+          CASE
+            WHEN COALESCE(
+              cus_kodemember,
+              ''
+            ) ILIKE $2
+            THEN 5.0
             ELSE 0
           END
         ) AS rank
 
       FROM tbmaster_customer
-    
-      WHERE 
+
+      WHERE
         cus_recordid IS NULL
-        AND cus_namamember <> 'NEW'
+
+        AND COALESCE(
+          cus_namamember,
+          ''
+        ) <> 'NEW'
+
         AND (
-          $1 = '' OR
-          to_tsvector('simple', cus_namamember)
-            @@ plainto_tsquery('simple', $1)
-          OR
-          cus_kodemember ILIKE $2
+          $1 = ''
+
+          OR TO_TSVECTOR(
+            'simple',
+            COALESCE(
+              cus_namamember,
+              ''
+            )
+          ) @@ PLAINTO_TSQUERY(
+            'simple',
+            $1
+          )
+
+          OR COALESCE(
+            cus_kodemember,
+            ''
+          ) ILIKE $2
         )
 
-      ORDER BY 
-      rank DESC,
-      cus_kodeigr,
-      cus_kodemember
+      /*
+       * ORDER BY dibuat stabil untuk pagination.
+       *
+       * Apabila nilai rank sama, urutan dilanjutkan
+       * menggunakan kode IGR, kode member, dan nama.
+       */
+      ORDER BY
+        rank DESC,
+        cus_kodeigr ASC NULLS LAST,
+        cus_kodemember ASC NULLS LAST,
+        cus_namamember ASC NULLS LAST
 
-      LIMIT $3 OFFSET $4
+      LIMIT $3
+      OFFSET $4
     `;
 
-    const result = await pool.query(query, [
-      keyword, // FTS
-      `%${keyword}%`, // LIKE untuk kode
-      limit,
+    const result = await pool.query<DaftarMemberRows>(query, [
+      keyword,
+      keywordLike,
+      pageSize,
       offset,
     ]);
 
     // =========================
-    // 🔥 COUNT QUERY
+    // COUNT QUERY
     // =========================
     const countQuery = `
-      SELECT COUNT(*) AS total
+      SELECT
+        COUNT(*) AS total
+
       FROM tbmaster_customer
-      WHERE 
+
+      WHERE
         cus_recordid IS NULL
+
+        AND COALESCE(
+          cus_namamember,
+          ''
+        ) <> 'NEW'
+
         AND (
-          $1 = '' OR
-          to_tsvector('simple', cus_namamember)
-            @@ plainto_tsquery('simple', $1)
-          OR
-          cus_kodemember ILIKE $2
+          $1 = ''
+
+          OR TO_TSVECTOR(
+            'simple',
+            COALESCE(
+              cus_namamember,
+              ''
+            )
+          ) @@ PLAINTO_TSQUERY(
+            'simple',
+            $1
+          )
+
+          OR COALESCE(
+            cus_kodemember,
+            ''
+          ) ILIKE $2
         )
     `;
 
-    const countResult = await pool.query(countQuery, [keyword, `%${keyword}%`]);
+    const countResult = await pool.query<{
+      total: string;
+    }>(countQuery, [keyword, keywordLike]);
+
+    const total = Number(countResult.rows[0]?.total ?? 0);
 
     return res.status(200).json({
       success: true,
       data: result.rows,
-      total: Number(countResult.rows[0].total),
+      total,
     });
   } catch (error) {
     console.error("[ERROR] /api/daftar-member:", error);

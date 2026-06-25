@@ -26,7 +26,7 @@ export const FilterLppSaatIniSchema = z.object({
   statusTag: z.string().optional(),
   statusQty: z.string().optional(),
   lokasi: z.string().optional(),
-  groupSales: z.string().optional(),
+  groupFlag: z.string().optional(),
   branch: z
     .string()
     .trim()

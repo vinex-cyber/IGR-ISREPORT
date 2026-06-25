@@ -69,7 +69,7 @@ export function ReportTable<T extends Record<string, unknown>>({
     <div className="max-h-[65vh] overflow-y-auto shadow-xl rounded-md">
       <table className="min-w-full table-fixed">
         {/* ================= HEADER ================= */}
-        <thead className="sticky top-0 z-10 bg-blue-400 border border-gray-400">
+        <thead className="sticky top-0 z-10 bg-blue-400 border border-gray-400 dark:bg-gray-400">
           {/* GROUP HEADER */}
           {headerGroups && (
             <tr>
@@ -105,7 +105,7 @@ export function ReportTable<T extends Record<string, unknown>>({
         </thead>
 
         {/* ================= BODY ================= */}
-        <tbody>
+        <tbody className="text-sm bg-white dark:bg-gray-800">
           {isRefreshing ? (
             Array.from({ length: 5 }).map((_, rowIdx) => (
               <tr key={`skeleton-${rowIdx}`}>
@@ -177,7 +177,7 @@ export function ReportTable<T extends Record<string, unknown>>({
                       ? firstNumericIndex
                       : columns.length)
                   }
-                  className="border px-2 py-2 text-center bg-blue-400 font-bold">
+                  className="border px-2 py-2 text-center bg-blue-400 font-bold dark:bg-gray-400">
                   TOTAL
                 </td>
 
@@ -192,7 +192,7 @@ export function ReportTable<T extends Record<string, unknown>>({
                   return (
                     <td
                       key={`num-${String(col.field)}`}
-                      className="border px-2 py-2 text-right bg-blue-400">
+                      className="border px-2 py-2 text-right bg-blue-400 dark:bg-gray-400">
                       {typeof value === "number"
                         ? formatNumber(value)
                         : String(value ?? "")}
@@ -209,13 +209,13 @@ export function ReportTable<T extends Record<string, unknown>>({
                   .map((col) => (
                     <td
                       key={`empty-${String(col.field)}`}
-                      className="border px-2 py-2 bg-blue-400"
+                      className="border px-2 py-2 bg-blue-400 dark:bg-gray-400"
                     />
                   ))}
 
                 {/* 🔥 ACTION */}
                 {renderActions && (
-                  <td className="border px-2 py-2 bg-blue-400" />
+                  <td className="border px-2 py-2 bg-blue-400 dark:bg-gray-400" />
                 )}
               </tr>
             ) : null)}

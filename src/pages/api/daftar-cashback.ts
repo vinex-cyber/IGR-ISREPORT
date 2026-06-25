@@ -1,8 +1,10 @@
 // src/pages/api/daftar-cashback.ts
 
-import { NextApiRequest, NextApiResponse } from "next";
-import { getPool, BranchType } from "@/lib/db";
-import { DaftarCashbackRows } from "@/configs/input/daftar-cashbackConfig";
+import type { NextApiRequest, NextApiResponse } from "next";
+
+import { getPool, type BranchType } from "@/lib/db";
+
+import type { DaftarCashbackRows } from "@/configs/input/daftar-cashbackConfig";
 
 type ApiResponse<T> = {
   success: boolean;
@@ -12,11 +14,36 @@ type ApiResponse<T> = {
   error?: string;
 };
 
+function parsePositiveInteger(
+  value: string | string[] | undefined,
+  defaultValue: number,
+): number {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+
+  const parsedValue = Number(rawValue);
+
+  if (!Number.isInteger(parsedValue) || parsedValue < 1) {
+    return defaultValue;
+  }
+
+  return parsedValue;
+}
+
+function getQueryString(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) {
+    return value[0]?.trim() ?? "";
+  }
+
+  return value?.trim() ?? "";
+}
+
 export default async function daftarCashbackHandler(
   req: NextApiRequest,
   res: NextApiResponse<ApiResponse<DaftarCashbackRows[]>>,
 ) {
   if (req.method !== "GET") {
+    res.setHeader("Allow", ["GET"]);
+
     return res.status(405).json({
       success: false,
       message: "Method not allowed",
@@ -24,63 +51,162 @@ export default async function daftarCashbackHandler(
   }
 
   try {
-    // 🔥 branch
+    // Branch database
     const branch = (req.query.branch as BranchType) || "IGRCPG";
 
-    // 🔥 database pool
     const pool = getPool(branch);
 
-    // 🔥 query param
-    const page = Number(req.query.page ?? "1");
+    // Pagination
+    const page = parsePositiveInteger(req.query.page, 1);
 
-    const pageSize = Number(req.query.pageSize ?? "10");
+    const requestedPageSize = parsePositiveInteger(req.query.pageSize, 10);
 
-    const search = String(req.query.search ?? "");
+    // Maksimal 100 data per halaman
+    const pageSize = Math.min(requestedPageSize, 100);
 
-    const limit = pageSize;
+    const offset = (page - 1) * pageSize;
 
-    const offset = (page - 1) * limit;
+    // Search
+    const search = getQueryString(req.query.search).toLowerCase();
 
-    const keyword = `%${search.toLowerCase()}%`;
+    const keyword = `%${search}%`;
 
-    // 🔥 main query
-    const result = await pool.query(
+    /**
+     * cashback_unique:
+     *
+     * Satu kode promosi hanya menghasilkan satu baris.
+     * Jika kode yang sama memiliki beberapa periode,
+     * periode dengan tanggal akhir terbaru yang digunakan.
+     */
+    const result = await pool.query<DaftarCashbackRows>(
       `
-      select
-        cbh_kodepromosi,
-        cbh_namapromosi,
-        to_char(cbh_tglawal, 'YYYY-MM-DD') cbh_tglawal,
-        to_char(cbh_tglakhir, 'YYYY-MM-DD') cbh_tglakhir,
-        case
-            when cbh_tglakhir >= current_date then 'AKTIF'
-            else 'NON AKTIF'
-        end cbh_status
-      from tbtr_cashback_hdr
-      where 
-        lower(cbh_kodepromosi) like $1
-        or lower(cbh_namapromosi) like $1
-      order by cbh_tglakhir desc
-      limit $2 offset $3
-      `,
-      [keyword, limit, offset],
+        WITH cashback_unique AS (
+          SELECT DISTINCT ON (
+            cbh_kodepromosi
+          )
+            cbh_kodepromosi,
+            cbh_namapromosi,
+            cbh_tglawal,
+            cbh_tglakhir
+
+          FROM tbtr_cashback_hdr
+
+          ORDER BY
+            cbh_kodepromosi ASC,
+            cbh_tglakhir DESC NULLS LAST,
+            cbh_tglawal DESC NULLS LAST
+        )
+
+        SELECT
+          cbh_kodepromosi,
+          cbh_namapromosi,
+
+          TO_CHAR(
+            cbh_tglawal,
+            'YYYY-MM-DD'
+          ) AS cbh_tglawal,
+
+          TO_CHAR(
+            cbh_tglakhir,
+            'YYYY-MM-DD'
+          ) AS cbh_tglakhir,
+
+          CASE
+            WHEN cbh_tglakhir >= CURRENT_DATE
+            THEN 'AKTIF'
+            ELSE 'NON AKTIF'
+          END AS cbh_status
+
+        FROM cashback_unique
+
+        WHERE
+          LOWER(
+            COALESCE(
+              cbh_kodepromosi,
+              ''
+            )
+          ) LIKE $1
+
+          OR LOWER(
+            COALESCE(
+              cbh_namapromosi,
+              ''
+            )
+          ) LIKE $1
+
+        /**
+         * Urutan dibuat stabil.
+         *
+         * Ketika tanggal akhir sama,
+         * kode promosi menjadi pembeda.
+         */
+        ORDER BY
+          cbh_tglakhir DESC NULLS LAST,
+          cbh_kodepromosi ASC
+
+        LIMIT $2
+        OFFSET $3
+        `,
+      [keyword, pageSize, offset],
     );
 
-    // 🔥 total count
-    const countResult = await pool.query(
+    /**
+     * Count menggunakan sumber data yang sama
+     * dengan main query.
+     *
+     * Jadi total tidak menghitung kode cashback
+     * yang sama lebih dari satu kali.
+     */
+    const countResult = await pool.query<{
+      total: string;
+    }>(
       `
-      select count(*) 
-      from tbtr_cashback_hdr
-      where 
-        lower(cbh_kodepromosi) like $1
-        or lower(cbh_namapromosi) like $1
-      `,
+        WITH cashback_unique AS (
+          SELECT DISTINCT ON (
+            cbh_kodepromosi
+          )
+            cbh_kodepromosi,
+            cbh_namapromosi,
+            cbh_tglawal,
+            cbh_tglakhir
+
+          FROM tbtr_cashback_hdr
+
+          ORDER BY
+            cbh_kodepromosi ASC,
+            cbh_tglakhir DESC NULLS LAST,
+            cbh_tglawal DESC NULLS LAST
+        )
+
+        SELECT
+          COUNT(*) AS total
+
+        FROM cashback_unique
+
+        WHERE
+          LOWER(
+            COALESCE(
+              cbh_kodepromosi,
+              ''
+            )
+          ) LIKE $1
+
+          OR LOWER(
+            COALESCE(
+              cbh_namapromosi,
+              ''
+            )
+          ) LIKE $1
+        `,
       [keyword],
     );
 
+    const total = Number(countResult.rows[0]?.total ?? 0);
+
     return res.status(200).json({
       success: true,
-      total: Number(countResult.rows[0].count),
       data: result.rows,
+      total,
     });
   } catch (error) {
     console.error("Database connection failed:", error);

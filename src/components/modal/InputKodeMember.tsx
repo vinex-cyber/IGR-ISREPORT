@@ -1,37 +1,82 @@
-// Compenents/modal/InputKodeMember.tsx
-import { daftarMemberColumns, DaftarMemberRows } from "@/configs/input/daftar-memberConfig";
-import { GenericLookupModal } from "./GenericLookupModal";
-import { useFormContext } from "react-hook-form";
+// src/components/modal/InputKodeMember.tsx
 
-interface Props {
-    show: boolean;
-    onClose: () => void;
-    noMember?: boolean;
-    namaMember?: boolean;
+import {
+  daftarMemberColumns,
+  type DaftarMemberRows,
+} from "@/configs/input/daftar-memberConfig";
+
+import { GenericLookupModal } from "@/components/modal/GenericLookupModal";
+
+export interface MemberSelection {
+  kodeIgr: string;
+  kodeMember: string;
+  namaMember: string;
+  jenisMember: string;
+  row: DaftarMemberRows;
 }
 
-export default function InputKodeMemberModal({ show, onClose, noMember, namaMember }: Props) {
-    const { setValue, watch } = useFormContext();
-    // 🔥 ambil branch dari form
-    const branch = watch("branch");
+export interface InputKodeMemberModalProps {
+  show: boolean;
+  onClose: () => void;
 
-    const onSelect = (row: DaftarMemberRows) => {
-        if (noMember) {
-            setValue("noMember", row.cus_kodemember);
-        }
-        if (namaMember) {
-            setValue("namaMember", row.cus_namamember);
-        }
+  /**
+   * Branch database aktif.
+   *
+   * Contoh:
+   * - IGRCPG
+   * - ICMCPG
+   * - SPICPG1I
+   * - SPICPG4L
+   */
+  branch: string;
+
+  /**
+   * Mengirim data member yang dipilih
+   * kepada komponen pemanggil.
+   */
+  onSelect: (selection: MemberSelection) => void;
+
+  title?: string;
+  endpoint?: string;
+}
+
+export default function InputKodeMemberModal({
+  show,
+  onClose,
+  branch,
+  onSelect,
+  title = "Pilih Member",
+  endpoint = "/api/daftar-member",
+}: InputKodeMemberModalProps) {
+  const normalizedBranch = branch.trim();
+
+  const resolvedEndpoint =
+    normalizedBranch !== ""
+      ? `${endpoint}?branch=${encodeURIComponent(normalizedBranch)}`
+      : endpoint;
+
+  const handleSelect = (row: DaftarMemberRows) => {
+    const selection: MemberSelection = {
+      kodeIgr: row.cus_kodeigr?.trim() ?? "",
+      kodeMember: row.cus_kodemember?.trim() ?? "",
+      namaMember: row.cus_namamember?.trim() ?? "",
+      jenisMember: row.jenis_member?.trim() ?? "",
+      row,
     };
 
-    return (
-        <GenericLookupModal<DaftarMemberRows>
-            show={show}
-            onClose={onClose}
-            endpoint={`/api/daftar-member?branch=${branch}`} // ⚠️ API harus return ALL data
-            columns={daftarMemberColumns}
-            title="Pilih Member"
-            onSelect={onSelect}
-        />
-    );
+    onSelect(selection);
+    onClose();
+  };
+
+  return (
+    <GenericLookupModal<DaftarMemberRows>
+      show={show}
+      onClose={onClose}
+      endpoint={resolvedEndpoint}
+      columns={daftarMemberColumns}
+      title={title}
+      onSelect={handleSelect}
+      mode="server"
+    />
+  );
 }

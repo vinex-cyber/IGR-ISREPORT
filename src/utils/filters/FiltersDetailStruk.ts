@@ -166,12 +166,21 @@ export const FilterDetailStruk = (filters: FilterDetailStrukInput) => {
     params.push(filters.cbredempoin);
   }
   // Filter Gift
-  if (filters.kodeGift && filters.kodeGift !== "") {
-    conditions.push(
-      `dtl_cusno = ANY(select distinct kd_member from m_gift_h where kd_promosi = $${params.length + 1})`,
-    );
-    params.push(filters.kodeGift);
+  const gift = normalizeToArray(filters.kodeGift);
+  if (gift.length > 0) {
+    if (gift.length === 1) {
+      conditions.push(
+        `dtl_cusno = ANY(select distinct kd_member from m_gift_h where kd_promosi = $${params.length + 1})`,
+      );
+      params.push(gift[0]);
+    } else {
+      conditions.push(
+        `dtl_cusno = ANY(select distinct kd_member from m_gift_h where kd_promosi = ANY($${params.length + 1}))`,
+      );
+      params.push(gift);
+    }
   }
+
   // Filter Promo Gift
   if (filters.promo && filters.promo.length > 0) {
     conditions.push(

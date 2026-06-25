@@ -1,6 +1,6 @@
 // src/pages/inventory/lpp-saat-ini/index.tsx
 
-import type { GetServerSideProps } from "next";
+import type { InferGetServerSidePropsType } from "next";
 import { useRouter } from "next/router";
 
 import { useForm } from "react-hook-form";
@@ -27,37 +27,25 @@ import { DATABASE_OPTIONS } from "@/configs/database-options";
 
 import { getFilterLppSaatIniDefaultValues } from "@/configs/lpp-saat-ini/filter-default-value";
 
-import { getBranchFromRequest } from "@/utils/server/getBranchFomRequest";
 import {
   CardContent,
+  CardDescription,
   CardFieldset,
   CardTitleLegend,
 } from "@/components/ui/card";
-
-interface LppSaatIniPageProps {
-  /**
-   * Branch default berdasarkan IP client.
-   *
-   * Jika IP tidak cocok dengan mapping jaringan,
-   * akan menggunakan NEXT_PUBLIC_APP_NAME.
-   */
-  defaultBranch: string;
-}
+import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
+import SelectGroupFlag from "@/components/form/shared/SelectGroupFlag";
+import SelectStatusTag from "@/components/form/shared/SelectStatusTag";
+import CardSupplier from "@/components/form/evaluasisales/CardSupplier";
 
 /**
  * Dijalankan oleh server pada setiap request halaman.
  */
-export const getServerSideProps: GetServerSideProps<
-  LppSaatIniPageProps
-> = async ({ req }) => {
-  const defaultBranch = getBranchFromRequest(req);
+export const getServerSideProps = getDefaultBranchServerSideProps;
 
-  return {
-    props: {
-      defaultBranch,
-    },
-  };
-};
+type LppSaatIniPageProps = InferGetServerSidePropsType<
+  typeof getServerSideProps
+>;
 
 export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
   const router = useRouter();
@@ -158,15 +146,15 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
 
               <CardFieldset className={`relative rounded-lg border shadow`}>
                 <CardTitleLegend className="mx-6 px-2 text-md font-semibold">
-                  Group Sales
+                  Group Flag
                 </CardTitleLegend>
 
                 <CardContent>
-                  <SelectLokasi<FilterLppSaatIniInput>
+                  <SelectGroupFlag<FilterLppSaatIniInput>
                     control={control}
-                    name="lokasi"
-                    labelAll="All Lokasi"
-                    placeholder="All Lokasi"
+                    name="groupFlag"
+                    labelAll="All Flag"
+                    placeholder="All Flag"
                   />
                 </CardContent>
               </CardFieldset>
@@ -177,15 +165,17 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
                 </CardTitleLegend>
 
                 <CardContent>
-                  <SelectLokasi<FilterLppSaatIniInput>
+                  <SelectStatusTag<FilterLppSaatIniInput>
                     control={control}
-                    name="lokasi"
-                    labelAll="All Lokasi"
-                    placeholder="All Lokasi"
+                    name="statusTag"
+                    labelAll="All Status Tag"
+                    placeholder="All Status Tag"
                   />
-                  <span className="px-3 text-xs text-muted-foreground">
-                    Discontinue: ARNHOTX
-                  </span>
+                  <CardDescription>
+                    <span className="px-3 text-xs text-muted-foreground">
+                      Discontinue: <i>ARNHOTX</i>
+                    </span>
+                  </CardDescription>
                 </CardContent>
               </CardFieldset>
 
@@ -241,9 +231,27 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
                 }}
               />
             </div>
+
+            <div>
+              <CardSupplier<FilterLppSaatIniInput>
+                control={control}
+                branch={selectedBranch}
+                fields={{
+                  kodeSupplier: {
+                    name: "kodeSupplier",
+                    multiple: true,
+                    separator: ",",
+                    allowManualInput: true,
+                  },
+                  namaSupplier: {
+                    name: "namaSupplier",
+                  },
+                }}
+              />
+            </div>
           </div>
 
-          <div className="border-t border-slate-200 pt-4 dark:border-slate-800">
+          <div className="border-t border-black pt-4 dark:border-slate-800">
             <div className="flex justify-end gap-2">
               <Button
                 type="button"

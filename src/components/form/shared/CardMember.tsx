@@ -1,6 +1,6 @@
 // src/components/form/shared/CardMember.tsx
 
-import type { ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 
 import {
   Controller,
@@ -9,6 +9,8 @@ import {
   type FieldValues,
 } from "react-hook-form";
 
+import { Search } from "lucide-react";
+
 import {
   CardContent,
   CardFieldset,
@@ -16,6 +18,7 @@ import {
 } from "@/components/ui/card";
 
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import FormInput from "@/components/FormInput";
 
 import SelectOutletMember from "@/components/form/shared/SelectOutletMember";
@@ -23,10 +26,15 @@ import SelectMemberKhusus from "@/components/form/shared/SelectMemberKhusus";
 import SelectSubOutletMember from "@/components/form/shared/SelectSubOutletMember";
 import SelectKategoriMember from "@/components/form/shared/SelectKategoriMember";
 
+import InputKodeMemberModal, {
+  type MemberSelection,
+} from "@/components/modal/InputKodeMember";
+
 import { cn } from "@/lib/utils";
 
 /**
  * Field yang hanya menerima:
+ *
  * - string
  * - undefined
  */
@@ -37,6 +45,7 @@ type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
 
 /**
  * Field yang menerima:
+ *
  * - string
  * - string[]
  * - undefined
@@ -62,12 +71,19 @@ export interface StringOrArrayFieldConfig<TFieldValues extends FieldValues> {
    * nilai disimpan sebagai string.
    *
    * true:
-   * nilai dipisahkan berdasarkan separator
-   * lalu disimpan sebagai string[].
+   * nilai disimpan sebagai string[].
    *
    * @default false
    */
   multiple?: boolean;
+
+  /**
+   * Ketika multiple=true, member baru akan
+   * ditambahkan ke pilihan sebelumnya.
+   *
+   * @default true
+   */
+  append?: boolean;
 
   /**
    * Pemisah untuk mode multiple.
@@ -75,6 +91,13 @@ export interface StringOrArrayFieldConfig<TFieldValues extends FieldValues> {
    * @default ","
    */
   separator?: string;
+
+  /**
+   * Mengizinkan input diketik secara manual.
+   *
+   * @default true
+   */
+  allowManualInput?: boolean;
 }
 
 export interface DependentFieldConfig<
@@ -135,6 +158,13 @@ export interface CardMemberProps<TFieldValues extends FieldValues> {
   control: Control<TFieldValues>;
 
   /**
+   * Branch database aktif.
+   *
+   * Digunakan oleh modal pencarian member.
+   */
+  branch: string;
+
+  /**
    * Konfigurasi field yang akan ditampilkan.
    */
   fields: CardMemberFields<TFieldValues>;
@@ -162,37 +192,84 @@ export interface CardMemberProps<TFieldValues extends FieldValues> {
 interface MemberCodeInputProps<TFieldValues extends FieldValues> {
   control: Control<TFieldValues>;
   name: StringOrArrayFieldName<TFieldValues>;
+  branch: string;
   placeholder?: string;
   disabled?: boolean;
   multiple?: boolean;
+  append?: boolean;
   separator?: string;
+  allowManualInput?: boolean;
+}
+
+function normalizeMemberCodes(value: unknown, separator: string): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === "string")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(separator)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function removeDuplicateMemberCodes(values: string[]): string[] {
+  return Array.from(new Set(values));
 }
 
 /**
  * Input khusus nomor member.
  *
- * Mendukung nilai:
- * - string
- * - string[]
+ * Mendukung:
+ *
+ * - input manual;
+ * - modal pencarian member;
+ * - nilai string;
+ * - nilai string[];
+ * - mode multiple.
  */
 function MemberCodeInput<TFieldValues extends FieldValues>({
   control,
   name,
+  branch,
   placeholder = "Kode Member",
   disabled = false,
   multiple = false,
+  append = true,
   separator = ",",
+  allowManualInput = true,
 }: MemberCodeInputProps<TFieldValues>) {
+  const [memberModalOpen, setMemberModalOpen] = useState(false);
+
+  const openMemberModal = () => {
+    if (!disabled) {
+      setMemberModalOpen(true);
+    }
+  };
+
+  const closeMemberModal = () => {
+    setMemberModalOpen(false);
+  };
+
   return (
     <Controller<TFieldValues, StringOrArrayFieldName<TFieldValues>>
       control={control}
       name={name}
-      render={({ field }) => {
-        const displayValue = Array.isArray(field.value)
-          ? field.value.join(`${separator} `)
-          : typeof field.value === "string"
-            ? field.value
-            : "";
+      render={({ field, fieldState }) => {
+        const selectedMemberCodes = normalizeMemberCodes(
+          field.value,
+          separator,
+        );
+
+        const displayValue = multiple
+          ? selectedMemberCodes.join(`${separator} `)
+          : (selectedMemberCodes[0] ?? "");
 
         const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
           const inputValue = event.target.value;
@@ -202,24 +279,79 @@ function MemberCodeInput<TFieldValues extends FieldValues>({
             return;
           }
 
-          const memberCodes = inputValue
-            .split(separator)
-            .map((value) => value.trim())
-            .filter(Boolean);
+          const memberCodes = normalizeMemberCodes(inputValue, separator);
 
-          field.onChange(memberCodes);
+          field.onChange(removeDuplicateMemberCodes(memberCodes));
+        };
+
+        const handleMemberSelect = (selection: MemberSelection) => {
+          const memberCode = selection.kodeMember.trim();
+
+          if (!memberCode) {
+            return;
+          }
+
+          if (!multiple) {
+            field.onChange(memberCode);
+            closeMemberModal();
+            return;
+          }
+
+          const nextMemberCodes = append
+            ? [...selectedMemberCodes, memberCode]
+            : [memberCode];
+
+          field.onChange(removeDuplicateMemberCodes(nextMemberCodes));
+
+          closeMemberModal();
         };
 
         return (
-          <Input
-            ref={field.ref}
-            name={field.name}
-            value={displayValue}
-            placeholder={placeholder}
-            disabled={disabled}
-            onBlur={field.onBlur}
-            onChange={handleChange}
-          />
+          <>
+            <div className="space-y-1">
+              <div className="relative">
+                <Input
+                  ref={field.ref}
+                  name={field.name}
+                  value={displayValue}
+                  placeholder={placeholder}
+                  disabled={disabled}
+                  readOnly={!allowManualInput}
+                  onBlur={field.onBlur}
+                  onChange={handleChange}
+                  className="pr-10"
+                />
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  disabled={disabled}
+                  onClick={openMemberModal}
+                  aria-label="Cari member"
+                  className={cn(
+                    "absolute right-0 top-1/2",
+                    "h-full -translate-y-1/2",
+                    "cursor-pointer",
+                  )}>
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {fieldState.error && (
+                <p className="text-sm text-destructive">
+                  {fieldState.error.message}
+                </p>
+              )}
+            </div>
+
+            <InputKodeMemberModal
+              show={memberModalOpen}
+              onClose={closeMemberModal}
+              branch={branch}
+              onSelect={handleMemberSelect}
+            />
+          </>
         );
       }}
     />
@@ -228,6 +360,7 @@ function MemberCodeInput<TFieldValues extends FieldValues>({
 
 export default function CardMember<TFieldValues extends FieldValues>({
   control,
+  branch,
   fields,
   title = "Member",
   className,
@@ -255,10 +388,13 @@ export default function CardMember<TFieldValues extends FieldValues>({
           <MemberCodeInput<TFieldValues>
             control={control}
             name={fields.noMember.name}
+            branch={branch}
             placeholder={fields.noMember.placeholder ?? "Kode Member"}
             disabled={fields.noMember.disabled}
-            multiple={fields.noMember.multiple}
-            separator={fields.noMember.separator}
+            multiple={fields.noMember.multiple ?? false}
+            append={fields.noMember.append ?? true}
+            separator={fields.noMember.separator ?? ","}
+            allowManualInput={fields.noMember.allowManualInput ?? true}
           />
         )}
 

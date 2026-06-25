@@ -1,45 +1,89 @@
-import { GenericLookupModal } from "./GenericLookupModal";
-import { supplierColumns, SupplierRows } from "@/configs/supplierConfig";
-import { useFormContext } from "react-hook-form";
+// src/components/modal/SupplierModal.tsx
 
-interface Props {
-    show: boolean;
-    onClose: () => void;
-    kodeSupplier?: boolean;
-    namaSupplier?: boolean;
+import { GenericLookupModal } from "@/components/modal/GenericLookupModal";
+
+import { supplierColumns, type SupplierRows } from "@/configs/supplierConfig";
+
+export interface SupplierSelection {
+  code: string;
+  name: string;
+  row: SupplierRows;
 }
 
-export default function SupplierModal({ show, onClose, kodeSupplier, namaSupplier }: Props) {
-    const { setValue, watch } = useFormContext();
-    // 🔥 ambil branch dari form
-    const branch = watch("branch");
+export interface SupplierModalProps {
+  show: boolean;
+  onClose: () => void;
 
-    const filterFn = (item: SupplierRows, keyword: string) => {
-        const kode = item.hgb_kodesupplier?.toLowerCase() || "";
-        const nama = item.sup_namasupplier?.toLowerCase() || "";
+  /**
+   * Branch aktif.
+   *
+   * Contoh:
+   * - IGRCPG
+   * - ICMCPG
+   * - SPICPG1I
+   * - SPICPG4L
+   */
+  branch: string;
 
-        return kode.includes(keyword) || nama.includes(keyword);
-    }
+  /**
+   * Mengirim supplier yang dipilih
+   * kepada komponen pemanggil.
+   */
+  onSelect: (selection: SupplierSelection) => void;
 
-    const onSelect = (row: SupplierRows) => {
-        if (kodeSupplier) {
-            setValue("kodeSupplier", row.hgb_kodesupplier);
-        }
-        if (namaSupplier) {
-            setValue("namaSupplier", row.sup_namasupplier);
-        }
-    }
-    return (
-        <GenericLookupModal<SupplierRows>
-            show={show}
-            onClose={onClose}
-            endpoint={`/api/daftar-supplier?branch=${branch}`}
-            columns={supplierColumns}
-            title="Pilih Supplier"
+  title?: string;
+  endpoint?: string;
+}
 
-            onSelect={onSelect}
-            filterFn={filterFn}
-            mode="client"
-        />
-    );
+export default function SupplierModal({
+  show,
+  onClose,
+  branch,
+  onSelect,
+  title = "Pilih Supplier",
+  endpoint = "/api/daftar-supplier",
+}: SupplierModalProps) {
+  const normalizedBranch = branch.trim();
+
+  const resolvedEndpoint =
+    normalizedBranch !== ""
+      ? `${endpoint}?branch=${encodeURIComponent(normalizedBranch)}`
+      : endpoint;
+
+  const filterFn = (item: SupplierRows, keyword: string): boolean => {
+    const normalizedKeyword = keyword.trim().toLowerCase();
+
+    const kode = item.hgb_kodesupplier?.trim().toLowerCase() ?? "";
+
+    const nama = item.sup_namasupplier?.trim().toLowerCase() ?? "";
+
+    return kode.includes(normalizedKeyword) || nama.includes(normalizedKeyword);
+  };
+
+  const handleSelect = (row: SupplierRows) => {
+    const code = row.hgb_kodesupplier?.trim() ?? "";
+
+    const name = row.sup_namasupplier?.trim() ?? "";
+
+    onSelect({
+      code,
+      name,
+      row,
+    });
+
+    onClose();
+  };
+
+  return (
+    <GenericLookupModal<SupplierRows>
+      show={show}
+      onClose={onClose}
+      endpoint={resolvedEndpoint}
+      columns={supplierColumns}
+      title={title}
+      onSelect={handleSelect}
+      filterFn={filterFn}
+      mode="client"
+    />
+  );
 }

@@ -82,7 +82,7 @@ const PerDepartementPage = () => {
   ];
 
   return (
-    <Layout title={title}>
+    <Layout title={title} branch={query.branch}>
       <section className="space-y-2 p-2">
         {loading && !isRefreshing ? (
           <LoadingIgr />

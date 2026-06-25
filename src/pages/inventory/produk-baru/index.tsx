@@ -1,6 +1,6 @@
 // src/pages/inventory/produk-baru/index.tsx
 
-import type { GetServerSideProps } from "next";
+import type { InferGetServerSidePropsType } from "next";
 import { useRouter } from "next/router";
 
 import { useForm } from "react-hook-form";
@@ -34,18 +34,8 @@ import { DATABASE_OPTIONS } from "@/configs/database-options";
 
 import { getFilterProdukBaruDefaultValues } from "@/configs/produk-baru/filter-default-value";
 
-import { getBranchFromRequest } from "@/utils/server/getBranchFomRequest";
 import { FormatTanggal } from "@/utils/formatTanggal";
-
-interface ProdukBaruPageProps {
-  /**
-   * Branch awal berdasarkan IP client.
-   *
-   * Apabila IP tidak cocok dengan mapping jaringan,
-   * nilainya akan fallback ke NEXT_PUBLIC_APP_NAME.
-   */
-  defaultBranch: string;
-}
+import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
 
 /**
  * Dijalankan pada server setiap halaman dibuka.
@@ -55,17 +45,10 @@ interface ProdukBaruPageProps {
  * - X-Forwarded-For
  * - req.socket.remoteAddress
  */
-export const getServerSideProps: GetServerSideProps<
-  ProdukBaruPageProps
-> = async ({ req }) => {
-  const defaultBranch = getBranchFromRequest(req);
-
-  return {
-    props: {
-      defaultBranch,
-    },
-  };
-};
+export const getServerSideProps = getDefaultBranchServerSideProps;
+type ProdukBaruPageProps = InferGetServerSidePropsType<
+  typeof getServerSideProps
+>;
 
 export default function ProdukBaruPage({ defaultBranch }: ProdukBaruPageProps) {
   const router = useRouter();
@@ -160,11 +143,13 @@ export default function ProdukBaruPage({ defaultBranch }: ProdukBaruPageProps) {
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <PeriodeRange<FilterProdukBaruInput>
-              control={control}
-              startDateName="startDate"
-              endDateName="endDate"
-            />
+            <div>
+              <PeriodeRange<FilterProdukBaruInput>
+                control={control}
+                startDateName="startDate"
+                endDateName="endDate"
+              />
+            </div>
 
             <CardFieldset className="relative rounded-lg border shadow">
               <CardTitleLegend className="mx-6 px-2 text-md font-semibold">
@@ -202,7 +187,11 @@ export default function ProdukBaruPage({ defaultBranch }: ProdukBaruPageProps) {
               </CardTitleLegend>
 
               <CardContent className="flex flex-col gap-2">
-                <Button type="submit">Tampilkan</Button>
+                <Button
+                  type="submit"
+                  className="bg-blue-500 dark:bg-slate-600 hover:cursor-pointer dark:hover:bg-blue-400 dark:text-white">
+                  Submit
+                </Button>
 
                 <Button type="button" variant="outline" onClick={handleReset}>
                   Reset
