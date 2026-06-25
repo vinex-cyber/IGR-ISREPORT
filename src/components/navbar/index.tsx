@@ -57,7 +57,7 @@ export default function Navbar({ branch, logoSrc }: NavbarProps) {
 
   return (
     <header
-      className={`fixed left-1/2 top-4 z-50 flex min-h-20 w-[95%] max-w-6xl -translate-x-1/2 items-center justify-between rounded-2xl border border-white/20 px-4 py-2 text-white shadow-lg backdrop-blur-md transition-colors duration-300 dark:bg-slate-900/90 ${navbarBackground}`}>
+      className={`fixed left-1/2 top-4 z-50 flex  w-[95%] max-w-6xl -translate-x-1/2 items-center justify-between rounded-2xl border border-white/20 px-4 py-2 text-white shadow-lg backdrop-blur-md transition-colors duration-300 dark:bg-slate-900/90 ${navbarBackground}`}>
       <Link href="/" aria-label="Kembali ke Dashboard" className="shrink-0">
         <Image
           src={resolvedLogoSrc}

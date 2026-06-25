@@ -143,7 +143,7 @@ export default function ProdukBaruPage({ defaultBranch }: ProdukBaruPageProps) {
   };
 
   return (
-    <Layout title="Produk Baru">
+    <Layout title="Produk Baru" branch={selectedBranch}>
       <Form {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="flex items-center justify-between gap-4">

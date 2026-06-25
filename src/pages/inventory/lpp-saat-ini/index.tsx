@@ -123,7 +123,7 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
   };
 
   return (
-    <Layout title="LPP Saat Ini">
+    <Layout title="LPP Saat Ini" branch={selectedBranch}>
       <Form {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="flex items-center justify-between gap-4">

@@ -106,10 +106,12 @@ export default function FormSoHarian() {
     router.push("/form-so-harian", undefined, { shallow: true });
   };
 
+  const selectedBranch = methods.watch("branch");
+
   return (
-    <Layout title="Form SO Harian">
+    <Layout title="Form SO Harian" branch={selectedBranch}>
       <h1 className="text-2xl font-bold mb-4">
-        Form SO Harian - {methods.watch("branch")} :{" "}
+        Form SO Harian - {selectedBranch} :{" "}
         {query.prdcd ? `PLU ${query.prdcd}` : ""}
       </h1>
 
