@@ -1,7 +1,6 @@
 // src/pages/evaluasi-sales/index.tsx
 
 import dynamic from "next/dynamic";
-import type { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 
 import { useForm } from "react-hook-form";
@@ -28,7 +27,6 @@ import { getFilterDetailStrukDefaultValues } from "@/configs/evaluasi-sales/filt
 
 import { EVALUASI_SALES_REPORT_OPTIONS } from "@/configs/evaluasi-sales/report-options";
 
-import { getBranchFromRequest } from "@/utils/server/getBranchFomRequest";
 import { FormatTanggal } from "@/utils/formatTanggal";
 
 import PeriodeRange from "@/components/form/shared/PeriodeRange";
@@ -37,6 +35,8 @@ import CardKasir from "@/components/form/shared/CardKasir";
 import CardMember from "@/components/form/shared/CardMember";
 import CardPromo from "@/components/form/shared/CardPromo";
 import SelectReport from "@/components/form/shared/SelectReport";
+import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
+import { InferGetServerSidePropsType } from "next";
 
 /**
  * Dynamic import tetap boleh digunakan karena
@@ -49,33 +49,16 @@ const CardSupplier = dynamic(
   },
 );
 
-interface EvaluasiSalesPageProps {
-  /**
-   * Branch awal berdasarkan IP client.
-   *
-   * Jika IP tidak cocok dengan mapping jaringan,
-   * nilainya akan fallback ke NEXT_PUBLIC_APP_NAME.
-   */
-  defaultBranch: string;
-}
-
 /**
  * Dijalankan pada server setiap kali halaman dibuka.
  *
  * Request digunakan untuk membaca IP komputer client,
  * kemudian menentukan branch berdasarkan segment IP.
  */
-export const getServerSideProps: GetServerSideProps<
-  EvaluasiSalesPageProps
-> = async ({ req }) => {
-  const defaultBranch = getBranchFromRequest(req);
-
-  return {
-    props: {
-      defaultBranch,
-    },
-  };
-};
+export const getServerSideProps = getDefaultBranchServerSideProps;
+type EvaluasiSalesPageProps = InferGetServerSidePropsType<
+  typeof getServerSideProps
+>;
 
 export default function EvaluasiSales({
   defaultBranch,

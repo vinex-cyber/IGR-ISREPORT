@@ -3,9 +3,7 @@
 import type { IncomingMessage } from "http";
 
 import { getBranchFromIp } from "@/configs/branch-network-map";
-
 import type { DatabaseBranch } from "@/configs/database-options";
-
 import { getDefaultBranch } from "@/utils/getDefaultBranch";
 
 function getFirstHeaderValue(header: string | string[] | undefined): string {
@@ -16,27 +14,47 @@ function getFirstHeaderValue(header: string | string[] | undefined): string {
   return header?.trim() ?? "";
 }
 
+/**
+ * Menormalisasi format IP yang diterima Node.js/Nginx.
+ *
+ * Contoh:
+ * ::ffff:192.168.226.50 → 192.168.226.50
+ * 192.168.226.50:52100  → 192.168.226.50
+ * ::1                   → 127.0.0.1
+ */
 export function normalizeIpAddress(ipAddress: string): string {
-  return ipAddress.trim().replace(/^::ffff:/, "");
-}
+  let normalized = ipAddress.trim().replace(/^::ffff:/i, "");
 
-export function getClientIp(request: IncomingMessage): string {
-  /*
-   * Digunakan ketika Next.js berada di belakang Nginx.
-   */
-  const realIp = getFirstHeaderValue(request.headers["x-real-ip"]);
-
-  if (realIp) {
-    return normalizeIpAddress(realIp);
+  if (normalized === "::1") {
+    return "127.0.0.1";
   }
 
-  /*
-   * X-Forwarded-For bisa berisi beberapa IP:
-   *
-   * 192.168.226.50, 127.0.0.1
-   *
-   * IP pertama adalah IP client.
-   */
+  const ipv4WithPort = normalized.match(/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/);
+
+  if (ipv4WithPort?.[1]) {
+    normalized = ipv4WithPort[1];
+  }
+
+  return normalized;
+}
+
+/**
+ * Membaca IP client.
+ *
+ * Prioritas:
+ * 1. X-Real-IP dari Nginx
+ * 2. X-Forwarded-For
+ * 3. Socket remoteAddress
+ */
+export function getClientIp(request: IncomingMessage): string {
+  const realIp = normalizeIpAddress(
+    getFirstHeaderValue(request.headers["x-real-ip"]),
+  );
+
+  if (realIp) {
+    return realIp;
+  }
+
   const forwardedFor = getFirstHeaderValue(request.headers["x-forwarded-for"]);
 
   if (forwardedFor) {
@@ -50,14 +68,16 @@ export function getClientIp(request: IncomingMessage): string {
   return normalizeIpAddress(request.socket.remoteAddress ?? "");
 }
 
+/**
+ * Menentukan branch berdasarkan IP client.
+ *
+ * Jika IP tidak terdaftar dalam mapping jaringan,
+ * gunakan branch default dari NEXT_PUBLIC_APP_NAME.
+ */
 export function getBranchFromRequest(request: IncomingMessage): DatabaseBranch {
   const clientIp = getClientIp(request);
 
   const branchFromIp = getBranchFromIp(clientIp);
 
-  /*
-   * Jika IP tidak cocok, gunakan NEXT_PUBLIC_APP_NAME
-   * atau database pertama.
-   */
   return branchFromIp ?? getDefaultBranch();
 }
