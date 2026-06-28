@@ -1,7 +1,6 @@
 // src/components/input/InputKodeKasir.tsx
 
 import { useState } from "react";
-import { Search } from "lucide-react";
 import {
   Controller,
   useFormContext,
@@ -9,9 +8,14 @@ import {
   type FieldValues,
 } from "react-hook-form";
 
+import { Search } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import InputKodeKasirModal from "../modal/InputKodeKasirModal";
+
+import InputKodeKasirModal, {
+  type KasirSelection,
+} from "@/components/modal/InputKodeKasirModal";
 
 type KasirFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
   TFieldValues,
@@ -20,92 +24,170 @@ type KasirFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
 
 interface InputKodeKasirProps<TFieldValues extends FieldValues> {
   name: KasirFieldName<TFieldValues>;
+
   placeholder?: string;
+
   disabled?: boolean;
 
   /**
-   * true jika field form bertipe string[].
+   * Menyimpan data sebagai string[]
    *
-   * Contoh:
-   * kasir: z.array(z.string()).optional()
+   * @default false
    */
   multiple?: boolean;
+
+  /**
+   * Jika multiple=true maka hasil
+   * ditambahkan ke data sebelumnya.
+   *
+   * @default true
+   */
+  append?: boolean;
+
+  /**
+   * Separator ketika multiple=true
+   *
+   * @default ","
+   */
+  separator?: string;
+
+  /**
+   * Mengizinkan input manual.
+   *
+   * @default true
+   */
+  allowManualInput?: boolean;
+
+  /**
+   * Judul modal.
+   */
+  modalTitle?: string;
 }
 
-const InputKodeKasir = <TFieldValues extends FieldValues>({
+function normalizeToArray(value: unknown, separator: string): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === "string")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(separator)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function removeDuplicateValues(values: string[]) {
+  return [...new Set(values)];
+}
+
+export default function InputKodeKasir<TFieldValues extends FieldValues>({
   name,
   placeholder = "Kode Kasir",
   disabled = false,
   multiple = false,
-}: InputKodeKasirProps<TFieldValues>) => {
+  append = true,
+  separator = ",",
+  allowManualInput = true,
+  modalTitle = "Pilih Kode Kasir",
+}: InputKodeKasirProps<TFieldValues>) {
   const [show, setShow] = useState(false);
 
   const { control } = useFormContext<TFieldValues>();
 
-  const handleShow = () => {
-    if (disabled) return;
-
-    setShow((previous) => !previous);
-  };
-
   return (
-    <>
-      <Controller
-        control={control}
-        name={name}
-        render={({ field }) => {
-          const displayValue = Array.isArray(field.value)
-            ? field.value.join(",")
-            : String(field.value ?? "");
+    <Controller
+      control={control}
+      name={name}
+      render={({ field, fieldState }) => {
+        const selectedValues = normalizeToArray(field.value, separator);
 
-          return (
-            <div className="relative">
-              <Input
-                ref={field.ref}
-                name={field.name}
-                value={displayValue}
-                placeholder={placeholder}
-                disabled={disabled}
-                className="pr-10"
-                onBlur={field.onBlur}
-                onChange={(event) => {
-                  const value = event.target.value;
+        const displayValue = multiple
+          ? selectedValues.join(`${separator} `)
+          : (selectedValues[0] ?? "");
 
-                  if (multiple) {
-                    const values = value
-                      .split(",")
-                      .map((item) => item.trim())
-                      .filter(Boolean);
+        const handleManualChange = (value: string) => {
+          if (!multiple) {
+            field.onChange(value);
+            return;
+          }
 
-                    field.onChange(values);
-                    return;
-                  }
+          const values = normalizeToArray(value, separator);
 
-                  field.onChange(value);
-                }}
-              />
+          field.onChange(removeDuplicateValues(values));
+        };
 
-              <button
-                type="button"
-                disabled={disabled}
-                onClick={handleShow}
-                className={cn(
-                  "absolute right-3 top-1/2 -translate-y-1/2",
-                  "text-gray-400 hover:text-black",
-                  disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
-                )}>
-                <Search className="h-4 w-4" />
-              </button>
+        const handleKasirSelect = (selection: KasirSelection) => {
+          const kodeKasir = selection.kodeKasir.trim();
+
+          if (!kodeKasir) {
+            return;
+          }
+
+          if (!multiple) {
+            field.onChange(kodeKasir);
+            setShow(false);
+            return;
+          }
+
+          const nextValues = append
+            ? [...selectedValues, kodeKasir]
+            : [kodeKasir];
+
+          field.onChange(removeDuplicateValues(nextValues));
+
+          setShow(false);
+        };
+
+        return (
+          <>
+            <div className="space-y-1">
+              <div className="relative">
+                <Input
+                  ref={field.ref}
+                  name={field.name}
+                  value={displayValue}
+                  placeholder={placeholder}
+                  disabled={disabled}
+                  readOnly={!allowManualInput}
+                  className="pr-10"
+                  onBlur={field.onBlur}
+                  onChange={(event) => handleManualChange(event.target.value)}
+                />
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  disabled={disabled}
+                  onClick={() => setShow(true)}
+                  aria-label="Cari Kasir"
+                  className="absolute right-0 top-1/2 h-full -translate-y-1/2 cursor-pointer text-muted-foreground hover:bg-transparent hover:text-foreground">
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {fieldState.error && (
+                <p className="text-sm text-destructive">
+                  {fieldState.error.message}
+                </p>
+              )}
             </div>
-          );
-        }}
-      />
 
-      {!disabled && (
-        <InputKodeKasirModal show={show} onClose={handleShow} kasir />
-      )}
-    </>
+            <InputKodeKasirModal
+              show={show}
+              onClose={() => setShow(false)}
+              title={modalTitle}
+              onSelect={handleKasirSelect}
+            />
+          </>
+        );
+      }}
+    />
   );
-};
-
-export default InputKodeKasir;
+}

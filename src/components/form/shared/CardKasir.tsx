@@ -35,6 +35,21 @@ interface KasirFieldConfig<TFieldValues extends FieldValues> {
   disabled?: boolean;
 
   /**
+   * Gunakan true apabila field di schema bertipe string.
+   */
+  allowManualInput?: boolean;
+
+  /**
+   * Gunakan true apabila field di schema bertipe string.
+   */
+  separator?: string;
+
+  /**
+   * Gunakan true apabila field di schema bertipe string.
+   */
+  append?: boolean;
+
+  /**
    * Gunakan true apabila field di schema bertipe string[].
    */
   multiple?: boolean;
@@ -82,6 +97,10 @@ const CardKasir = <TFieldValues extends FieldValues>({
             placeholder={fields.kodeKasir.placeholder ?? "Kode Kasir"}
             disabled={fields.kodeKasir.disabled}
             multiple={fields.kodeKasir.multiple}
+            allowManualInput={fields.kodeKasir.multiple}
+            append={fields.kodeKasir.append}
+            separator={fields.kodeKasir.separator ?? ","}
+            modalTitle={fields.kodeKasir.placeholder ?? "Kode Kasir"}
           />
         )}
 

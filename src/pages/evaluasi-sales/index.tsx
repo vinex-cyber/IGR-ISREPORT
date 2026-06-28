@@ -275,6 +275,8 @@ export default function EvaluasiSales({
                     name: "kasir",
                     placeholder: "Kode Kasir",
                     multiple: true,
+                    allowManualInput: true,
+                    separator: ", ",
                   },
 
                   station: {
