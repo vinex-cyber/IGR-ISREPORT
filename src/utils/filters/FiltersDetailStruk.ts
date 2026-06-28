@@ -1,11 +1,12 @@
 // /src/utils/filters/FiltersDetailStruk.ts
 import { FilterDetailStrukInput } from "@/schema/filterDetailStruk";
 import { normalizeToArray } from "@/utils/normalizeToArray";
+import { applyGiftFilters, GiftReportType } from "@/utils/filters/GiftFilters";
 import { applyStrukFilters } from "./StrukFilters";
 
 export const FilterDetailStruk = (filters: FilterDetailStrukInput) => {
   const conditions = [];
-  const params = [];
+  const params: (string | string[])[] = [];
 
   // Filter untuk tanggal (startDate dan endDate)
   if (filters.startDate && filters.endDate) {
@@ -166,20 +167,14 @@ export const FilterDetailStruk = (filters: FilterDetailStrukInput) => {
     params.push(filters.cbredempoin);
   }
   // Filter Gift
-  const gift = normalizeToArray(filters.kodeGift);
-  if (gift.length > 0) {
-    if (gift.length === 1) {
-      conditions.push(
-        `dtl_cusno = ANY(select distinct kd_member from m_gift_h where kd_promosi = $${params.length + 1})`,
-      );
-      params.push(gift[0]);
-    } else {
-      conditions.push(
-        `dtl_cusno = ANY(select distinct kd_member from m_gift_h where kd_promosi = ANY($${params.length + 1}))`,
-      );
-      params.push(gift);
-    }
-  }
+  applyGiftFilters(
+    {
+      kodeGift: filters.kodeGift,
+      reportType: filters.selectedReport as GiftReportType,
+    },
+    conditions,
+    params,
+  );
 
   // Filter Promo Gift
   if (filters.promo && filters.promo.length > 0) {
