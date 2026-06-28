@@ -333,6 +333,7 @@ function MemberCodeInput<TFieldValues extends FieldValues>({
                     "absolute right-0 top-1/2",
                     "h-full -translate-y-1/2",
                     "cursor-pointer",
+                    "text-muted-foreground",
                   )}>
                   <Search className="h-4 w-4" />
                 </Button>

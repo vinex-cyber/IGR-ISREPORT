@@ -36,7 +36,7 @@ import {
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
 import SelectGroupFlag from "@/components/form/shared/SelectGroupFlag";
 import SelectStatusTag from "@/components/form/shared/SelectStatusTag";
-import CardSupplier from "@/components/form/evaluasisales/CardSupplier";
+import CardSupplier from "@/components/form/shared/CardSupplier";
 
 /**
  * Dijalankan oleh server pada setiap request halaman.

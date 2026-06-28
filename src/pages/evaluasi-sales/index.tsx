@@ -35,7 +35,7 @@ import CardPromo from "@/components/form/shared/CardPromo";
 import SelectReport from "@/components/form/shared/SelectReport";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
 import { InferGetServerSidePropsType } from "next";
-import CardSupplier from "@/components/form/evaluasisales/CardSupplier";
+import CardSupplier from "@/components/form/shared/CardSupplier";
 
 /**
  * Dijalankan pada server setiap kali halaman dibuka.
