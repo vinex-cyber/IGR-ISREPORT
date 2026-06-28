@@ -11,9 +11,9 @@ export const FilterLppSaatIniSchema = z.object({
     .refine(
       (v) => {
         if (!v) return true;
-        return /^[0-9,]+$/.test(v); // hanya angka & koma
+        return v.split(",").every((item) => /^[0-9]{7}$/.test(item.trim()));
       },
-      { message: "Format PLU tidak valid" },
+      { message: "Format PLU tidak valid, harus 7 digit angka" },
     ),
   namaBarang: z.string().optional(),
   kodeMonitoringPlu: z.string().toUpperCase().optional(),
@@ -24,7 +24,7 @@ export const FilterLppSaatIniSchema = z.object({
   kodeSupplier: z.union([z.string(), z.array(z.string())]).optional(),
   namaSupplier: z.string().optional(),
   statusTag: z.string().optional(),
-  statusQty: z.string().optional(),
+  statusQty: z.enum(["1", "2", "3", "4", "5"]).optional(),
   lokasi: z.string().optional(),
   groupFlag: z.string().optional(),
   branch: z

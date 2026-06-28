@@ -21,8 +21,7 @@ SELECT
 	sup.sup_jangkawaktukirimbarang AS hgb_lead_time,
 	sup.sup_minrph as hgb_minrph  
 FROM tbmaster_hargabeli hgb
-LEFT JOIN tbmaster_supplier sup
-hgb.hgb_kodesupplier = sup.sup_kodesupplier
-WHERE hgb.hgb_tipe      = '2' 
+LEFT JOIN tbmaster_supplier sup on hgb.hgb_kodesupplier = sup.sup_kodesupplier
+WHERE hgb.hgb_tipe      = '2'
     `;
 };

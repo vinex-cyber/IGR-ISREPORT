@@ -37,6 +37,7 @@ import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranch
 import SelectGroupFlag from "@/components/form/shared/SelectGroupFlag";
 import SelectStatusTag from "@/components/form/shared/SelectStatusTag";
 import CardSupplier from "@/components/form/shared/CardSupplier";
+import SelectStatusQty from "@/components/form/shared/SelectStatusQty";
 
 /**
  * Dijalankan oleh server pada setiap request halaman.
@@ -185,11 +186,12 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
                 </CardTitleLegend>
 
                 <CardContent>
-                  <SelectLokasi<FilterLppSaatIniInput>
+                  <SelectStatusQty<FilterLppSaatIniInput>
                     control={control}
-                    name="lokasi"
-                    labelAll="All Lokasi"
-                    placeholder="All Lokasi"
+                    name="statusQty"
+                    labelAll="All Status Qty"
+                    placeholder="All"
+                    enableSearch={true}
                   />
                 </CardContent>
               </CardFieldset>

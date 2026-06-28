@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import InputGiftModal from "@/components/modal/InputGiftModal";
 
 import { cn } from "@/lib/utils";
+import { FormatTanggalISO } from "@/utils/formatTanggal";
 
 type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
   TFieldValues,
@@ -134,85 +135,6 @@ export interface InputKodeGiftProps<TFieldValues extends FieldValues> {
   onGiftSelect?: (gift: GiftSelection) => void;
 }
 
-function createLocalDateString(
-  year: number,
-  month: number,
-  day: number,
-): string {
-  const date = new Date(year, month - 1, day);
-
-  const isValid =
-    date.getFullYear() === year &&
-    date.getMonth() === month - 1 &&
-    date.getDate() === day;
-
-  if (!isValid) {
-    return "";
-  }
-
-  const formattedMonth = String(month).padStart(2, "0");
-
-  const formattedDay = String(day).padStart(2, "0");
-
-  return `${year}-${formattedMonth}-${formattedDay}`;
-}
-
-/**
- * Mengubah tanggal menjadi YYYY-MM-DD
- * tanpa menggeser tanggal karena UTC.
- */
-function formatDate(value: DateInput): string {
-  if (!value) {
-    return "";
-  }
-
-  if (value instanceof Date) {
-    if (Number.isNaN(value.getTime())) {
-      return "";
-    }
-
-    return createLocalDateString(
-      value.getFullYear(),
-      value.getMonth() + 1,
-      value.getDate(),
-    );
-  }
-
-  const stringValue = String(value).trim();
-
-  const compactDateMatch = stringValue.match(/^(\d{4})(\d{2})(\d{2})$/);
-
-  if (compactDateMatch) {
-    return createLocalDateString(
-      Number(compactDateMatch[1]),
-      Number(compactDateMatch[2]),
-      Number(compactDateMatch[3]),
-    );
-  }
-
-  const normalDateMatch = stringValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
-
-  if (normalDateMatch) {
-    return createLocalDateString(
-      Number(normalDateMatch[1]),
-      Number(normalDateMatch[2]),
-      Number(normalDateMatch[3]),
-    );
-  }
-
-  const parsedDate = new Date(stringValue);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "";
-  }
-
-  return createLocalDateString(
-    parsedDate.getFullYear(),
-    parsedDate.getMonth() + 1,
-    parsedDate.getDate(),
-  );
-}
-
 /**
  * Mengubah nilai generic menjadi string[].
  *
@@ -299,7 +221,10 @@ export default function InputKodeGift<TFieldValues extends FieldValues>({
 
     setValue(
       fieldName,
-      formatDate(dateValue) as FieldPathValue<TFieldValues, typeof fieldName>,
+      FormatTanggalISO(dateValue) as FieldPathValue<
+        TFieldValues,
+        typeof fieldName
+      >,
       {
         shouldDirty: true,
         shouldTouch: true,

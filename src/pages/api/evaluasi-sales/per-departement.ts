@@ -1,34 +1,17 @@
+// /src/pages/api/evaluasi-sales/per-departement.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { getPool } from "@/lib/db";
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk"; // pastikan import benar
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk"; // pastikan import benar
 import { DetailStruk } from "@/utils/query/detailStruk";
+import { checkMethod, handleServerError } from "@/lib/apiHandler";
+import { ApiResponse } from "@/types/api";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
-  try {
-    // Ambil semua query string dan validasi pakai Zod
-    const result = FilterDetailStrukSchema.safeParse(req.query);
-
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid query parameters",
-        errors: result.error.flatten(),
-      });
-    }
-
-    const filters = result.data;
-    // branch
-    const branch = filters.branch || "IGRCPG";
-    const pool = getPool(branch);
-
-    const { conditions, params } = FilterDetailStruk(filters);
-
-    const query = `
-        SELECT
+// ============================================================
+// Query Builder
+// ============================================================
+const buildQuery = (conditions: string, params: (string | string[])[]) => `
+          SELECT
             dtl_k_div as div,
             dtl_k_dept as dept,
             dtl_nama_dept as nama_dept,
@@ -44,20 +27,59 @@ export default async function handler(
         GROUP BY dtl_k_div, dtl_k_dept, dtl_nama_dept
         having coalesce(SUM(dtl_netto),0) <> 0
         ORDER BY dtl_k_div, dtl_k_dept
-        `;
+`;
 
-    const resultQuery = await pool.query(query, params);
+// ============================================================
+// Handler
+// ============================================================
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<ApiResponse<unknown>>,
+) {
+  if (!checkMethod(req, res, "GET")) return;
 
+  // 1. Validasi query parameter
+  const parsed = FilterDetailStrukSchema.safeParse(req.query);
+  if (!parsed.success) {
+    return res.status(400).json({
+      success: false,
+      message: "Query parameter tidak valid.",
+      errors: parsed.error.flatten(),
+    });
+  }
+
+  const filters = parsed.data;
+  const branch = filters.branch;
+
+  try {
+    // 2. Koneksi ke database
+    const pool = getPool(branch);
+
+    // 3. Build filter & query
+    const { conditions, params } = FilterDetailStruk(filters);
+    const { rows } = await pool.query(buildQuery(conditions, params), params);
+
+    // 4. Tidak ada data
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `Tidak ada data evaluasi sales per departement untuk branch '${branch}'.`,
+      });
+    }
+
+    // 5. Sukses
     return res.status(200).json({
       success: true,
-      data: resultQuery.rows,
+      message: `Data evaluasi sales per departement untuk branch '${branch}' berhasil diambil.`,
+      total: rows.length,
+      data: rows,
     });
   } catch (error) {
-    console.error("Error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error instanceof Error ? error.message : String(error),
-    });
+    return handleServerError(
+      res,
+      error,
+      branch,
+      "Evaluasi Sales Per Departement",
+    );
   }
 }

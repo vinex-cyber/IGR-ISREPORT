@@ -3,9 +3,12 @@ import { QueryHargaBeli } from "./queryHargaBeli";
 import { QueryPoOutStanding } from "./queryPoOutStanding";
 import { QuerySalesPerDay } from "./querySalesPerDay";
 
-export const QueryLppSaatIni = () => {
+type FiltersConditions = {
+  conditions: string;
+};
+export const QueryLppSaatIni = (filters: FiltersConditions) => {
   return `
-SELECT prd.prd_kodedivisi AS st_div,
+SELECT     prd.prd_kodedivisi AS st_div,
            div.div_namadivisi AS st_div_nama,
            prd.prd_kodedepartement AS st_dept,
            dep.dep_namadepartement AS st_dept_nama,
@@ -75,7 +78,8 @@ SELECT prd.prd_kodedivisi AS st_div,
     LEFT JOIN (SELECT kat_kodedepartement || kat_kodekategori AS kat_kodekategori, kat_namakategori FROM tbmaster_kategori) kat ON prd.prd_kodedepartement || prd.prd_kodekategoribarang = kat.kat_kodekategori
     LEFT JOIN (${QuerySalesPerDay()}) spd ON prd.prd_prdcd = spd.spd_prdcd
     LEFT JOIN (${QueryPoOutStanding()}) poo ON prd.prd_prdcd = poo.tpod_prdcd
-    LEFT JOIN (${QueryGroupFlag()}) sii ON prd.prd_prdcd = sii.prd_prdcd
+    LEFT JOIN (${QueryGroupFlag()}) sii ON prd.prd_prdcd = sii.plu
     WHERE prd.prd_prdcd LIKE '%0'
+  ${filters.conditions ? `AND ${filters.conditions}` : ""}
     `;
 };
