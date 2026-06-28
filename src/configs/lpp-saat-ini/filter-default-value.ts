@@ -48,7 +48,7 @@ export function getFilterLppSaatIniDefaultValues(
     statusQty: "",
 
     lokasi: "",
-    groupSales: "",
+    groupFlag: "",
 
     selectedReport: "per-divisi",
 
