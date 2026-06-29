@@ -1,40 +1,18 @@
+// /src/pages/api/evaluasi-sales/per-struk.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { getPool } from "@/lib/db";
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk"; // pastikan import benar
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk"; // pastikan import benar
 import { DetailStruk } from "@/utils/query/detailStruk";
+import { QueryParam } from "@/types/queryParams";
+import { checkMethod, handleServerError } from "@/lib/apiHandler";
+import { buildPaginationQuery } from "@/utils/pagination/buildPaginationQuery";
+import { getTotalData } from "@/utils/pagination/getTotalData";
+import { getPaginationParams } from "@/utils/pagination/getPaginationParams";
+import { ApiResponse } from "@/types/api";
 
-export const config = {
-  api: {
-    responseLimit: "10mb",
-  },
-};
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
-  try {
-    // Ambil semua query string dan validasi pakai Zod
-    const result = FilterDetailStrukSchema.safeParse(req.query);
-
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid query parameters",
-        errors: result.error.flatten(),
-      });
-    }
-
-    const filters = result.data;
-
-    // branch
-    const branch = filters.branch || "IGRCPG";
-    const pool = getPool(branch);
-
-    const { conditions, params } = FilterDetailStruk(filters);
-
-    const query = `
-        SELECT
+const buildQuery = (conditions: string, params: QueryParam[]) => `
+SELECT
             to_char(dtl_tanggal, 'dd-MM-yyyy') as tanggal,
             dtl_struk as struk,
             dtl_stat as station,
@@ -70,20 +48,66 @@ export default async function handler(
             dtl_memberkhusus
         HAVING count(dtl_netto) > 0
         ORDER BY to_char(dtl_tanggal, 'yyyymmdd'), dtl_struk, dtl_stat, dtl_kasir
-        `;
 
-    const resultQuery = await pool.query(query, params);
+`;
+
+// ============================================================
+// Handler
+// ============================================================
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<ApiResponse<unknown>>,
+) {
+  if (!checkMethod(req, res, "GET")) return;
+
+  const parsed = FilterDetailStrukSchema.safeParse(req.query);
+
+  if (!parsed.success) {
+    return res.status(400).json({
+      success: false,
+      message: "Query parameter tidak valid.",
+      errors: parsed.error.flatten(),
+    });
+  }
+
+  const filters = parsed.data;
+
+  const branch = filters.branch;
+
+  try {
+    const pool = getPool(branch);
+
+    const { page, limit, exportAll } = getPaginationParams(req);
+
+    const { conditions, params } = FilterDetailStruk(filters);
+
+    const baseQuery = buildQuery(conditions, params);
+
+    // total data
+    const total = await getTotalData(pool, baseQuery, params);
+
+    // query pagination / export
+    const { query, values } = buildPaginationQuery({
+      baseQuery,
+      params,
+      page,
+      limit,
+      exportAll,
+    });
+
+    const { rows } = await pool.query(query, values);
 
     return res.status(200).json({
       success: true,
-      data: resultQuery.rows,
+      message: "Data evaluasi sales per struk berhasil diambil.",
+      total,
+      page: exportAll ? 1 : page,
+      limit: exportAll ? total : limit,
+      totalPages: exportAll ? 1 : Math.ceil(total / limit),
+      data: rows,
     });
   } catch (error) {
-    console.error("Error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error instanceof Error ? error.message : String(error),
-    });
+    return handleServerError(res, error, branch, "Evaluasi Sales Per Struk");
   }
 }
