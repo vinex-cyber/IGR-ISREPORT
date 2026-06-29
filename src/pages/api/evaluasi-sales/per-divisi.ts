@@ -6,11 +6,12 @@ import { checkMethod, handleServerError } from "@/lib/apiHandler";
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk";
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk";
 import { DetailStruk } from "@/utils/query/detailStruk";
+import type { QueryParam } from "@/types/queryParams";
 
 // ============================================================
 // Query Builder
 // ============================================================
-const buildQuery = (conditions: string, params: (string | string[])[]) => `
+const buildQuery = (conditions: string, params: QueryParam[]) => `
   SELECT
     dtl_k_div                        AS div,
     dtl_nama_div                     AS nama_div,

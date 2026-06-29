@@ -55,7 +55,7 @@ export default function Layout({
       <Navbar branch={activeBranch} logoSrc={logoSrc} />
 
       <main
-        className={`min-h-screen px-4 pb-8 pt-28 transition-colors duration-300 dark:bg-slate-900 ${pageBackground}`}>
+        className={`min-h-screen px-4 pb-8 pt-24 transition-colors duration-300 dark:bg-slate-900 ${pageBackground}`}>
         <div className="mx-auto w-full max-w-6xl">{children}</div>
       </main>
     </>

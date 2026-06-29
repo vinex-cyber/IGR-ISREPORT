@@ -6,11 +6,12 @@ import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk"; // pastika
 import { DetailStruk } from "@/utils/query/detailStruk";
 import { checkMethod, handleServerError } from "@/lib/apiHandler";
 import { ApiResponse } from "@/types/api";
+import type { QueryParam } from "@/types/queryParams";
 
 // ============================================================
 // Query Builder
 // ============================================================
-const buildQuery = (conditions: string, params: (string | string[])[]) => `
+const buildQuery = (conditions: string, params: QueryParam[]) => `
           SELECT
             dtl_k_div as div,
             dtl_k_dept as dept,

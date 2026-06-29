@@ -1,4 +1,5 @@
 // src/utils/filters/shared/GiftFilters.ts
+import type { QueryParam } from "@/types/queryParams";
 import { normalizeToArray } from "@/utils/normalizeToArray";
 
 // ─── Report Type ──────────────────────────────────────────────────────────────
@@ -43,7 +44,7 @@ interface GiftFilterInput {
 export function applyGiftFilters(
   filters: GiftFilterInput,
   conditions: string[],
-  params: (string | string[])[],
+  params: QueryParam[],
 ) {
   const gift = normalizeToArray(filters.kodeGift);
   if (gift.length === 0) return;

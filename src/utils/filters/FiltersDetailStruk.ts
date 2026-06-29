@@ -3,10 +3,11 @@ import { FilterDetailStrukInput } from "@/schema/filterDetailStruk";
 import { normalizeToArray } from "@/utils/normalizeToArray";
 import { applyGiftFilters, GiftReportType } from "@/utils/filters/GiftFilters";
 import { applyStrukFilters } from "./StrukFilters";
+import type { QueryParam } from "@/types/queryParams";
 
 export const FilterDetailStruk = (filters: FilterDetailStrukInput) => {
   const conditions = [];
-  const params: (string | string[])[] = [];
+  const params: QueryParam[] = [];
 
   // Filter untuk tanggal (startDate dan endDate)
   if (filters.startDate && filters.endDate) {

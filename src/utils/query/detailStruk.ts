@@ -1,7 +1,9 @@
+import type { QueryParam } from "@/types/queryParams";
+
 // /src/utils/query/detailStruk.ts
 export const DetailStruk = (
   conditions: string,
-  params: (string | string[])[] = [],
+  params: QueryParam[],
 ): string => {
   const startDate = params[0] || null;
   const endDate = params[1] || null;

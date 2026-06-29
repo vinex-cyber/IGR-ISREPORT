@@ -1,7 +1,8 @@
 // hooks/useReportPage.ts
 
-import { useState } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 
+import axiosClient from "@/lib/axiosClient";
 import { useFetchData } from "@/hooks/useFetchData";
 import { useRefreshRouter } from "@/hooks/useRefreshRouter";
 import { useReportQueryEndpoint } from "@/hooks/useReportQueryEndpoint";
@@ -57,161 +58,78 @@ interface CustomFetchOptions {
 interface UseReportPageOptions<T> {
   /**
    * Endpoint API yang sudah pasti tanpa awalan `/api`.
-   *
-   * Gunakan `endpoint` untuk laporan yang tidak memerlukan
-   * pemilihan `selectedReport`.
-   *
-   * @example
-   * useReportPage<FormSoHarianRows>({
-   *   endpoint: "form-so-harian",
-   *   ...config,
-   * });
-   *
-   * Request akhirnya:
-   * `/api/form-so-harian`
-   *
-   * Jangan digunakan bersamaan dengan `basePath`
-   * kecuali memang diperlukan.
    */
   endpoint?: string;
 
   /**
    * Path utama API untuk laporan yang memiliki beberapa jenis laporan.
-   *
-   * `basePath` akan digabungkan dengan:
-   * - `selectedReport` dari URL; atau
-   * - `reportType` sebagai fallback.
-   *
-   * @example
-   * basePath: "evaluasi-sales"
-   *
-   * Jika selectedReport adalah "per-divisi",
-   * endpoint menjadi:
-   * `evaluasi-sales/per-divisi`
-   *
-   * Request akhirnya:
-   * `/api/evaluasi-sales/per-divisi`
    */
   basePath?: string;
 
   /**
    * Jenis laporan tetap atau fallback untuk `selectedReport`.
-   *
-   * Gunakan ini ketika halaman sudah mengetahui jenis laporannya,
-   * tetapi Anda tetap ingin mendukung selectedReport.
-   *
-   * @example
-   * useReportPage<PerDivisiRows>({
-   *   basePath: "evaluasi-sales",
-   *   reportType: "per-divisi",
-   *   ...config,
-   * });
-   *
-   * Endpoint akhirnya:
-   * `evaluasi-sales/per-divisi`
    */
   reportType?: string;
 
   /**
    * Judul laporan.
-   *
-   * @example
-   * reportTitle: "Laporan Penjualan"
-   * */
+   */
   reportTitle?: string;
 
   /**
    * Daftar field yang digunakan untuk pencarian global.
-   *
-   * @example
-   * searchableFields: [
-   *   "prdcd",
-   *   "nama_barang",
-   * ]
    */
   searchableFields: (keyof T)[];
 
   /**
    * Daftar field angka yang akan dihitung pada total/footer.
-   *
-   * @example
-   * numericFields: [
-   *   "total_qty",
-   *   "total_netto",
-   *   "total_margin",
-   * ]
    */
   numericFields: (keyof T)[];
 
   /**
    * Judul kolom untuk export Excel.
-   *
-   * Urutan headers harus sama dengan urutan `allFields`.
-   *
-   * @example
-   * headers: [
-   *   "PLU",
-   *   "Nama Barang",
-   *   "Total Qty",
-   * ]
    */
   headers: string[];
 
   /**
    * Seluruh field yang digunakan pada laporan dan export.
-   *
-   * Urutannya harus sama dengan `headers`.
-   *
-   * @example
-   * allFields: [
-   *   "prdcd",
-   *   "nama_barang",
-   *   "total_qty",
-   * ]
    */
   allFields: (keyof T)[];
 
   /**
    * Mengubah satu object data menjadi array untuk export Excel.
-   *
-   * @example
-   * mapRow: (row) => [
-   *   row.prdcd,
-   *   row.nama_barang,
-   *   row.total_qty,
-   * ]
    */
   mapRow: (row: T) => (string | number | null)[];
 
   /**
    * Menentukan apakah proses fetch boleh dijalankan.
-   *
-   * Jika tidak diisi, fetch dijalankan ketika:
-   * - router sudah siap;
-   * - endpoint tersedia.
-   *
-   * @example
-   * enabled: Boolean(branch)
    */
   enabled?: boolean;
 
   /**
    * Konfigurasi fetch khusus.
-   *
-   * Jika digunakan, `customFetch` akan menggantikan endpoint
-   * dan query bawaan dari useReportQueryEndpoint.
-   *
-   * @example
-   * customFetch: {
-   *   endpoint: "produk/detail",
-   *   queryParams: {
-   *     prdcd: "1234560",
-   *     branch: "IGRCPG",
-   *   },
-   *   enabled: true,
-   * }
    */
   customFetch?: CustomFetchOptions;
+
+  // ── Pagination (opsional) ──────────────────────────────────
+
+  /**
+   * Aktifkan pagination.
+   *
+   * Jika false, semua data diambil sekaligus (perilaku lama).
+   *
+   * @default false
+   */
+  paginated?: boolean;
+
+  /**
+   * Jumlah data per halaman.
+   *
+   * Hanya digunakan ketika paginated=true.
+   *
+   * @default 100
+   */
+  defaultLimit?: number;
 }
 
 /**
@@ -225,7 +143,8 @@ interface UseReportPageOptions<T> {
  * - pencarian data;
  * - perhitungan total;
  * - refresh data;
- * - export Excel.
+ * - export Excel;
+ * - pagination (opsional).
  *
  * Terdapat tiga cara pemakaian.
  *
@@ -244,10 +163,12 @@ interface UseReportPageOptions<T> {
  * });
  *
  * @example
- * // 3. Endpoint dengan reportType sebagai fallback
- * useReportPage<PerDivisiRows>({
+ * // 3. Dengan pagination
+ * useReportPage<PerProdukRows>({
  *   basePath: "evaluasi-sales",
- *   reportType: "per-divisi",
+ *   reportType: "per-produk",
+ *   paginated: true,
+ *   defaultLimit: 100,
  *   ...config,
  * });
  */
@@ -266,48 +187,54 @@ export function useReportPage<T extends object>(
     allFields,
     enabled,
     customFetch,
+    paginated = false, // ← default false, tidak ubah perilaku lama
+    defaultLimit = 100,
   } = options;
 
-  /**
-   * Mendapatkan endpoint dan query berdasarkan:
-   * - endpoint tetap;
-   * - basePath;
-   * - reportType;
-   * - selectedReport dari URL.
-   */
   const routerResult = useReportQueryEndpoint({
     endpoint: fixedEndpoint,
     basePath,
     reportType,
   });
 
-  /**
-   * Urutan prioritas endpoint:
-   * 1. customFetch.endpoint
-   * 2. endpoint dari useReportQueryEndpoint
-   */
   const endpoint = customFetch?.endpoint ?? routerResult.endpoint;
-
-  /**
-   * Urutan prioritas query:
-   * 1. customFetch.queryParams
-   * 2. query dari router
-   */
-  const query = customFetch?.queryParams ?? routerResult.query;
+  const baseQuery = customFetch?.queryParams ?? routerResult.query;
 
   const defaultFetchEnabled = routerResult.isReady && Boolean(endpoint);
-
   const fetchEnabled = customFetch
     ? (customFetch.enabled ?? Boolean(customFetch.endpoint))
     : (enabled ?? defaultFetchEnabled);
 
+  // ── Pagination state ────────────────────────────────────────
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(defaultLimit);
+
+  // Reset ke halaman 1 ketika query berubah
+  const baseQueryString = JSON.stringify(baseQuery);
+
+  // ── Query yang dikirim ke API ────────────────────────────────
+  const query = useMemo(() => {
+    if (!paginated) return baseQuery; // perilaku lama, tidak ada page/limit
+
+    return {
+      ...baseQuery,
+      page: String(page),
+      limit: String(limit),
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseQueryString, paginated, page, limit]);
+
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data, loading, error, refetch } = useFetchData<T[]>({
+  const { data, loading, error, refetch, total, totalPages } = useFetchData<
+    T[]
+  >({
     endpoint,
     queryParams: query,
     enabled: fetchEnabled,
   });
+
+  console.log("total:", total, "totalPages:", totalPages);
 
   const { isRefreshing, handleRefresh } = useRefreshRouter(loading, refetch);
 
@@ -326,45 +253,66 @@ export function useReportPage<T extends object>(
     isNumeric: numericFields.includes(field),
   }));
 
-  const { handleExport } = useExportToExcel<T>({
+  // ── fetchAll untuk export Excel ──────────────────────────────
+  const fetchAll = useCallback(async (): Promise<T[]> => {
+    if (!endpoint) return [];
+
+    const response = await axiosClient.get(endpoint, {
+      params: {
+        ...baseQuery,
+        export: "true", // ambil semua data tanpa pagination
+      },
+    });
+
+    return response.data.data ?? [];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endpoint, baseQueryString]);
+
+  const { handleExport, isExporting } = useExportToExcel<T>({
     title,
-    data: filteredData ?? [],
+    // Kalau paginated → pakai fetchAll, kalau tidak → pakai data langsung (perilaku lama)
+    ...(paginated ? { fetchAll } : { data: filteredData ?? [] }),
     mapRow: (row) => mapRow(row).map((cell) => cell ?? ""),
     totalRow,
     columns,
   });
 
+  // ── Reset page ketika filter/query berubah ───────────────────
+  const prevQueryRef = useRef(baseQueryString);
+
+  useEffect(() => {
+    if (prevQueryRef.current !== baseQueryString) {
+      prevQueryRef.current = baseQueryString;
+      setPage(1);
+    }
+  }, [baseQueryString]);
+
   return {
-    /**
-     * Query parameter yang digunakan untuk mengambil data.
-     */
+    // ── Yang sudah ada (tidak berubah) ───────────────────────
     query,
-
-    /**
-     * selectedReport dari URL atau reportType fallback.
-     */
     selectedReport: routerResult.selectedReport,
-
-    /**
-     * Endpoint akhir yang digunakan useFetchData.
-     */
     endpoint,
-
     searchTerm,
     setSearchTerm,
-
     data,
     filteredData,
     loading,
     error,
-
     title,
     periode,
     totalRow,
-
     handleExport,
     isRefreshing,
     handleRefresh,
     refetch,
+
+    // ── Tambahan pagination ──────────────────────────────────
+    page,
+    setPage,
+    limit,
+    setLimit,
+    total,
+    totalPages,
+    isExporting,
   };
 }

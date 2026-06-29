@@ -1,8 +1,15 @@
 // src/types/api.ts
+
 export type ApiSuccess<T> = {
   success: true;
   message: string;
+
   total: number;
+
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+
   data: T;
 };
 

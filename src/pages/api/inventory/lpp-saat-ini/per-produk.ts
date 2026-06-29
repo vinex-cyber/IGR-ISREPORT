@@ -1,4 +1,4 @@
-// /src/pages/api/inventory/lpp-saat-ini/per-departement.ts
+// /src/pages/api/inventory/lpp-saat-ini/per-produk.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { getPool } from "@/lib/db";
 import { ApiResponse } from "@/types/api";
@@ -12,23 +12,10 @@ import { QueryLppSaatIni } from "@/utils/query/queryLppSaatIni";
 // ============================================================
 const buildQuery = (conditions: string) => `
   SELECT
-    st_div,
-	  st_div_nama,
-	  st_dept,
-	  st_dept_nama,
-	  COUNT(st_prdcd)               AS st_item_produk,
-  	SUM(st_saldo_in_pcs)          AS st_saldo_in_pcs,
-	  SUM(st_saldo_rph)             AS st_saldo_rph,
-	  SUM(st_saldo_rph_lastcost)    AS st_saldo_rph_lastcost,
-	  COUNT(DISTINCT(st_supp_kode)) AS st_supp_jumlah
+    *
   FROM (${QueryLppSaatIni({ conditions })}) as lpp
-  GROUP BY 
-    st_div,
-	st_div_nama,
-	st_dept,
-	st_dept_nama		
-  HAVING COALESCE(SUM(st_saldo_in_pcs), 0) <> 0
-  ORDER BY st_div,st_dept
+  where st_prdcd is not null
+  ORDER BY st_div,st_dept,st_katb,st_prdcd
 `;
 
 export default async function handler(
@@ -60,17 +47,17 @@ export default async function handler(
     if (rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: `Tidak ada data LPP per Departement untuk branch '${branch}'.`,
+        message: `Tidak ada data LPP per Produk untuk branch '${branch}'.`,
       });
     }
     // 5. Response Success
     return res.status(200).json({
       success: true,
-      message: `Data LPP per Departement branch '${branch}' berhasil diambil.`,
+      message: `Data LPP per Produk untuk branch '${branch}' berhasil diambil.`,
       total: rows.length,
       data: rows,
     });
   } catch (error) {
-    return handleServerError(res, error, branch, "LPP Per Departement");
+    return handleServerError(res, error, branch, "LPP Per Produk");
   }
 }
