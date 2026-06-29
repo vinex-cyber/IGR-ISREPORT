@@ -15,6 +15,7 @@ import { buildPaginationQuery } from "@/utils/pagination/buildPaginationQuery";
 
 import type { ApiResponse } from "@/types/api";
 import type { QueryParam } from "@/types/queryParams";
+import { getPaginationParams } from "@/utils/pagination/getPaginationParams";
 
 // ============================================================
 // Query Builder
@@ -72,9 +73,7 @@ export default async function handler(
   try {
     const pool = getPool(branch);
 
-    const page = Number(req.query.page ?? 1);
-    const limit = Number(req.query.limit ?? 100);
-    const exportAll = req.query.export === "true";
+    const { page, limit, exportAll } = getPaginationParams(req);
 
     const { conditions, params } = FilterDetailStruk(filters);
 

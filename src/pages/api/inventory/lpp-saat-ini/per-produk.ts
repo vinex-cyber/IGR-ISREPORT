@@ -6,6 +6,9 @@ import { checkMethod, handleServerError } from "@/lib/apiHandler";
 import { FilterLppSaatIniSchema } from "@/schema/filterLppSaatIni";
 import { buildFilterLppSaatIni } from "@/utils/filters/FilterLppSaatIni";
 import { QueryLppSaatIni } from "@/utils/query/queryLppSaatIni";
+import { getTotalData } from "@/utils/pagination/getTotalData";
+import { buildPaginationQuery } from "@/utils/pagination/buildPaginationQuery";
+import { getPaginationParams } from "@/utils/pagination/getPaginationParams";
 
 // ============================================================
 // Query Builder
@@ -40,9 +43,27 @@ export default async function handler(
     // 2. Koneksi ke database
     const pool = getPool(branch);
 
+    const { page, limit, exportAll } = getPaginationParams(req);
+
     // 3. Build filter & query
     const { conditions, params } = buildFilterLppSaatIni(filters);
-    const { rows } = await pool.query(buildQuery(conditions), params);
+
+    const baseQuery = buildQuery(conditions);
+
+    // total data
+    const total = await getTotalData(pool, baseQuery, params);
+
+    // query pagination / export
+    const { query, values } = buildPaginationQuery({
+      baseQuery,
+      params,
+      page,
+      limit,
+      exportAll,
+    });
+
+    const { rows } = await pool.query(query, values);
+
     // 4. Response Tidak ada data
     if (rows.length === 0) {
       return res.status(404).json({
@@ -53,8 +74,11 @@ export default async function handler(
     // 5. Response Success
     return res.status(200).json({
       success: true,
-      message: `Data LPP per Produk untuk branch '${branch}' berhasil diambil.`,
-      total: rows.length,
+      message: "Data evaluasi sales per produk berhasil diambil.",
+      total,
+      page: exportAll ? 1 : page,
+      limit: exportAll ? total : limit,
+      totalPages: exportAll ? 1 : Math.ceil(total / limit),
       data: rows,
     });
   } catch (error) {

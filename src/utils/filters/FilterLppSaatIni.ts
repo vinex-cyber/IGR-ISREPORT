@@ -2,10 +2,11 @@
 
 import { FilterLppSaatIniInput } from "@/schema/filterLppSaatIni";
 import { normalizeToArray } from "../normalizeToArray";
+import { QueryParam } from "@/types/queryParams";
 
 interface FilterLppSaatIniResult {
   conditions: string;
-  params: (string | string[])[];
+  params: QueryParam[];
 }
 
 export const buildFilterLppSaatIni = (

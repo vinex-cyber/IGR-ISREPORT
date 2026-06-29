@@ -234,8 +234,6 @@ export function useReportPage<T extends object>(
     enabled: fetchEnabled,
   });
 
-  console.log("total:", total, "totalPages:", totalPages);
-
   const { isRefreshing, handleRefresh } = useRefreshRouter(loading, refetch);
 
   const { filteredData, title, periode, totalRow } = useReportTableLogic<T>(
