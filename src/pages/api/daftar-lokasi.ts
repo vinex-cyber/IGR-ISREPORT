@@ -1,52 +1,17 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { getPool, BranchType } from "@/lib/db";
+// ============================================================
+// Schema
 
-/**
- * =========================================
- * 🔌 API ROUTE: DaftarLokasi
- * =========================================
- *
- * 📍 Endpoint: /api/daftar-lokasi
- * 📄 File: src/pages/api/daftar-lokasi.ts
- * 🧩 Handler: daftarLokasiHandler
- *
- * 📌 Supported Methods:
- * - GET → Fetch data
- */
+import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { z } from "zod";
 
-// 🔥 Response Generic Type
-type ApiResponse<T> = {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: string;
-};
+// ============================================================
+export const DaftarLokasiSchema = z.object({});
 
-// 🔥 Data Type (ubah sesuai kebutuhan)
-type DaftarKodeKasir = {
-  // contoh:
-  st_lokasi: string;
-  nama_lokasi: string;
-};
+// ============================================================
+// Query
+// ============================================================
 
-/**
- * Main handler untuk /api/daftar-lokasi
- */
-export default async function daftarKodeKasirHandler(
-  req: NextApiRequest,
-  res: NextApiResponse<ApiResponse<DaftarKodeKasir[]>>,
-) {
-  // 🔥 hanya GET
-  if (req.method !== "GET") {
-    return res.status(405).json({
-      success: false,
-      message: "Method not allowed",
-    });
-  }
-
-  try {
-    // 🔥 TODO: Ganti query sesuai kebutuhan
-    const query = `
+const buildQuery = () => `
       select DISTINCT 
         st_lokasi,
       CASE
@@ -58,27 +23,11 @@ export default async function daftarKodeKasirHandler(
       order by st_lokasi
     `;
 
-    const branch = (req.query.branch as BranchType) || "IGRCPG";
-    const pool = getPool(branch);
-
-    const result = await pool.query(query);
-
-    return res.status(200).json({
-      success: true,
-      data: result.rows,
-    });
-  } catch (error) {
-    console.error("[ERROR] /api/daftar-lokasi:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error:
-        process.env.NODE_ENV === "development"
-          ? error instanceof Error
-            ? error.message
-            : String(error)
-          : undefined,
-    });
-  }
-}
+export default createSimpleGetHandler({
+  schema: DaftarLokasiSchema,
+  buildFilters: () => ({ conditions: "", params: [] }),
+  buildQuery,
+  successMessage: "Data Lokasi berhasil diambil.",
+  emptyMessage: (branch) => `Tidak ada data Lokasi untuk branch '${branch}'.`,
+  errorContext: "Daftar Lokasi",
+});

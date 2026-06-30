@@ -2,7 +2,7 @@
 import { FilterLppSaatIniSchema } from "@/schema/filterLppSaatIni";
 import { buildFilterLppSaatIni } from "@/utils/filters/FilterLppSaatIni";
 import { QueryLppSaatIni } from "@/utils/query/queryLppSaatIni";
-import { createSimpleGetHandler } from "@/lib/handleFactory";
+import { createSimpleGetHandler } from "@/lib/handlerFactory";
 
 // ============================================================
 // Query Builder

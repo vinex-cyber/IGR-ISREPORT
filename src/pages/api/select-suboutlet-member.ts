@@ -1,17 +1,16 @@
 // src/pages/api/select-suboutlet-member.ts
-import { NextApiRequest, NextApiResponse } from "next";
-import { getPool, BranchType } from "@/lib/db";
+import { z } from "zod";
+import { createSimpleGetHandler } from "@/lib/handlerFactory";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
-  res.setHeader("Cache-Control", "no-store"); // 🧹 Matikan cache di level HTTP
+//===============================================================
+// Schema
+//===============================================================
+const SelectSubOutletMemberSchema = z.object({});
 
-  try {
-    const { kodeoutlet } = req.query;
-
-    const query = `
+//===============================================================
+// Query
+//===============================================================
+const buildQuery = () => `
             SELECT
                 sub_kodeoutlet,
                 out_namaoutlet,
@@ -25,19 +24,13 @@ export default async function handler(
                 ($1::text IS NULL OR sub_kodeoutlet = $1)
         `;
 
-    const branch = (req.query.branch as BranchType) || "IGRCPG";
-    const pool = getPool(branch);
-    const result = await pool.query(query, [kodeoutlet || null]);
-    return res.status(200).json({
-      success: true,
-      data: result.rows,
-    });
-  } catch (error) {
-    console.error("Error fetching sub outlet members:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-}
+export default createSimpleGetHandler({
+  schema: SelectSubOutletMemberSchema,
+  buildFilters: () => ({ conditions: "", params: [] }),
+  buildQuery,
+  emptyMessage: (branch) =>
+    `Tidak ada data sub outlet untuk branch '${branch}'.`,
+  successMessage: (branch) =>
+    `Data sub outlet berhasil diambil untuk branch '${branch}'.`,
+  errorContext: "Daftar Sub Outlet",
+});

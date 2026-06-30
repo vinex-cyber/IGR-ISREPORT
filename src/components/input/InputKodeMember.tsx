@@ -46,17 +46,6 @@ export interface InputKodeMemberProps<TFieldValues extends FieldValues> {
   name: MemberCodeFieldName<TFieldValues>;
 
   /**
-   * Branch database yang sedang aktif.
-   *
-   * Contoh:
-   * - IGRCPG
-   * - ICMCPG
-   * - SPICPG1I
-   * - SPICPG4L
-   */
-  branch: string;
-
-  /**
    * Placeholder input.
    *
    * @default "Kode Member"
@@ -171,7 +160,6 @@ function removeDuplicateMemberCodes(values: string[]): string[] {
 export default function InputKodeMember<TFieldValues extends FieldValues>({
   control,
   name,
-  branch,
   placeholder = "Kode Member",
   multiple = false,
   append = true,
@@ -293,7 +281,6 @@ export default function InputKodeMember<TFieldValues extends FieldValues>({
             <InputKodeMemberModal
               show={showModal}
               onClose={closeModal}
-              branch={branch}
               title={modalTitle}
               onSelect={handleMemberSelect}
             />

@@ -1,128 +1,83 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { getPool, BranchType } from "@/lib/db";
-import { DaftarProdukRows } from "@/configs/input/daftar-produkConfig";
+// src/pages/api/daftar-produk.ts
+import { z } from "zod";
+import { createPaginatedGetHandler } from "@/lib/handlerFactory";
+import type { QueryParam } from "@/types/queryParams";
 
-type ApiResponse<T> = {
-  success: boolean;
-  data?: T;
-  total?: number;
-  message?: string;
-  error?: string;
-};
+// ============================================================
+// Schema
+// ============================================================
+const DaftarProdukSchema = z.object({
+  search: z.string().trim().optional().default(""),
+});
 
-export default async function daftarProdukHandler(
-  req: NextApiRequest,
-  res: NextApiResponse<ApiResponse<DaftarProdukRows[]>>,
-) {
-  if (req.method !== "GET") {
-    return res.status(405).json({
-      success: false,
-      message: "Method not allowed",
-    });
-  }
+type DaftarProdukFilters = z.infer<typeof DaftarProdukSchema>;
 
-  try {
-    const branch = (req.query.branch as BranchType) || "IGRCPG";
-    const pool = getPool(branch);
+// ============================================================
+// Filter Builder
+// ============================================================
+function buildFilters(filters: DaftarProdukFilters) {
+  const keywordLike = `%${filters.search}%`;
 
-    // =========================
-    // 🔥 QUERY PARAM
-    // =========================
-    const { page = "1", pageSize = "10", search = "" } = req.query;
+  const conditions = `
+    prd_prdcd LIKE '%0'
+    AND (
+      $1 = ''
+      OR TO_TSVECTOR('simple', prd_deskripsipanjang) @@ PLAINTO_TSQUERY('simple', $1)
+      OR prd_prdcd ILIKE $2
+    )
+  `;
 
-    const limit = Number(pageSize);
-    const offset = (Number(page) - 1) * limit;
+  const params: QueryParam[] = [filters.search, keywordLike];
 
-    const keyword = String(search).trim();
-
-    // =========================
-    // 🔥 DATA QUERY (HYBRID SEARCH)
-    // =========================
-    const query = `
-      SELECT
-        prd_prdcd,
-        prd_deskripsipanjang,
-        prd_frac||' / '||prd_unit AS satuan,
-        COALESCE(st_saldoakhir, 0) AS st_saldoakhir,
-
-        -- 🔥 ranking gabungan
-        (
-          ts_rank_cd(
-            to_tsvector('simple', prd_deskripsipanjang),
-            plainto_tsquery('simple', $1)
-          )
-          +
-          CASE 
-            WHEN prd_prdcd ILIKE $2 THEN 5.0  -- boost kalau match kode
-            ELSE 0
-          END
-        ) AS rank
-
-      FROM tbmaster_prodmast
-      LEFT JOIN tbmaster_stock 
-        ON prd_prdcd = st_prdcd
-        AND st_lokasi = '01'
-
-      WHERE 
-        prd_prdcd LIKE '%0'
-        AND (
-          $1 = '' OR
-          to_tsvector('simple', prd_deskripsipanjang)
-            @@ plainto_tsquery('simple', $1)
-          OR
-          prd_prdcd ILIKE $2
-        )
-
-      ORDER BY 
-        rank DESC,
-        prd_prdcd
-
-      LIMIT $3 OFFSET $4
-    `;
-
-    const result = await pool.query(query, [
-      keyword, // FTS
-      `%${keyword}%`, // LIKE untuk kode
-      limit,
-      offset,
-    ]);
-
-    // =========================
-    // 🔥 COUNT QUERY
-    // =========================
-    const countQuery = `
-      SELECT COUNT(*) AS total
-      FROM tbmaster_prodmast
-      WHERE 
-        prd_prdcd LIKE '%0'
-        AND (
-          $1 = '' OR
-          to_tsvector('simple', prd_deskripsipanjang)
-            @@ plainto_tsquery('simple', $1)
-          OR
-          prd_prdcd ILIKE $2
-        )
-    `;
-
-    const countResult = await pool.query(countQuery, [keyword, `%${keyword}%`]);
-
-    return res.status(200).json({
-      success: true,
-      data: result.rows,
-      total: Number(countResult.rows[0].total),
-    });
-  } catch (error) {
-    console.error("[ERROR] /api/daftar-produk:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error:
-        process.env.NODE_ENV === "development"
-          ? error instanceof Error
-            ? error.message
-            : String(error)
-          : undefined,
-    });
-  }
+  return { conditions, params };
 }
+
+// ============================================================
+// Query Builder
+// ============================================================
+function buildQuery(conditions: string) {
+  return `
+    SELECT
+      prd_prdcd,
+      prd_deskripsipanjang,
+      prd_frac||' / '||prd_unit AS satuan,
+      COALESCE(st_saldoakhir, 0) AS st_saldoakhir,
+
+      -- ranking gabungan
+      (
+        TS_RANK_CD(
+          TO_TSVECTOR('simple', prd_deskripsipanjang),
+          PLAINTO_TSQUERY('simple', $1)
+        )
+        +
+        CASE
+          WHEN prd_prdcd ILIKE $2 THEN 5.0  -- boost kalau match kode
+          ELSE 0
+        END
+      ) AS rank
+
+    FROM tbmaster_prodmast
+    LEFT JOIN tbmaster_stock
+      ON prd_prdcd = st_prdcd
+      AND st_lokasi = '01'
+
+    WHERE ${conditions}
+
+    ORDER BY
+      rank DESC,
+      prd_prdcd
+  `;
+}
+
+// ============================================================
+// Handler
+// ============================================================
+export default createPaginatedGetHandler<DaftarProdukFilters>({
+  schema: DaftarProdukSchema,
+  buildFilters,
+  buildQuery,
+  successMessage: "Data daftar produk berhasil diambil.",
+  emptyMessage: (branch) => `Tidak ada data produk untuk branch '${branch}'.`,
+  errorContext: "Daftar Produk",
+  return404IfEmpty: false, // search kosong tetap return 200, bukan 404
+});

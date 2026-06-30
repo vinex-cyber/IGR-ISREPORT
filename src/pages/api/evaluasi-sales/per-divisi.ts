@@ -1,5 +1,5 @@
 // /src/pages/api/evaluasi-sales/per-divisi.ts
-import { createSimpleGetHandler } from "@/lib/handleFactory";
+import { createSimpleGetHandler } from "@/lib/handlerFactory";
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk";
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk";
 import { DetailStruk } from "@/utils/query/detailStruk";

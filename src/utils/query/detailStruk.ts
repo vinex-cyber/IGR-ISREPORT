@@ -77,7 +77,7 @@ select
   sup_namasupplier as dtl_namasupplier,
   dtl_tglmulai,
   dtl_tglakhir,
-  dtl_method,
+  coalesce(dtl_method,'CASH') as dtl_method,
   vir_amount as dtl_amount,
   vir_type as dtl_virtype,
   key_vir
@@ -308,7 +308,7 @@ and m.hgb_recordid is null)gb on dtl_prdcd_ctn=hgb_prdcd
     left join (SELECT DISTINCT
     to_char(vir_transactiondate, 'yyyymmdd') || vir_create_by || vir_transactionno || vir_transactiontype AS key_vir,
     string_agg(vir_type||' - '||vir_amount,' + ') as vir_type,
-    coalesce(vir_method,'-') as dtl_method,
+    coalesce(vir_method,'CASH') as dtl_method,
     coalesce(sum(VIR_AMOUNT),0) as vir_amount
     FROM
         TBTR_VIRTUAL

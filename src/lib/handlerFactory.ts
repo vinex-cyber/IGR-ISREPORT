@@ -8,12 +8,13 @@ import { buildPaginationQuery } from "@/utils/pagination/buildPaginationQuery";
 import { getPaginationParams } from "@/utils/pagination/getPaginationParams";
 import type { ApiResponse } from "@/types/api";
 import type { QueryParam } from "@/types/queryParams";
+import { getRequestBranch } from "@/utils/getRequestBranch";
 
 // ============================================================
 // Shared Base Config
 // ============================================================
-interface BaseConfig<TFilters extends { branch: string }> {
-  schema: z.ZodType<TFilters>;
+interface BaseConfig<TFilters> {
+  schema: z.ZodType<TFilters, z.ZodTypeDef, unknown>; // ← unknown, bukan any
   buildFilters: (filters: TFilters) => {
     conditions: string;
     params: QueryParam[];
@@ -25,15 +26,13 @@ interface BaseConfig<TFilters extends { branch: string }> {
 // ============================================================
 // 1. Handler DENGAN Pagination
 // ============================================================
-interface PaginatedConfig<
-  TFilters extends { branch: string },
-> extends BaseConfig<TFilters> {
+interface PaginatedConfig<TFilters> extends BaseConfig<TFilters> {
   successMessage: string | ((branch: string) => string);
   emptyMessage: string | ((branch: string) => string);
   return404IfEmpty?: boolean;
 }
 
-export function createPaginatedGetHandler<TFilters extends { branch: string }>(
+export function createPaginatedGetHandler<TFilters>(
   config: PaginatedConfig<TFilters>,
 ) {
   return async function handler(
@@ -52,7 +51,7 @@ export function createPaginatedGetHandler<TFilters extends { branch: string }>(
     }
 
     const filters = parsed.data;
-    const branch = filters.branch;
+    const branch = getRequestBranch(req);
 
     try {
       const pool = getPool(branch);
@@ -110,15 +109,13 @@ export function createPaginatedGetHandler<TFilters extends { branch: string }>(
 // ============================================================
 // 2. Handler TANPA Pagination (Simple / Ambil Semua Data)
 // ============================================================
-interface SimpleConfig<
-  TFilters extends { branch: string },
-> extends BaseConfig<TFilters> {
+interface SimpleConfig<TFilters> extends BaseConfig<TFilters> {
   successMessage: string | ((branch: string) => string);
   emptyMessage: string | ((branch: string) => string);
   return404IfEmpty?: boolean;
 }
 
-export function createSimpleGetHandler<TFilters extends { branch: string }>(
+export function createSimpleGetHandler<TFilters>(
   config: SimpleConfig<TFilters>,
 ) {
   return async function handler(
@@ -137,7 +134,7 @@ export function createSimpleGetHandler<TFilters extends { branch: string }>(
     }
 
     const filters = parsed.data;
-    const branch = filters.branch;
+    const branch = getRequestBranch(req);
 
     try {
       const pool = getPool(branch);

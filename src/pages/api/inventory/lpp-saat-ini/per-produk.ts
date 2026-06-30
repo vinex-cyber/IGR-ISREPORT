@@ -1,5 +1,5 @@
 // /src/pages/api/inventory/lpp-saat-ini/per-produk.ts
-import { createPaginatedGetHandler } from "@/lib/handleFactory"; // Sesuaikan path
+import { createPaginatedGetHandler } from "@/lib/handlerFactory"; // Sesuaikan path
 import { FilterLppSaatIniSchema } from "@/schema/filterLppSaatIni";
 import { buildFilterLppSaatIni } from "@/utils/filters/FilterLppSaatIni";
 import { QueryLppSaatIni } from "@/utils/query/queryLppSaatIni";

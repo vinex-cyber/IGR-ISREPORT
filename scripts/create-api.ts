@@ -1,6 +1,7 @@
 // scripts/create-api.ts
 import fs from "fs";
 import path from "path";
+import readline from "readline";
 
 const apiName = process.argv[2];
 
@@ -12,8 +13,12 @@ const isValidKebabCase = (str: string): boolean => {
 };
 
 if (!apiName) {
-  console.error("❌ Masukkan nama API endpoint (contoh: users atau laporan/harian/penjualan)");
-  console.error("   ⚠️  WAJIB kebab-case: huruf kecil, angka, dan dash (-) saja");
+  console.error(
+    "❌ Masukkan nama API endpoint (contoh: users atau laporan/harian/penjualan)",
+  );
+  console.error(
+    "   ⚠️  WAJIB kebab-case: huruf kecil, angka, dan dash (-) saja",
+  );
   console.error("   Format: npm run create:api <path/nama-endpoint>");
   process.exit(1);
 }
@@ -22,7 +27,6 @@ if (!apiName) {
 // 🔧 HELPERS: Konversi ke format TypeScript
 // ─────────────────────────────────────────────
 
-// Kebab-case → PascalCase (untuk Type): "penjualan-aktif" → "PenjualanAktif"
 const toPascalCase = (str: string): string => {
   return str
     .split("-")
@@ -31,7 +35,6 @@ const toPascalCase = (str: string): string => {
     .join("");
 };
 
-// Kebab-case → camelCase (untuk Variable): "penjualan-aktif" → "penjualanAktif"
 const toCamelCase = (str: string): string => {
   const pascal = toPascalCase(str);
   return pascal.charAt(0).toLowerCase() + pascal.slice(1);
@@ -41,144 +44,278 @@ const toCamelCase = (str: string): string => {
 // 🧩 PROSES INPUT
 // ─────────────────────────────────────────────
 const parts = apiName.split("/");
-const rawFileName = parts.pop()!; // "penjualan-aktif"
-const folders = parts;            // ["laporan", "harian"]
+const rawFileName = parts.pop()!;
+const folders = parts;
 
-// 🔐 Validasi nama file HARUS kebab-case
 if (!isValidKebabCase(rawFileName)) {
   console.error(`❌ Nama API tidak valid: "${rawFileName}"`);
   console.error("   ✅ Gunakan kebab-case: huruf kecil, angka, dash (-)");
-  console.error("   📌 Contoh valid:");
-  console.error("      - users");
-  console.error("      - laporan-penjualan");
-  console.error("      - auth/login");
-  console.error("   🚫 Contoh invalid:");
-  console.error("      - Users (PascalCase)");
-  console.error("      - laporan_penjualan (snake_case)");
-  console.error("      - loginUsers (camelCase)");
   process.exit(1);
 }
 
-// 🔐 Validasi folder (jika ada) juga harus kebab-case
 for (const folder of folders) {
   if (folder && !isValidKebabCase(folder)) {
     console.error(`❌ Nama folder tidak valid: "${folder}"`);
-    console.error("   ✅ Folder juga harus kebab-case (huruf kecil + dash)");
     process.exit(1);
   }
 }
 
-// ─────────────────────────────────────────────
-// 📁 BUILD PATH (Next.js Pages Router API)
-// ─────────────────────────────────────────────
 const baseDir = path.join(process.cwd(), "src", "pages", "api", ...folders);
 const filePath = path.join(baseDir, `${rawFileName}.ts`);
 
-// 🔐 Cek jika file sudah ada
 if (fs.existsSync(filePath)) {
   console.error(`❌ API route sudah ada: ${filePath}`);
   process.exit(1);
 }
 
-// ─────────────────────────────────────────────
-// 🏷️ NAMING UNTUK TYPESCRIPT
-// ─────────────────────────────────────────────
-const typeName = toPascalCase(rawFileName);        // PenjualanAktif
-const handlerName = toCamelCase(rawFileName);      // penjualanAktif
-const routePath = `/api/${apiName}`;               // /api/laporan/harian/penjualan-aktif
+const typeName = toPascalCase(rawFileName);
+const handlerName = toCamelCase(rawFileName);
+const routePath = `/api/${apiName}`;
 
 // ─────────────────────────────────────────────
-// 📝 TEMPLATE (Next.js API Route Handler)
+// 🎯 PROMPT: Pilih jenis handler
 // ─────────────────────────────────────────────
-const template = `import { NextApiRequest, NextApiResponse } from "next";
-import pool from "@/lib/db";
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+function askHandlerType(): Promise<"paginated" | "simple" | "manual"> {
+  return new Promise((resolve) => {
+    console.log("\n📦 Pilih jenis handler:");
+    console.log(
+      "   1. Paginated  - List data dengan pagination + search (createPaginatedGetHandler)",
+    );
+    console.log(
+      "   2. Simple     - Ambil semua data tanpa pagination (createSimpleGetHandler)",
+    );
+    console.log("   3. Manual     - Handler kosong, tulis sendiri\n");
+
+    rl.question("Pilihan (1/2/3) [default: 1]: ", (answer) => {
+      const choice = answer.trim() || "1";
+
+      if (choice === "2") resolve("simple");
+      else if (choice === "3") resolve("manual");
+      else resolve("paginated");
+    });
+  });
+}
+
+// ─────────────────────────────────────────────
+// 📝 TEMPLATE: Paginated Handler
+// ─────────────────────────────────────────────
+const paginatedTemplate = `import { z } from "zod";
+import { createPaginatedGetHandler } from "@/lib/handlerFactory";
+import type { QueryParam } from "@/types/queryParams";
 
 /**
  * =========================================
  * 🔌 API ROUTE: ${typeName}
  * =========================================
- * 
+ *
  * 📍 Endpoint: ${routePath}
  * 📄 File: src/pages/api/${apiName}.ts
- * 🧩 Handler: ${handlerName}Handler
- * 
- * 📌 Supported Methods:
- * - GET → Fetch data
+ *
+ * 📌 Jenis: Paginated (list + search + pagination)
  */
 
-// 🔥 Response Generic Type
-type ApiResponse<T> = {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: string;
-};
+// ============================================================
+// Schema
+// ============================================================
+const ${typeName}Schema = z.object({
+  search: z.string().trim().optional().default(""),
+  // TODO: tambah field filter lain sesuai kebutuhan
+  // div: z.string().trim().optional(),
+});
 
-// 🔥 Data Type (ubah sesuai kebutuhan)
-type ${typeName} = {
-  // contoh:
-  id?: string;
-};
+type ${typeName}Filters = z.infer<typeof ${typeName}Schema>;
+
+// ============================================================
+// Filter Builder
+// ============================================================
+function buildFilters(filters: ${typeName}Filters) {
+  const keywordLike = \`%\${filters.search}%\`;
+
+  const conditions = \`
+    -- TODO: ganti dengan kondisi WHERE sesuai tabel
+    1 = 1
+    AND (
+      $1 = ''
+      OR your_column ILIKE $1
+    )
+  \`;
+
+  const params: QueryParam[] = [keywordLike];
+
+  return { conditions, params };
+}
+
+// ============================================================
+// Query Builder
+// ============================================================
+function buildQuery(conditions: string) {
+  return \`
+    SELECT
+      *
+    FROM your_table
+    WHERE \${conditions}
+    ORDER BY 1
+  \`;
+}
+
+// ============================================================
+// Handler
+// ============================================================
+export default createPaginatedGetHandler<${typeName}Filters>({
+  schema: ${typeName}Schema,
+  buildFilters,
+  buildQuery,
+  successMessage: "Data ${rawFileName.replace(/-/g, " ")} berhasil diambil.",
+  emptyMessage: (branch) => \`Tidak ada data untuk branch '\${branch}'.\`,
+  errorContext: "${typeName}",
+  return404IfEmpty: false,
+});
+`;
+
+// ─────────────────────────────────────────────
+// 📝 TEMPLATE: Simple Handler
+// ─────────────────────────────────────────────
+const simpleTemplate = `import { z } from "zod";
+import { createSimpleGetHandler } from "@/lib/handlerFactory";
 
 /**
- * Main handler untuk ${routePath}
+ * =========================================
+ * 🔌 API ROUTE: ${typeName}
+ * =========================================
+ *
+ * 📍 Endpoint: ${routePath}
+ * 📄 File: src/pages/api/${apiName}.ts
+ *
+ * 📌 Jenis: Simple (ambil semua data tanpa pagination)
  */
-export default async function ${handlerName}Handler(
+
+// ============================================================
+// Schema (kosongkan jika tidak ada filter)
+// ============================================================
+const ${typeName}Schema = z.object({
+  // TODO: tambah field filter sesuai kebutuhan
+});
+
+// ============================================================
+// Query
+// ============================================================
+const buildQuery = () => \`
+  SELECT
+    *
+  FROM your_table
+  ORDER BY 1
+\`;
+
+// ============================================================
+// Handler
+// ============================================================
+export default createSimpleGetHandler({
+  schema: ${typeName}Schema,
+  buildFilters: () => ({ conditions: "", params: [] }),
+  buildQuery,
+  successMessage: "Data ${rawFileName.replace(/-/g, " ")} berhasil diambil.",
+  emptyMessage: (branch) => \`Tidak ada data untuk branch '\${branch}'.\`,
+  errorContext: "${typeName}",
+});
+`;
+
+// ─────────────────────────────────────────────
+// 📝 TEMPLATE: Manual Handler
+// ─────────────────────────────────────────────
+const manualTemplate = `import { NextApiRequest, NextApiResponse } from "next";
+import { getPool } from "@/lib/db";
+import { checkMethod, handleServerError } from "@/lib/apiHandler";
+import { getRequestBranch } from "@/utils/getRequestBranch";
+
+import type { ApiResponse } from "@/types/api";
+
+/**
+ * =========================================
+ * 🔌 API ROUTE: ${typeName}
+ * =========================================
+ *
+ * 📍 Endpoint: ${routePath}
+ * 📄 File: src/pages/api/${apiName}.ts
+ *
+ * 📌 Jenis: Manual (handler kosong)
+ */
+
+// ============================================================
+// Query Builder
+// ============================================================
+const buildQuery = () => \`
+  SELECT *
+  FROM your_table
+  LIMIT 10
+\`;
+
+// ============================================================
+// Handler
+// ============================================================
+export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ApiResponse<${typeName}[]>>
+  res: NextApiResponse<ApiResponse<unknown>>,
 ) {
-  // 🔥 hanya GET
-  if (req.method !== "GET") {
-    return res.status(405).json({
-      success: false,
-      message: "Method not allowed",
-    });
-  }
+  if (!checkMethod(req, res, "GET")) return;
+
+  const branch = getRequestBranch(req);
 
   try {
-    // 🔥 TODO: Ganti query sesuai kebutuhan
-    const query = \`
-      SELECT *
-      FROM your_table
-      LIMIT 10
-    \`;
-
-    const result = await pool.query(query);
+    const pool = getPool(branch);
+    const { rows } = await pool.query(buildQuery());
 
     return res.status(200).json({
       success: true,
-      data: result.rows,
+      message: "Data ${rawFileName.replace(/-/g, " ")} berhasil diambil.",
+      total: rows.length,
+      data: rows,
     });
   } catch (error) {
-    console.error("[ERROR] ${routePath}:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error:
-        process.env.NODE_ENV === "development"
-          ? error instanceof Error
-            ? error.message
-            : String(error)
-          : undefined,
-    });
+    return handleServerError(res, error, branch, "${typeName}");
   }
 }
 `;
 
 // ─────────────────────────────────────────────
-// 🚀 EKSEKUSI: Buat folder + tulis file
+// 🚀 EKSEKUSI
 // ─────────────────────────────────────────────
-fs.mkdirSync(baseDir, { recursive: true });
-fs.writeFileSync(filePath, template);
+async function main() {
+  const handlerType = await askHandlerType();
+  rl.close();
 
-console.log(`✅ API route berhasil dibuat:`);
-console.log(`   📄 File        : ${filePath}`);
-console.log(`   🔌 Endpoint    : ${routePath}`);
-console.log(`   🧩 Handler     : ${handlerName}Handler`);
-console.log(`   🏷️  Type       : ${typeName}RequestBody / ${typeName}Response`);
-console.log(`   🗂️  Folder      : ${folders.length > 0 ? folders.join("/") : "(root api)"}`);
-console.log(``);
-console.log(`💡 Cara test:`);
-console.log(`   curl http://localhost:5000${routePath}`);
-console.log(`   curl -X POST http://localhost:5000${routePath} -H "Content-Type: application/json" -d '{"name":"test"}'`);
+  let template: string;
+  let typeLabel: string;
+
+  if (handlerType === "paginated") {
+    template = paginatedTemplate;
+    typeLabel = "Paginated (search + pagination)";
+  } else if (handlerType === "simple") {
+    template = simpleTemplate;
+    typeLabel = "Simple (tanpa pagination)";
+  } else {
+    template = manualTemplate;
+    typeLabel = "Manual";
+  }
+
+  fs.mkdirSync(baseDir, { recursive: true });
+  fs.writeFileSync(filePath, template);
+
+  console.log(`\n✅ API route berhasil dibuat:`);
+  console.log(`   📄 File        : ${filePath}`);
+  console.log(`   🔌 Endpoint    : ${routePath}`);
+  console.log(`   🧩 Handler     : ${handlerName}Handler`);
+  console.log(`   📦 Jenis       : ${typeLabel}`);
+  console.log(
+    `   🗂️  Folder      : ${folders.length > 0 ? folders.join("/") : "(root api)"}`,
+  );
+  console.log(``);
+  console.log(`💡 Cara test:`);
+  console.log(`   curl http://localhost:3001${routePath}`);
+}
+
+main();

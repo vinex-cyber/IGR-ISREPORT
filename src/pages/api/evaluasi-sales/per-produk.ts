@@ -1,5 +1,5 @@
 // /src/pages/api/evaluasi-sales/per-produk.ts
-import { createPaginatedGetHandler } from "@/lib/handleFactory"; // Sesuaikan path
+import { createPaginatedGetHandler } from "@/lib/handlerFactory"; // Sesuaikan path
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk";
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk";
 import { DetailStruk } from "@/utils/query/detailStruk";

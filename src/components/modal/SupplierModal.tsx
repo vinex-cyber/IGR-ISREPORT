@@ -15,17 +15,6 @@ export interface SupplierModalProps {
   onClose: () => void;
 
   /**
-   * Branch aktif.
-   *
-   * Contoh:
-   * - IGRCPG
-   * - ICMCPG
-   * - SPICPG1I
-   * - SPICPG4L
-   */
-  branch: string;
-
-  /**
    * Mengirim supplier yang dipilih
    * kepada komponen pemanggil.
    */
@@ -38,17 +27,11 @@ export interface SupplierModalProps {
 export default function SupplierModal({
   show,
   onClose,
-  branch,
   onSelect,
   title = "Pilih Supplier",
   endpoint = "/api/daftar-supplier",
 }: SupplierModalProps) {
-  const normalizedBranch = branch.trim();
-
-  const resolvedEndpoint =
-    normalizedBranch !== ""
-      ? `${endpoint}?branch=${encodeURIComponent(normalizedBranch)}`
-      : endpoint;
+  const resolvedEndpoint = `${endpoint}`;
 
   const filterFn = (item: SupplierRows, keyword: string): boolean => {
     const normalizedKeyword = keyword.trim().toLowerCase();

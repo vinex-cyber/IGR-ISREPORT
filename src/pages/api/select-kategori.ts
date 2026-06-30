@@ -1,53 +1,16 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { getPool, BranchType } from "@/lib/db";
+// src/pages/api/select-kategori.ts
+import { z } from "zod";
+import { createSimpleGetHandler } from "@/lib/handlerFactory";
 
-/**
- * =========================================
- * 🔌 API ROUTE: SelectKategori
- * =========================================
- *
- * 📍 Endpoint: /api/select-kategori
- * 📄 File: src/pages/api/select-kategori.ts
- * 🧩 Handler: selectKategoriHandler
- *
- * 📌 Supported Methods:
- * - GET → Fetch data
- */
+//===============================================================
+// Schema
+//===============================================================
+const SelectKategoriSchema = z.object({});
 
-// 🔥 Response Generic Type
-type ApiResponse<T> = {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: string;
-};
-
-// 🔥 Data Type (ubah sesuai kebutuhan)
-type SelectKategori = {
-  dep_kodedepartement: string;
-  dep_namadepartement: string;
-  kat_kodekategori: string;
-  kat_namakategori: string;
-};
-
-/**
- * Main handler untuk /api/select-kategori
- */
-export default async function selectKategoriHandler(
-  req: NextApiRequest,
-  res: NextApiResponse<ApiResponse<SelectKategori[]>>,
-) {
-  // 🔥 hanya GET
-  if (req.method !== "GET") {
-    return res.status(405).json({
-      success: false,
-      message: "Method not allowed",
-    });
-  }
-
-  try {
-    // 🔥 TODO: Ganti query sesuai kebutuhan
-    const query = `
+//===============================================================
+// Query
+//===============================================================
+const buildQuery = () => `
       select
         div_kodedivisi,
         div_namadivisi,
@@ -63,26 +26,11 @@ export default async function selectKategoriHandler(
       order by div_kodedivisi, dep_kodedepartement, kat_kodekategori;
     `;
 
-    const branch = (req.query.branch as BranchType) || "IGRCPG";
-    const pool = getPool(branch);
-    const result = await pool.query(query);
-
-    return res.status(200).json({
-      success: true,
-      data: result.rows,
-    });
-  } catch (error) {
-    console.error("[ERROR] /api/select-kategori:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error:
-        process.env.NODE_ENV === "development"
-          ? error instanceof Error
-            ? error.message
-            : String(error)
-          : undefined,
-    });
-  }
-}
+export default createSimpleGetHandler({
+  schema: SelectKategoriSchema,
+  buildQuery,
+  buildFilters: () => ({ conditions: "", params: [] }),
+  successMessage: "Data divisi berhasil diambil.",
+  emptyMessage: (branch) => `Tidak ada data Kategori untuk branch '${branch}'.`,
+  errorContext: "Daftar Kategori",
+});

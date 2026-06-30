@@ -1,6 +1,5 @@
 // File: src/type/filterdetailstruk.ts
 import { z } from "zod";
-import { isDatabaseBranch } from "@/configs/database-options";
 
 // Skema validasi filter menggunakan Zod
 export const FilterDetailStrukSchema = z.object({
@@ -49,13 +48,6 @@ export const FilterDetailStrukSchema = z.object({
   monitoringSupplier: z.string().optional(),
   strukSupplier: z.string().optional(),
   selectedReport: z.string().optional(),
-  branch: z
-    .string()
-    .trim()
-    .min(1, "Branch wajib dipilih")
-    .refine(isDatabaseBranch, {
-      message: "Branch tidak valid",
-    }),
 });
 
 export type FilterDetailStrukInput = z.infer<typeof FilterDetailStrukSchema>;

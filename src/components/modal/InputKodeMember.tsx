@@ -20,17 +20,6 @@ export interface InputKodeMemberModalProps {
   onClose: () => void;
 
   /**
-   * Branch database aktif.
-   *
-   * Contoh:
-   * - IGRCPG
-   * - ICMCPG
-   * - SPICPG1I
-   * - SPICPG4L
-   */
-  branch: string;
-
-  /**
    * Mengirim data member yang dipilih
    * kepada komponen pemanggil.
    */
@@ -43,17 +32,11 @@ export interface InputKodeMemberModalProps {
 export default function InputKodeMemberModal({
   show,
   onClose,
-  branch,
   onSelect,
   title = "Pilih Member",
   endpoint = "/api/daftar-member",
 }: InputKodeMemberModalProps) {
-  const normalizedBranch = branch.trim();
-
-  const resolvedEndpoint =
-    normalizedBranch !== ""
-      ? `${endpoint}?branch=${encodeURIComponent(normalizedBranch)}`
-      : endpoint;
+  const resolvedEndpoint = endpoint;
 
   const handleSelect = (row: DaftarMemberRows) => {
     const selection: MemberSelection = {
