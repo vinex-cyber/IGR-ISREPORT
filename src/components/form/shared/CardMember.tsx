@@ -158,13 +158,6 @@ export interface CardMemberProps<TFieldValues extends FieldValues> {
   control: Control<TFieldValues>;
 
   /**
-   * Branch database aktif.
-   *
-   * Digunakan oleh modal pencarian member.
-   */
-  branch: string;
-
-  /**
    * Konfigurasi field yang akan ditampilkan.
    */
   fields: CardMemberFields<TFieldValues>;
@@ -192,7 +185,6 @@ export interface CardMemberProps<TFieldValues extends FieldValues> {
 interface MemberCodeInputProps<TFieldValues extends FieldValues> {
   control: Control<TFieldValues>;
   name: StringOrArrayFieldName<TFieldValues>;
-  branch: string;
   placeholder?: string;
   disabled?: boolean;
   multiple?: boolean;
@@ -237,7 +229,6 @@ function removeDuplicateMemberCodes(values: string[]): string[] {
 function MemberCodeInput<TFieldValues extends FieldValues>({
   control,
   name,
-  branch,
   placeholder = "Kode Member",
   disabled = false,
   multiple = false,
@@ -349,7 +340,6 @@ function MemberCodeInput<TFieldValues extends FieldValues>({
             <InputKodeMemberModal
               show={memberModalOpen}
               onClose={closeMemberModal}
-              branch={branch}
               onSelect={handleMemberSelect}
             />
           </>
@@ -361,7 +351,6 @@ function MemberCodeInput<TFieldValues extends FieldValues>({
 
 export default function CardMember<TFieldValues extends FieldValues>({
   control,
-  branch,
   fields,
   title = "Member",
   className,
@@ -389,7 +378,6 @@ export default function CardMember<TFieldValues extends FieldValues>({
           <MemberCodeInput<TFieldValues>
             control={control}
             name={fields.noMember.name}
-            branch={branch}
             placeholder={fields.noMember.placeholder ?? "Kode Member"}
             disabled={fields.noMember.disabled}
             multiple={fields.noMember.multiple ?? false}
