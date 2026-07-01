@@ -46,14 +46,6 @@ export interface InputKodeCashbackProps<TFieldValues extends FieldValues> {
   name: CashbackFieldName<TFieldValues>;
 
   /**
-   * Field yang menyimpan branch.
-   *
-   * @example
-   * branchName="branch"
-   */
-  branchName: StringFieldName<TFieldValues>;
-
-  /**
    * Field tanggal awal.
    *
    * Tanggal awal cashback yang dipilih
@@ -284,7 +276,6 @@ function getCashbackDisplayValue(value: unknown, separator: string): string {
 
 export default function InputKodeCashback<TFieldValues extends FieldValues>({
   name,
-  branchName,
   startDateName,
   endDateName,
   placeholder = "Kode Cashback",
@@ -301,12 +292,7 @@ export default function InputKodeCashback<TFieldValues extends FieldValues>({
 }: InputKodeCashbackProps<TFieldValues>) {
   const [showModal, setShowModal] = useState(false);
 
-  const { control, watch, getValues, setValue } =
-    useFormContext<TFieldValues>();
-
-  const rawBranchValue = watch(branchName);
-
-  const branch = typeof rawBranchValue === "string" ? rawBranchValue : "";
+  const { control, getValues, setValue } = useFormContext<TFieldValues>();
 
   const handleOpenModal = () => {
     if (disabled) {
@@ -455,7 +441,6 @@ export default function InputKodeCashback<TFieldValues extends FieldValues>({
 
       <InputCashbackModal
         show={showModal}
-        branch={branch}
         onClose={handleCloseModal}
         onSelect={handleSelect}
       />

@@ -1,32 +1,11 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { getPool } from "@/lib/db";
+// /src/pages/api/evaluasi-sales/per-kategori.ts
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk"; // pastikan import benar
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk"; // pastikan import benar
 import { DetailStruk } from "@/utils/query/detailStruk";
+import { QueryParam } from "@/types/queryParams";
+import { createSimpleGetHandler } from "@/lib/handlerFactory";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
-  try {
-    // Ambil semua query string dan validasi pakai Zod
-    const result = FilterDetailStrukSchema.safeParse(req.query);
-
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid query parameters",
-        errors: result.error.flatten(),
-      });
-    }
-
-    const filters = result.data;
-    //branch
-    const branch = filters.branch || "IGRCPG";
-    const pool = getPool(branch);
-    const { conditions, params } = FilterDetailStruk(filters);
-
-    const query = `
+const buildQuery = (conditions: string, params: QueryParam[]) => `
         SELECT
             dtl_k_div as div,
             dtl_k_dept as dept,
@@ -45,19 +24,14 @@ export default async function handler(
         HAVING count(dtl_netto) > 0
         ORDER BY dtl_k_div, dtl_k_dept, dtl_k_katb
         `;
-
-    const resultQuery = await pool.query(query, params);
-
-    return res.status(200).json({
-      success: true,
-      data: resultQuery.rows,
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-}
+export default createSimpleGetHandler({
+  schema: FilterDetailStrukSchema,
+  buildFilters: FilterDetailStruk,
+  buildQuery,
+  successMessage: (branch) =>
+    `Data evaluasi sales Per Kategori branch '${branch}' berhasil diambil.`,
+  errorContext: "Evaluasi Sales Per Kategori",
+  emptyMessage: (branch) =>
+    `Tidak ada data evaluasi sales Per Kategori untuk branch '${branch}'.`,
+  return404IfEmpty: true,
+});

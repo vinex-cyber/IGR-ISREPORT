@@ -2,11 +2,9 @@
 
 import Layout from "@/components/Layout";
 import ReportHeader from "@/components/ReportHeader";
-import SearchInput from "@/components/SearchInput";
 import { ReportTable } from "@/components/table/ReportTable";
 import { useReportPage } from "@/hooks/useReportPage";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import ProdukModal from "@/components/modal/evaluasi-sales/ProdukModal";
 import LoadingIgr from "@/components/LoadingIgr";
 import RowDropdownMenu from "@/components/RowDropdownMenu";
@@ -35,9 +33,18 @@ const PerMemberPage = () => {
     handleExport,
     isRefreshing,
     handleRefresh,
+    // page,
+    // setPage,
+    // limit,
+    // setLimit,
+    // total,
+    // totalPages,
+    isExporting,
   } = useReportPage<MemberRows>({
     basePath: "evaluasi-sales",
     reportType: "per-member",
+    // paginated: true, // ← aktifkan pagination
+    // defaultLimit: 100, // ← default 100 data per halaman
     ...config,
   });
 
@@ -48,7 +55,6 @@ const PerMemberPage = () => {
     setSelectedRow(row);
     setShowProdukModal(true);
   };
-  const handleReset = () => setSearchTerm("");
 
   return (
     <Layout title={title} branch={query.branch}>
@@ -63,22 +69,8 @@ const PerMemberPage = () => {
               onExport={handleExport}
               onRefresh={handleRefresh}
               isRefreshing={isRefreshing}
+              isExporting={isExporting}
             />
-
-            <div className="flex space-x-2 justify-end">
-              <Button
-                variant="outline"
-                onClick={handleReset}
-                className="text-sm h-8 bg-red-400 hover:bg-red-500 text-white">
-                Reset
-              </Button>
-
-              <SearchInput
-                value={searchTerm}
-                onChange={setSearchTerm}
-                placeholder="Cari..."
-              />
-            </div>
 
             {error && <p className="text-red-500">{error}</p>}
 
@@ -94,6 +86,20 @@ const PerMemberPage = () => {
                 textBody="xs"
                 isRefreshing={isRefreshing}
                 headerGroups={config.headerGroups}
+                // search
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                onSearchReset={() => setSearchTerm("")}
+                // pagination
+                // page={page}
+                // limit={limit}
+                // total={total}
+                // totalPages={totalPages}
+                // onPageChange={setPage}
+                // onLimitChange={(val) => {
+                //   setLimit(val);
+                //   setPage(1);
+                // }}
                 renderActions={(row) => (
                   <RowDropdownMenu
                     label={

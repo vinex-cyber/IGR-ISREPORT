@@ -1,5 +1,5 @@
 // /src/pages/api/evaluasi-sales/per-produk.ts
-import { createPaginatedGetHandler } from "@/lib/handlerFactory"; // Sesuaikan path
+import { createSimpleGetHandler } from "@/lib/handlerFactory"; // Sesuaikan path
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk";
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk";
 import { DetailStruk } from "@/utils/query/detailStruk";
@@ -30,7 +30,7 @@ const buildQuery = (conditions: string, params: QueryParam[]) => `
     ORDER BY total_margin DESC
 `;
 
-export default createPaginatedGetHandler({
+export default createSimpleGetHandler({
   schema: FilterDetailStrukSchema,
   buildFilters: FilterDetailStruk,
   buildQuery,
@@ -40,3 +40,14 @@ export default createPaginatedGetHandler({
   emptyMessage: (branch) =>
     `Tidak ada data evaluasi sales per produk untuk branch '${branch}'.`,
 });
+
+// export default createPaginatedGetHandler({
+//   schema: FilterDetailStrukSchema,
+//   buildFilters: FilterDetailStruk,
+//   buildQuery,
+//   successMessage: (branch) =>
+//     `Data evaluasi sales per produk branch '${branch}' berhasil diambil.`,
+//   errorContext: "Evaluasi Sales Per Produk",
+//   emptyMessage: (branch) =>
+//     `Tidak ada data evaluasi sales per produk untuk branch '${branch}'.`,
+// });

@@ -1,10 +1,8 @@
 import Layout from "@/components/Layout";
 import ReportHeader from "@/components/ReportHeader";
-import SearchInput from "@/components/SearchInput";
 import { ReportTable } from "@/components/table/ReportTable";
 import { useReportPage } from "@/hooks/useReportPage";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import ProdukModal from "@/components/modal/evaluasi-sales/ProdukModal";
 import LoadingIgr from "@/components/LoadingIgr";
 import RowDropdownMenu from "@/components/RowDropdownMenu";
@@ -30,6 +28,7 @@ const PerSupplierPage = () => {
     totalRow,
     handleExport,
     isRefreshing,
+    isExporting,
     handleRefresh,
   } = useReportPage<PerSupplierRows>({
     basePath: "evaluasi-sales",
@@ -79,21 +78,8 @@ const PerSupplierPage = () => {
               onExport={handleExport}
               onRefresh={handleRefresh}
               isRefreshing={isRefreshing}
+              isExporting={isExporting}
             />
-
-            <div className="flex space-x-2 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => setSearchTerm("")}
-                className="text-sm h-8 bg-red-400 dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-black hover:bg-red-500 text-white shadow-2xl hover:cursor-pointer">
-                Reset
-              </Button>
-              <SearchInput
-                value={searchTerm}
-                onChange={setSearchTerm}
-                placeholder="Cari..."
-              />
-            </div>
 
             {error && <p className="text-red-500">{error}</p>}
 
@@ -109,6 +95,9 @@ const PerSupplierPage = () => {
                 textBody="xs"
                 isRefreshing={isRefreshing}
                 headerGroups={config.headerGroups}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                onSearchReset={() => setSearchTerm("")}
                 renderActions={(row) => (
                   <RowDropdownMenu
                     label={

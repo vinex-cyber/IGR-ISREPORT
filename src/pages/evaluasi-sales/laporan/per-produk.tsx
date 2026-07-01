@@ -35,18 +35,18 @@ const PerProdukPage = () => {
     isRefreshing,
     handleRefresh,
     // ── Tambahan pagination ──
-    page,
-    setPage,
-    limit,
-    setLimit,
-    total,
-    totalPages,
+    // page,
+    // setPage,
+    // limit,
+    // setLimit,
+    // total,
+    // totalPages,
     isExporting,
   } = useReportPage<PerProdukRows>({
     basePath: "evaluasi-sales",
     reportType: "per-produk",
-    paginated: true, // ← aktifkan pagination
-    defaultLimit: 100, // ← default 100 data per halaman
+    // paginated: true, // ← aktifkan pagination
+    // defaultLimit: 100, // ← default 100 data per halaman
     ...config,
   });
 
@@ -104,15 +104,15 @@ const PerProdukPage = () => {
                   onSearchChange={setSearchTerm}
                   onSearchReset={() => setSearchTerm("")}
                   // pagination
-                  page={page}
-                  limit={limit}
-                  total={total}
-                  totalPages={totalPages}
-                  onPageChange={setPage}
-                  onLimitChange={(val) => {
-                    setLimit(val);
-                    setPage(1);
-                  }}
+                  // page={page}
+                  // limit={limit}
+                  // total={total}
+                  // totalPages={totalPages}
+                  // onPageChange={setPage}
+                  // onLimitChange={(val) => {
+                  //   setLimit(val);
+                  //   setPage(1);
+                  // }}
                   renderActions={(row) => (
                     <RowDropdownMenu
                       label={

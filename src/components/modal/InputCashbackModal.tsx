@@ -10,21 +10,19 @@ import {
 interface InputCashbackModalProps {
   show: boolean;
   onClose: () => void;
-  branch: string;
   onSelect: (row: DaftarCashbackRows) => void;
 }
 
 export default function InputCashbackModal({
   show,
   onClose,
-  branch,
   onSelect,
 }: InputCashbackModalProps) {
   return (
     <GenericLookupModal<DaftarCashbackRows>
       show={show}
       onClose={onClose}
-      endpoint={`/api/daftar-cashback?branch=${encodeURIComponent(branch)}`}
+      endpoint={`/api/daftar-cashback`}
       columns={daftarCashbackColumns}
       title="Pilih Kode Cashback"
       onSelect={onSelect}

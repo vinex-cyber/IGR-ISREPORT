@@ -31,12 +31,12 @@ const PerProdukPage = () => {
     handleExport,
     isRefreshing,
     handleRefresh,
-    page,
-    setPage,
-    limit,
-    setLimit,
-    total,
-    totalPages,
+    // page,
+    // setPage,
+    // limit,
+    // setLimit,
+    // total,
+    // totalPages,
     isExporting,
   } = useReportPage<PerStrukRows>({
     basePath: "evaluasi-sales",
@@ -114,15 +114,15 @@ const PerProdukPage = () => {
                 onSearchChange={setSearchTerm}
                 onSearchReset={() => setSearchTerm("")}
                 // pagination
-                page={page}
-                limit={limit}
-                total={total}
-                totalPages={totalPages}
-                onPageChange={setPage}
-                onLimitChange={(val) => {
-                  setLimit(val);
-                  setPage(1);
-                }}
+                // page={page}
+                // limit={limit}
+                // total={total}
+                // totalPages={totalPages}
+                // onPageChange={setPage}
+                // onLimitChange={(val) => {
+                //   setLimit(val);
+                //   setPage(1);
+                // }}
                 renderActions={(row) => (
                   <RowDropdownMenu
                     label={

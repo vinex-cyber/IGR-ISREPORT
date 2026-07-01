@@ -60,7 +60,13 @@ export function createPaginatedGetHandler<TFilters>(
       const { conditions, params } = config.buildFilters(filters);
       const baseQuery = config.buildQuery(conditions, params);
 
-      const total = await getTotalData(pool, baseQuery, params);
+      // Ambil total dari query param kalau ada (skip COUNT)
+      const clientTotal = req.query._total ? Number(req.query._total) : null;
+
+      const total =
+        clientTotal && clientTotal > 0
+          ? clientTotal
+          : await getTotalData(pool, baseQuery, params);
 
       const { query, values } = buildPaginationQuery({
         baseQuery,

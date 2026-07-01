@@ -1,9 +1,7 @@
 import Layout from "@/components/Layout";
 import LoadingIgr from "@/components/LoadingIgr";
 import ReportHeader from "@/components/ReportHeader";
-import SearchInput from "@/components/SearchInput";
 import { ReportTable } from "@/components/table/ReportTable";
-import { Button } from "@/components/ui/button";
 import {
   ProdukBaruRows,
   produkBaruColumns,
@@ -23,7 +21,7 @@ const ProdukBaruPage = () => {
       : Array.isArray(branchQuery)
         ? branchQuery[0]
         : "";
-
+  // TODO : Masih ada branch di query
   const reportTitle = branch ? `Produk Baru - ${branch}` : "Produk Baru";
 
   const config = buildReport<ProdukBaruRows>(produkBaruColumns);
@@ -37,6 +35,7 @@ const ProdukBaruPage = () => {
     periode,
     handleExport,
     isRefreshing,
+    isExporting,
     handleRefresh,
   } = useReportPage<ProdukBaruRows>({
     endpoint: "inventory/produk-baru",
@@ -57,21 +56,8 @@ const ProdukBaruPage = () => {
               onExport={handleExport}
               onRefresh={handleRefresh}
               isRefreshing={isRefreshing}
+              isExporting={isExporting}
             />
-
-            <div className="flex space-x-2 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => setSearchTerm("")}
-                className="text-sm h-8 bg-red-400 dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-black hover:bg-red-500 text-white shadow-2xl hover:cursor-pointer">
-                Reset
-              </Button>
-              <SearchInput
-                value={searchTerm}
-                onChange={setSearchTerm}
-                placeholder="Search..."
-              />
-            </div>
 
             {error && <p className="text-red-500">{error}</p>}
 
@@ -82,6 +68,9 @@ const ProdukBaruPage = () => {
                 keyField={(row) => row.plu}
                 showRowNumber
                 isRefreshing={isRefreshing}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                onSearchReset={() => setSearchTerm("")}
               />
             )}
           </>

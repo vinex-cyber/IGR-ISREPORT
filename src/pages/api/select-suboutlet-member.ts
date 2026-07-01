@@ -5,7 +5,13 @@ import { createSimpleGetHandler } from "@/lib/handlerFactory";
 //===============================================================
 // Schema
 //===============================================================
-const SelectSubOutletMemberSchema = z.object({});
+const SelectSubOutletMemberSchema = z.object({
+  kodeOutlet: z.string().optional(),
+});
+
+//===============================================================
+// Filter
+//===============================================================
 
 //===============================================================
 // Query
@@ -20,8 +26,6 @@ const buildQuery = () => `
                 tbmaster_suboutlet
             LEFT JOIN
                 tbmaster_outlet ON sub_kodeoutlet = out_kodeoutlet
-            WHERE
-                ($1::text IS NULL OR sub_kodeoutlet = $1)
         `;
 
 export default createSimpleGetHandler({

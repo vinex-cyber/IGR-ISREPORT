@@ -1,38 +1,11 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { getPool } from "@/lib/db";
+// /src/pages/api/evaluasi-sales/per-bulan.ts
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk"; // pastikan import benar
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk"; // pastikan import benar
 import { DetailStruk } from "@/utils/query/detailStruk";
+import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { QueryParam } from "@/types/queryParams";
 
-export const config = {
-  api: {
-    responseLimit: "10mb",
-  },
-};
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
-  try {
-    // Ambil semua query string dan validasi pakai Zod
-    const result = FilterDetailStrukSchema.safeParse(req.query);
-
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid query parameters",
-        errors: result.error.flatten(),
-      });
-    }
-
-    const filters = result.data;
-
-    // branch
-    const branch = filters.branch || "IGRCPG";
-    const pool = getPool(branch);
-    const { conditions, params } = FilterDetailStruk(filters);
-
-    const query = `
+const buildQuery = (conditions: string, params: QueryParam[]) => `
         SELECT
             to_char(dtl_tanggal, 'MM-yyyy') as bulan,
             to_char(dtl_tanggal, 'Month YYYY') as nama_bulan,
@@ -50,18 +23,14 @@ export default async function handler(
         ORDER BY to_char(dtl_tanggal, 'yyyymm')
         `;
 
-    const resultQuery = await pool.query(query, params);
-
-    return res.status(200).json({
-      success: true,
-      data: resultQuery.rows,
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-}
+export default createSimpleGetHandler({
+  schema: FilterDetailStrukSchema,
+  buildFilters: FilterDetailStruk,
+  buildQuery,
+  emptyMessage: (branch) =>
+    `Tidak ada data evaluasi sales per bulan untuk branch '${branch}'.`,
+  successMessage: (branch) =>
+    `Data evaluasi sales per bulan branch '${branch}' berhasil diambil.`,
+  errorContext: "Evaluasi Sales Per Bulan",
+  return404IfEmpty: true,
+});

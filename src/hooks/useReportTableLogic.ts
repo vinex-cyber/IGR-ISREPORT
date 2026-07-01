@@ -15,6 +15,7 @@ export const useReportTableLogic = <T extends object>(
   totalFields: (keyof T)[],
   allFields: (keyof T)[],
   reportTitle?: string,
+  paginated?: boolean,
 ) => {
   const router = useRouter();
 
@@ -32,12 +33,18 @@ export const useReportTableLogic = <T extends object>(
 
   const periode = formatReportPeriod(startDate, endDate);
 
-  const totalRow = useTotalRow<T>(
-    filteredData,
+  const rawTotalRow = useTotalRow<T>(
+    paginated ? [] : filteredData, // ← kalau paginated, jangan hitung total
     excludeTotalFields,
     totalFields,
     allFields,
   );
+
+  const totalRow = paginated
+    ? undefined // ← tidak tampilkan total kalau paginated
+    : rawTotalRow.length > 0
+      ? rawTotalRow
+      : undefined;
 
   return {
     filteredData,

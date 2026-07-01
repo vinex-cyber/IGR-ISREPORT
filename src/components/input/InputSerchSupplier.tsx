@@ -44,14 +44,6 @@ export interface InputSerchSupplierProps<TFieldValues extends FieldValues> {
   name: SupplierFieldName<TFieldValues>;
 
   /**
-   * Branch database yang sedang aktif.
-   *
-   * @example
-   * branch="IGRCPG"
-   */
-  branch: string;
-
-  /**
    * Placeholder input.
    *
    * @default "Kode Supplier"
@@ -123,7 +115,6 @@ function removeDuplicateValues(values: string[]): string[] {
 export default function InputSerchSupplier<TFieldValues extends FieldValues>({
   control,
   name,
-  branch,
   placeholder = "Kode Supplier",
   multiple = false,
   append = true,
@@ -226,7 +217,6 @@ export default function InputSerchSupplier<TFieldValues extends FieldValues>({
             <SupplierModal
               show={supplierModal}
               onClose={closeSupplierModal}
-              branch={branch}
               onSelect={handleSupplierSelect}
             />
           </>

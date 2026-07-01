@@ -43,13 +43,6 @@ export interface InputNamaSupplierProps<TFieldValues extends FieldValues> {
   name: SupplierNameFieldName<TFieldValues>;
 
   /**
-   * Branch database yang sedang aktif.
-   *
-   * Digunakan untuk mengambil daftar supplier.
-   */
-  branch: string;
-
-  /**
    * Placeholder input.
    *
    * @default "Nama Supplier"
@@ -76,7 +69,6 @@ export interface InputNamaSupplierProps<TFieldValues extends FieldValues> {
 export default function InputNamaSupplier<TFieldValues extends FieldValues>({
   control,
   name,
-  branch,
   placeholder = "Nama Supplier",
   allowManualInput = true,
   disabled = false,
@@ -151,7 +143,6 @@ export default function InputNamaSupplier<TFieldValues extends FieldValues>({
             <SupplierModal
               show={supplierModal}
               onClose={closeSupplierModal}
-              branch={branch}
               onSelect={handleSupplierSelect}
             />
           </>

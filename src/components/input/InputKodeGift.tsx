@@ -49,11 +49,6 @@ export interface InputKodeGiftProps<TFieldValues extends FieldValues> {
   name: GiftFieldName<TFieldValues>;
 
   /**
-   * Field branch/database.
-   */
-  branchName: StringFieldName<TFieldValues>;
-
-  /**
    * Field tanggal awal.
    */
   startDateName?: StringFieldName<TFieldValues>;
@@ -175,7 +170,6 @@ function getGiftDisplayValue(value: unknown, separator: string): string {
 
 export default function InputKodeGift<TFieldValues extends FieldValues>({
   name,
-  branchName,
   startDateName,
   endDateName,
   placeholder = "Kode Gift",
@@ -192,12 +186,7 @@ export default function InputKodeGift<TFieldValues extends FieldValues>({
 }: InputKodeGiftProps<TFieldValues>) {
   const [showModal, setShowModal] = useState(false);
 
-  const { control, watch, getValues, setValue } =
-    useFormContext<TFieldValues>();
-
-  const rawBranchValue = watch(branchName);
-
-  const branch = typeof rawBranchValue === "string" ? rawBranchValue : "";
+  const { control, getValues, setValue } = useFormContext<TFieldValues>();
 
   const handleOpenModal = () => {
     if (disabled) {
@@ -336,7 +325,6 @@ export default function InputKodeGift<TFieldValues extends FieldValues>({
 
       <InputGiftModal
         show={showModal}
-        branch={branch}
         onClose={handleCloseModal}
         onSelect={handleSelect}
       />

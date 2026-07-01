@@ -1,33 +1,11 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { getPool } from "@/lib/db";
+// /src/pages/api/evaluasi-sales/per-member.ts
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk"; // pastikan import benar
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk"; // pastikan import benar
 import { DetailStruk } from "@/utils/query/detailStruk";
+import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { QueryParam } from "@/types/queryParams";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
-  try {
-    // Ambil semua query string dan validasi pakai Zod
-    const result = FilterDetailStrukSchema.safeParse(req.query);
-
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid query parameters",
-        errors: result.error.flatten(),
-      });
-    }
-
-    const filters = result.data;
-
-    // branch
-    const branch = filters.branch || "IGRCPG";
-    const pool = getPool(branch);
-    const { conditions, params } = FilterDetailStruk(filters);
-
-    const query = `
+const buildQuery = (conditions: string, params: QueryParam[]) => `
         SELECT
             dtl_outlet as outlet,
             dtl_suboutlet as suboutlet,
@@ -55,25 +33,39 @@ export default async function handler(
             dtl_suboutlet,
             dtl_cusno,
             dtl_namamember,
-            to_char(dtl_tglmulai, 'dd-MM-yyyy'),
-            to_char(dtl_tglakhir, 'dd-MM-yyyy'),
+            dtl_tglmulai,
+            dtl_tglakhir,
             dtl_memberkhusus
-        HAVING count(dtl_netto) > 0
+        HAVING coalesce(sum(dtl_netto),0) <> 0
         ORDER BY dtl_outlet desc, dtl_suboutlet, dtl_cusno
         `;
 
-    const resultQuery = await pool.query(query, params);
+export default createSimpleGetHandler({
+  schema: FilterDetailStrukSchema,
+  buildFilters: FilterDetailStruk,
+  buildQuery,
+  // Kedua pesan menggunakan fungsi untuk interpolasi branch
+  successMessage: (branch) =>
+    `Data evaluasi sales Per Member branch '${branch}' berhasil diambil.`,
+  emptyMessage: (branch) =>
+    `Tidak ada data evaluasi sales Per Member untuk branch '${branch}'.`,
+  errorContext: "Evaluasi Sales Per Member",
+  // Return 404 jika tidak ada data
+  return404IfEmpty: true,
+});
 
-    return res.status(200).json({
-      success: true,
-      data: resultQuery.rows,
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-}
+// export default createPaginatedGetHandler({
+//   schema: FilterDetailStrukSchema,
+//   buildFilters: FilterDetailStruk,
+//   buildQuery,
+//   // Kedua pesan menggunakan fungsi untuk interpolasi branch
+//   successMessage: (branch) =>
+//     `Data evaluasi sales Per Member branch '${branch}' berhasil diambil.`,
+//   emptyMessage: (branch) =>
+//     `Tidak ada data evaluasi sales Per Member untuk branch '${branch}'.`,
+
+//   errorContext: "Evaluasi Sales Per Member",
+
+//   // Return 404 jika tidak ada data
+//   return404IfEmpty: true,
+// });

@@ -243,6 +243,7 @@ export function useReportPage<T extends object>(
     numericFields,
     allFields,
     reportTitle,
+    paginated,
   );
 
   const columns = allFields.map((field, index) => ({

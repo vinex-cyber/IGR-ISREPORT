@@ -1,10 +1,8 @@
 import Layout from "@/components/Layout";
 import ReportHeader from "@/components/ReportHeader";
-import SearchInput from "@/components/SearchInput";
 import { ReportTable } from "@/components/table/ReportTable";
 import { useReportPage } from "@/hooks/useReportPage";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import ProdukTanggalModal from "@/components/modal/evaluasi-sales/ProdukTanggalModal";
 import StrukModal from "@/components/modal/evaluasi-sales/StrukModal";
 import ProdukModal from "@/components/modal/evaluasi-sales/ProdukModal";
@@ -31,6 +29,7 @@ const PerTanggalPage = () => {
     totalRow,
     handleExport,
     isRefreshing,
+    isExporting,
     handleRefresh,
   } = useReportPage<PerTanggalRows>({
     basePath: "evaluasi-sales",
@@ -94,21 +93,8 @@ const PerTanggalPage = () => {
               onExport={handleExport}
               onRefresh={handleRefresh}
               isRefreshing={isRefreshing}
+              isExporting={isExporting}
             />
-
-            <div className="flex space-x-2 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => setSearchTerm("")}
-                className="text-sm h-8 bg-red-400 hover:bg-red-500 text-white shadow hover:cursor-pointer">
-                Reset
-              </Button>
-              <SearchInput
-                value={searchTerm}
-                onChange={setSearchTerm}
-                placeholder="Cari..."
-              />
-            </div>
 
             {error && <p className="text-red-500">{error}</p>}
 
@@ -123,6 +109,9 @@ const PerTanggalPage = () => {
                 textHeader="sm"
                 textFooter="sm"
                 headerGroups={config.headerGroups}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                onSearchReset={() => setSearchTerm("")}
                 renderActions={(row) => (
                   <RowDropdownMenu
                     label={`Tgl: ${row.tanggal}`}

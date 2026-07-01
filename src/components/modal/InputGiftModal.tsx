@@ -56,12 +56,6 @@ export interface InputGiftModalProps {
   onClose: () => void;
 
   /**
-   * Branch/database yang digunakan
-   * dalam request API.
-   */
-  branch: string;
-
-  /**
    * Callback ketika row gift dipilih.
    */
   onSelect: (gift: GiftSelection) => void;
@@ -87,12 +81,11 @@ export interface InputGiftModalProps {
 export default function InputGiftModal({
   show,
   onClose,
-  branch,
   onSelect,
   title = "Pilih Kode Gift",
   endpoint = "/api/daftar-gift",
 }: InputGiftModalProps) {
-  const resolvedEndpoint = `${endpoint}?branch=${encodeURIComponent(branch)}`;
+  const resolvedEndpoint = endpoint;
 
   const handleSelect = (row: DaftarGiftRows) => {
     const code = String(row.gfh_kodepromosi ?? "").trim();

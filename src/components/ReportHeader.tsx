@@ -1,6 +1,9 @@
 // components/ReportHeader.tsx
+import { useRouter } from "next/router";
+
 import ButtonExportExcel from "./ButtonExportExcel";
 import ButtonRefresh from "./ButtonRefresh";
+import { Button } from "./ui/button";
 
 interface ReportHeaderProps {
   title: string;
@@ -8,7 +11,7 @@ interface ReportHeaderProps {
   onExport: () => void;
   onRefresh: () => void;
   isRefreshing: boolean;
-  isExporting?: boolean; // ← tambah ini, opsional agar laporan lama tidak error
+  isExporting?: boolean;
 }
 
 const ReportHeader = ({
@@ -17,25 +20,39 @@ const ReportHeader = ({
   onExport,
   onRefresh,
   isRefreshing,
-  isExporting = false, // ← default false
-}: ReportHeaderProps) => (
-  <div className="flex justify-between items-center">
-    <div>
-      <h1 className="text-2xl font-bold text-green-600">📊 Laporan {title}</h1>
-      <p>{periode}</p>
+  isExporting = false,
+}: ReportHeaderProps) => {
+  const router = useRouter();
+
+  return (
+    <div className="flex justify-between items-center">
+      <div>
+        <h1 className="text-2xl font-bold text-green-600">
+          📊 Laporan {title}
+        </h1>
+
+        <p>{periode}</p>
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="hover:cursor-pointer"
+          onClick={() => router.back()}>
+          ← Kembali
+        </Button>
+      </div>
+
+      <div className="flex gap-2 items-center">
+        <ButtonExportExcel handleExport={onExport} isExporting={isExporting} />
+
+        <ButtonRefresh
+          disabled={isRefreshing}
+          onClick={onRefresh}
+          isRefreshing={isRefreshing}
+        />
+      </div>
     </div>
-    <div className="flex gap-2 items-center">
-      <ButtonExportExcel
-        handleExport={onExport}
-        isExporting={isExporting} // ← teruskan ke button
-      />
-      <ButtonRefresh
-        disabled={isRefreshing}
-        onClick={onRefresh}
-        isRefreshing={isRefreshing}
-      />
-    </div>
-  </div>
-);
+  );
+};
 
 export default ReportHeader;

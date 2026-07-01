@@ -3,10 +3,8 @@ import { useState } from "react";
 // components
 import Layout from "@/components/Layout";
 import ReportHeader from "@/components/ReportHeader";
-import SearchInput from "@/components/SearchInput";
 import { useReportPage } from "@/hooks/useReportPage";
 import { ReportTable } from "@/components/table/ReportTable";
-import { Button } from "@/components/ui/button";
 import ProdukTanggalModal from "@/components/modal/evaluasi-sales/ProdukTanggalModal";
 import ProdukModal from "@/components/modal/evaluasi-sales/ProdukModal";
 import StrukModal from "@/components/modal/evaluasi-sales/StrukModal";
@@ -34,6 +32,7 @@ const PerDepartementPage = () => {
     totalRow,
     handleExport,
     isRefreshing,
+    isExporting,
     handleRefresh,
   } = useReportPage<PerDepartementRows>({
     basePath: "evaluasi-sales",
@@ -94,21 +93,8 @@ const PerDepartementPage = () => {
               onExport={handleExport}
               onRefresh={handleRefresh}
               isRefreshing={isRefreshing}
+              isExporting={isExporting}
             />
-            <div className="flex space-x-2 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => setSearchTerm("")}
-                className="text-sm h-8 bg-red-400 dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-black hover:bg-red-500 text-white shadow-2xl hover:cursor-pointer">
-                Reset
-              </Button>
-              <SearchInput
-                value={searchTerm}
-                onChange={setSearchTerm}
-                placeholder="Search Departement..."
-              />
-            </div>
-
             {error && <p className="text-red-500">{error}</p>}
 
             {!error && filteredData && (
@@ -120,6 +106,9 @@ const PerDepartementPage = () => {
                 showRowNumber={true}
                 isRefreshing={isRefreshing}
                 headerGroups={config.headerGroups}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                onSearchReset={() => setSearchTerm("")}
                 renderActions={(row) => (
                   <RowDropdownMenu
                     label={

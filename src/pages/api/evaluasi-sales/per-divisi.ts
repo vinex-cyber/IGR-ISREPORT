@@ -9,8 +9,13 @@ const buildQuery = (conditions: string, params: QueryParam[]) => `
   SELECT
     dtl_k_div                        AS div,
     dtl_nama_div                     AS nama_div,
+    COUNT(DISTINCT dtl_cusno)        AS jumlah_member,
     COUNT(DISTINCT dtl_struk)        AS jumlah_struk,
-    SUM(dtl_netto)                   AS total_netto
+    COUNT(DISTINCT dtl_prdcd_ctn)    AS jumlah_produk,
+    sum(dtl_qty_pcs)                 AS total_qty,
+    sum(dtl_gross)                   AS total_gross,
+    SUM(dtl_netto)                   AS total_netto,
+    sum(dtl_margin)                  AS total_margin
   FROM (${DetailStruk(conditions, params)}) AS dtl
   GROUP BY dtl_k_div, dtl_nama_div
   HAVING COALESCE(SUM(dtl_netto), 0) <> 0
@@ -28,7 +33,7 @@ export default createSimpleGetHandler({
   emptyMessage: (branch) =>
     `Tidak ada data evaluasi sales per divisi untuk branch '${branch}'.`,
 
-  errorContext: "LPP Saat Ini Per Divisi",
+  errorContext: "Evaluasi Sales Per Divisi",
 
   // Return 404 jika tidak ada data
   return404IfEmpty: true,
