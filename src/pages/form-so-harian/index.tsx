@@ -24,7 +24,7 @@ import { formatNumber } from "@/utils/formatNumber";
 import { exportToPdf } from "@/utils/exportToPdf";
 import { RiFilePdf2Fill } from "react-icons/ri";
 import InputProdukPlu from "@/components/input/InputProdukPlu";
-import SettingsDatabase from "@/components/Settings/Settings";
+import SettingsDatabase from "@/components/Settings/SettingsDatabase";
 import { DATABASE_OPTIONS } from "@/configs/database-options";
 
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
@@ -33,6 +33,7 @@ import {
   CardFieldset,
   CardTitleLegend,
 } from "@/components/ui/card";
+import { useState } from "react";
 
 /**
  * Membaca default branch berdasarkan IP client.
@@ -45,7 +46,7 @@ type FormSoHarianPageProps = InferGetServerSidePropsType<
 
 export default function FormSoHarian({ defaultBranch }: FormSoHarianPageProps) {
   const router = useRouter();
-
+  const [branch, setBranch] = useState(defaultBranch);
   // 🔥 CONFIG TABLE (reuse system kamu)
   const config = buildReport<FormSoHarianRows>(formSoHarianColumns);
 
@@ -74,11 +75,6 @@ export default function FormSoHarian({ defaultBranch }: FormSoHarianPageProps) {
 
     defaultValues: {
       prdcd: "",
-
-      /**
-       * Branch awal berdasarkan IP client.
-       */
-      branch: defaultBranch,
     },
   });
 
@@ -118,7 +114,6 @@ export default function FormSoHarian({ defaultBranch }: FormSoHarianPageProps) {
 
         query: {
           prdcd: formattedPlu,
-          branch: formData.branch,
         },
       });
     } catch (err) {
@@ -138,7 +133,6 @@ export default function FormSoHarian({ defaultBranch }: FormSoHarianPageProps) {
      */
     methods.reset({
       prdcd: "",
-      branch: defaultBranch,
     });
 
     // Hapus query params dari URL
@@ -147,20 +141,17 @@ export default function FormSoHarian({ defaultBranch }: FormSoHarianPageProps) {
     });
   };
 
-  const selectedBranch = methods.watch("branch");
-
   return (
-    <Layout title="Form SO Harian" branch={selectedBranch}>
+    <Layout title="Form SO Harian" branch={branch}>
       <div className="flex justify-between">
         <h1 className="text-2xl font-bold mb-4">
-          Form SO Harian - {selectedBranch} :{" "}
-          {query.prdcd ? `PLU ${query.prdcd}` : ""}
+          Form SO Harian - {branch} : {query.prdcd ? `PLU ${query.prdcd}` : ""}
         </h1>
 
-        <SettingsDatabase<FilterFormSoHarianInput>
-          control={methods.control}
+        <SettingsDatabase
+          value={branch}
+          onChange={setBranch}
           options={DATABASE_OPTIONS}
-          name="branch"
         />
       </div>
 

@@ -12,7 +12,7 @@ import Layout from "@/components/Layout";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 
-import SettingsDatabase from "@/components/Settings/Settings";
+import SettingsDatabase from "@/components/Settings/SettingsDatabase";
 
 import {
   FilterDetailStrukSchema,
@@ -36,6 +36,7 @@ import SelectReport from "@/components/form/shared/SelectReport";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
 import { InferGetServerSidePropsType } from "next";
 import CardSupplier from "@/components/form/shared/CardSupplier";
+import { useState } from "react";
 
 /**
  * Dijalankan pada server setiap kali halaman dibuka.
@@ -52,19 +53,17 @@ export default function EvaluasiSales({
   defaultBranch,
 }: EvaluasiSalesPageProps) {
   const router = useRouter();
-
+  const [branch, setBranch] = useState(defaultBranch);
   const methods = useForm<FilterDetailStrukInput>({
     resolver: zodResolver(FilterDetailStrukSchema),
 
     /**
      * Branch pertama diisi berdasarkan IP client.
      */
-    defaultValues: getFilterDetailStrukDefaultValues(defaultBranch),
+    defaultValues: getFilterDetailStrukDefaultValues(),
   });
 
-  const { control, reset, clearErrors, watch, handleSubmit } = methods;
-
-  const selectedBranch = watch("branch");
+  const { control, reset, clearErrors, handleSubmit } = methods;
 
   const onSubmit = async (data: FilterDetailStrukInput) => {
     try {
@@ -122,7 +121,7 @@ export default function EvaluasiSales({
      * Tanggal dihitung kembali agar selalu memakai
      * tanggal ketika tombol reset ditekan.
      */
-    reset(getFilterDetailStrukDefaultValues(defaultBranch));
+    reset(getFilterDetailStrukDefaultValues());
 
     clearErrors();
 
@@ -133,19 +132,19 @@ export default function EvaluasiSales({
   };
 
   return (
-    <Layout title="Evaluasi Sales" branch={selectedBranch}>
+    <Layout title="Evaluasi Sales" branch={branch}>
       <Form {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-6 flex items-center justify-between gap-4">
             <h1 className="flex items-center gap-1 text-2xl font-bold text-blue-500">
               Evaluasi Sales
               <ArrowRightIcon size={22} />
-              {selectedBranch}
+              {branch}
             </h1>
 
-            <SettingsDatabase<FilterDetailStrukInput>
-              control={control}
-              name="branch"
+            <SettingsDatabase
+              value={branch}
+              onChange={setBranch}
               options={DATABASE_OPTIONS}
             />
           </div>
@@ -161,7 +160,6 @@ export default function EvaluasiSales({
 
               <CardMember<FilterDetailStrukInput>
                 control={control}
-                branch={selectedBranch}
                 fields={{
                   namaMember: {
                     name: "namaMember",
@@ -249,7 +247,6 @@ export default function EvaluasiSales({
             {/* KOLOM KETIGA */}
             <div className="space-y-4">
               <CardPromo<FilterDetailStrukInput>
-                branchName="branch"
                 startDateName="startDate"
                 endDateName="endDate"
                 fields={{
@@ -304,7 +301,6 @@ export default function EvaluasiSales({
             <div className="space-y-4">
               <CardSupplier<FilterDetailStrukInput>
                 control={control}
-                branch={selectedBranch}
                 fields={{
                   kodeSupplier: {
                     name: "kodeSupplier",

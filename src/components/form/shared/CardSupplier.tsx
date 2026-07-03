@@ -99,13 +99,6 @@ export interface CardSupplierFields<TFieldValues extends FieldValues> {
 export interface CardSupplierProps<TFieldValues extends FieldValues> {
   control: Control<TFieldValues>;
 
-  /**
-   * Branch database yang sedang aktif.
-   *
-   * Digunakan saat mengambil daftar supplier.
-   */
-  branch: string;
-
   fields: CardSupplierFields<TFieldValues>;
 
   /**
@@ -121,7 +114,6 @@ export interface CardSupplierProps<TFieldValues extends FieldValues> {
 
 export default function CardSupplier<TFieldValues extends FieldValues>({
   control,
-  branch,
   fields,
   title = "Supplier",
   className = "",
@@ -138,7 +130,6 @@ export default function CardSupplier<TFieldValues extends FieldValues>({
           <InputSerchSupplier<TFieldValues>
             control={control}
             name={fields.kodeSupplier.name}
-            branch={branch}
             placeholder={fields.kodeSupplier.placeholder ?? "Kode Supplier"}
             multiple={fields.kodeSupplier.multiple ?? true}
             append={fields.kodeSupplier.append ?? true}
@@ -151,7 +142,6 @@ export default function CardSupplier<TFieldValues extends FieldValues>({
           <InputNamaSupplier<TFieldValues>
             control={control}
             name={fields.namaSupplier.name}
-            branch={branch}
             placeholder={fields.namaSupplier.placeholder ?? "Nama Supplier"}
             disabled={fields.namaSupplier.disabled ?? false}
           />

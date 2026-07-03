@@ -1,9 +1,8 @@
 // src/hooks/useLookupData.ts
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type Mode = "client" | "server";
-
 type ExtraParamValue = string | number | boolean;
 
 interface UseLookupDataProps {
@@ -21,6 +20,18 @@ interface ApiResult<T> {
   total?: number;
 }
 
+const COOKIE_NAME = "selected_branch";
+
+function getBranchFromCookie(): string {
+  if (typeof window === "undefined") return "";
+
+  const cookie = document.cookie
+    .split("; ")
+    .find((item) => item.startsWith(`${COOKIE_NAME}=`));
+
+  return cookie ? decodeURIComponent(cookie.split("=")[1] ?? "") : "";
+}
+
 export function useLookupData<T>({
   endpoint,
   mode = "client",
@@ -36,25 +47,54 @@ export function useLookupData<T>({
 
   const cacheRef = useRef<Map<string, ApiResult<T>>>(new Map());
 
-  /*
-   * Membuat dependency primitive agar effect tidak
-   * dijalankan ulang hanya karena referensi objek berubah.
-   */
-  const extraParamsKey = Object.entries(extraParams ?? {})
-    .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
-    .map(
-      ([key, value]) =>
-        `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`,
-    )
-    .join("&");
+  const [branch, setBranch] = useState("");
+
+  // ==========================================
+  // Deteksi perubahan branch
+  // ==========================================
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    setBranch(getBranchFromCookie());
+
+    const timer = window.setInterval(() => {
+      const current = getBranchFromCookie();
+
+      setBranch((prev) => {
+        if (prev === current) return prev;
+
+        cacheRef.current.clear();
+
+        return current;
+      });
+    }, 300);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const extraParamsKey = useMemo(
+    () =>
+      Object.entries(extraParams ?? {})
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(
+          ([k, v]) =>
+            `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`,
+        )
+        .join("&"),
+    [extraParams],
+  );
 
   const fetchData = useCallback(
-    async (url: string, controller: AbortController): Promise<void> => {
-      const cachedData = cacheRef.current.get(url);
+    async (
+      requestUrl: string,
+      cacheKey: string,
+      controller: AbortController,
+    ) => {
+      const cached = cacheRef.current.get(cacheKey);
 
-      if (cachedData) {
-        setData(cachedData.data ?? []);
-        setTotal(cachedData.total ?? cachedData.data?.length ?? 0);
+      if (cached) {
+        setData(cached.data ?? []);
+        setTotal(cached.total ?? cached.data.length);
         setLoading(false);
         return;
       }
@@ -62,28 +102,42 @@ export function useLookupData<T>({
       setLoading(true);
 
       try {
-        const response = await fetch(url, {
+        const response = await fetch(requestUrl, {
           signal: controller.signal,
+          credentials: "same-origin",
         });
 
+        // ==========================
+        // 404 = Data kosong
+        // ==========================
+        if (response.status === 404) {
+          const empty: ApiResult<T> = {
+            data: [],
+            total: 0,
+          };
+
+          cacheRef.current.set(cacheKey, empty);
+
+          setData([]);
+          setTotal(0);
+
+          return;
+        }
+
         if (!response.ok) {
-          throw new Error(`Request gagal dengan status ${response.status}`);
+          throw new Error(`Status ${response.status}`);
         }
 
         const result = (await response.json()) as ApiResult<T>;
 
-        if (controller.signal.aborted) {
-          return;
-        }
+        if (controller.signal.aborted) return;
 
-        cacheRef.current.set(url, result);
+        cacheRef.current.set(cacheKey, result);
 
         setData(result.data ?? []);
-        setTotal(result.total ?? result.data?.length ?? 0);
+        setTotal(result.total ?? result.data.length);
       } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") {
-          return;
-        }
+        if (controller.signal.aborted) return;
 
         console.error("Lookup fetch error:", error);
 
@@ -115,37 +169,30 @@ export function useLookupData<T>({
 
     const controller = new AbortController();
 
-    if (mode === "client") {
-      void fetchData(endpoint, controller);
+    let requestUrl = endpoint;
 
-      return () => {
-        controller.abort();
-      };
+    if (mode === "server") {
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize),
+        search,
+      });
+
+      Object.entries(extraParams ?? {}).forEach(([k, v]) => {
+        params.set(k, String(v));
+      });
+
+      requestUrl = `${endpoint}${
+        endpoint.includes("?") ? "&" : "?"
+      }${params.toString()}`;
     }
 
-    const params = new URLSearchParams({
-      page: String(page),
-      pageSize: String(pageSize),
-      search,
-    });
+    // Cache dipisahkan berdasarkan branch
+    const cacheKey = `${requestUrl}|${branch}`;
 
-    /*
-     * extraParams dimasukkan terakhir sehingga tetap
-     * mengikuti perilaku kode sebelumnya.
-     */
-    Object.entries(extraParams ?? {}).forEach(([key, value]) => {
-      params.set(key, String(value));
-    });
+    void fetchData(requestUrl, cacheKey, controller);
 
-    const separator = endpoint.includes("?") ? "&" : "?";
-
-    const url = `${endpoint}${separator}${params.toString()}`;
-
-    void fetchData(url, controller);
-
-    return () => {
-      controller.abort();
-    };
+    return () => controller.abort();
   }, [
     endpoint,
     mode,
@@ -154,6 +201,7 @@ export function useLookupData<T>({
     search,
     minSearch,
     extraParamsKey,
+    branch,
     fetchData,
     extraParams,
   ]);

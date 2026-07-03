@@ -48,14 +48,11 @@ interface Props {
 export default function InputKodeKasirModal({
   show,
   onClose,
-  branch,
   title = "Pilih Kode Kasir",
   onSelect,
   kasir,
 }: Props) {
-  const { setValue, watch } = useFormContext();
-
-  const selectedBranch = branch ?? watch("branch");
+  const { setValue } = useFormContext();
 
   const handleSelect = (row: DaftarKodeKasirRows) => {
     const selection: KasirSelection = {
@@ -88,7 +85,7 @@ export default function InputKodeKasirModal({
     <GenericLookupModal<DaftarKodeKasirRows>
       show={show}
       onClose={onClose}
-      endpoint={`/api/daftar-kodekasir?branch=${selectedBranch}`}
+      endpoint={`/api/daftar-kodekasir`}
       columns={daftarKodeKasirColumns}
       title={title}
       onSelect={handleSelect}

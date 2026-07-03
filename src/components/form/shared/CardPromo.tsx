@@ -56,6 +56,7 @@ export interface GiftFieldConfig<TFieldValues extends FieldValues> {
 
   placeholder?: string;
   disabled?: boolean;
+  title?: string;
 
   /**
    * Menyimpan banyak gift sebagai string[].
@@ -91,14 +92,6 @@ export interface GiftFieldConfig<TFieldValues extends FieldValues> {
    * @default true
    */
   updatePeriodOnSelect?: boolean;
-
-  /**
-   * Field khusus untuk gift.
-   *
-   * Jika tidak diberikan, memakai field
-   * milik CardPromo.
-   */
-  branchName?: StringFieldName<TFieldValues>;
   startDateName?: StringFieldName<TFieldValues>;
   endDateName?: StringFieldName<TFieldValues>;
 }
@@ -117,8 +110,6 @@ export interface CashbackFieldConfig<TFieldValues extends FieldValues> {
   separator?: string;
   allowManualInput?: boolean;
   updatePeriodOnSelect?: boolean;
-
-  branchName?: StringFieldName<TFieldValues>;
   startDateName?: StringFieldName<TFieldValues>;
   endDateName?: StringFieldName<TFieldValues>;
 }
@@ -131,8 +122,6 @@ export interface CardPromoFields<TFieldValues extends FieldValues> {
 
 export interface CardPromoProps<TFieldValues extends FieldValues> {
   fields: CardPromoFields<TFieldValues>;
-
-  branchName: StringFieldName<TFieldValues>;
 
   startDateName?: StringFieldName<TFieldValues>;
 
@@ -147,16 +136,12 @@ export interface CardPromoProps<TFieldValues extends FieldValues> {
 
 export default function CardPromo<TFieldValues extends FieldValues>({
   fields,
-  branchName,
   startDateName,
   endDateName,
   title = "Promo",
   className,
   contentClassName,
 }: CardPromoProps<TFieldValues>) {
-  const giftBranchName =
-    fields.gift && fields.gift.branchName ? fields.gift.branchName : branchName;
-
   const giftStartDateName =
     fields.gift && fields.gift.startDateName
       ? fields.gift.startDateName
@@ -166,11 +151,6 @@ export default function CardPromo<TFieldValues extends FieldValues>({
     fields.gift && fields.gift.endDateName
       ? fields.gift.endDateName
       : endDateName;
-
-  const cashbackBranchName =
-    fields.cashback && fields.cashback.branchName
-      ? fields.cashback.branchName
-      : branchName;
 
   const cashbackStartDateName =
     fields.cashback && fields.cashback.startDateName
@@ -195,7 +175,6 @@ export default function CardPromo<TFieldValues extends FieldValues>({
         {fields.gift && (
           <InputKodeGift<TFieldValues>
             name={fields.gift.name}
-            branchName={giftBranchName}
             startDateName={giftStartDateName}
             endDateName={giftEndDateName}
             placeholder={fields.gift.placeholder}
@@ -205,13 +184,13 @@ export default function CardPromo<TFieldValues extends FieldValues>({
             separator={fields.gift.separator}
             allowManualInput={fields.gift.allowManualInput}
             updatePeriodOnSelect={fields.gift.updatePeriodOnSelect}
+            title={fields.gift.title}
           />
         )}
 
         {fields.cashback && (
           <InputKodeCashback<TFieldValues>
             name={fields.cashback.name}
-            branchName={cashbackBranchName}
             startDateName={cashbackStartDateName}
             endDateName={cashbackEndDateName}
             placeholder={fields.cashback.placeholder}

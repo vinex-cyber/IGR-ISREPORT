@@ -97,5 +97,5 @@ export default createPaginatedGetHandler<DaftarGiftFilters>({
   successMessage: "Data daftar gift berhasil diambil.",
   emptyMessage: (branch) => `Tidak ada data gift untuk branch '${branch}'.`,
   errorContext: "Daftar Gift",
-  return404IfEmpty: false,
+  return404IfEmpty: true,
 });

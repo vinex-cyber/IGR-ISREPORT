@@ -1,26 +1,20 @@
 // utils/getRequestBranch.ts
 import type { NextApiRequest } from "next";
-
 import { getBranchFromIp } from "@/configs/branch-network-map";
 import { getDefaultBranch } from "@/utils/getDefaultBranch";
-import { DATABASE_OPTIONS } from "@/configs/database-options"; // untuk validasi
+import { DATABASE_OPTIONS } from "@/configs/database-options";
 
 const DATABASE_VALUES = new Set(DATABASE_OPTIONS.map((option) => option.value));
 
 export function getRequestBranch(req: NextApiRequest) {
-  // 1. Prioritas pertama → branch dari query parameter (pilihan user)
-  const queryBranch = req.query.branch;
-
-  const branchFromQuery =
-    typeof queryBranch === "string" ? queryBranch.trim() : "";
-
-  if (branchFromQuery && DATABASE_VALUES.has(branchFromQuery)) {
-    return branchFromQuery;
+  // 1. Cookie → branch pilihan user (tidak kelihatan di URL)
+  const cookieBranch = req.cookies["selected_branch"]?.trim();
+  if (cookieBranch && DATABASE_VALUES.has(cookieBranch)) {
+    return cookieBranch;
   }
 
   // 2. Fallback → deteksi dari IP
   const forwardedFor = req.headers["x-forwarded-for"];
-
   const ip =
     typeof forwardedFor === "string"
       ? forwardedFor.split(",")[0]?.trim()

@@ -128,6 +128,13 @@ export interface InputKodeGiftProps<TFieldValues extends FieldValues> {
    * Callback setelah gift dipilih dari modal.
    */
   onGiftSelect?: (gift: GiftSelection) => void;
+
+  /**
+   * Judul modal.
+   *
+   * @default "Pilih Kode Gift"
+   */
+  title?: string;
 }
 
 /**
@@ -183,6 +190,7 @@ export default function InputKodeGift<TFieldValues extends FieldValues>({
   inputClassName,
   onValueChange,
   onGiftSelect,
+  title,
 }: InputKodeGiftProps<TFieldValues>) {
   const [showModal, setShowModal] = useState(false);
 
@@ -327,6 +335,7 @@ export default function InputKodeGift<TFieldValues extends FieldValues>({
         show={showModal}
         onClose={handleCloseModal}
         onSelect={handleSelect}
+        title={title}
       />
     </>
   );

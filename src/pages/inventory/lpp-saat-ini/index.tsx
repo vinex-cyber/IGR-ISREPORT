@@ -10,7 +10,7 @@ import { RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 import Layout from "@/components/Layout";
-import SettingsDatabase from "@/components/Settings/Settings";
+import SettingsDatabase from "@/components/Settings/SettingsDatabase";
 
 import CardProduk from "@/components/form/shared/CardProduk";
 import SelectLokasi from "@/components/form/shared/SelectLokasi";
@@ -237,7 +237,6 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
             <div>
               <CardSupplier<FilterLppSaatIniInput>
                 control={control}
-                branch={selectedBranch}
                 fields={{
                   kodeSupplier: {
                     name: "kodeSupplier",

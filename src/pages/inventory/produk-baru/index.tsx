@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
 import Layout from "@/components/Layout";
-import SettingsDatabase from "@/components/Settings/Settings";
+import SettingsDatabase from "@/components/Settings/SettingsDatabase";
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
