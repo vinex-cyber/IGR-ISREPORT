@@ -1,4 +1,4 @@
-// api/form-so-harian/index.ts
+// api/form-so-harian/[prdcd]/index.ts
 import { formSoHarianQuery } from "@/utils/query/formSoHarian";
 import { FilterFormSoHarianSchema } from "@/schema/filterFormSoHarian";
 import { FilterFormSoHarian } from "@/utils/filters/FiltersFormSoHarian";
