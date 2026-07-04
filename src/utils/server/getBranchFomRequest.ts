@@ -3,8 +3,11 @@
 import type { IncomingMessage } from "http";
 
 import { getBranchFromIp } from "@/configs/branch-network-map";
+import { DATABASE_OPTIONS } from "@/configs/database-options";
 import type { DatabaseBranch } from "@/configs/database-options";
 import { getDefaultBranch } from "@/utils/getDefaultBranch";
+
+const DATABASE_VALUES = new Set(DATABASE_OPTIONS.map((opt) => opt.value));
 
 function getFirstHeaderValue(header: string | string[] | undefined): string {
   if (Array.isArray(header)) {
@@ -75,6 +78,15 @@ export function getClientIp(request: IncomingMessage): string {
  * gunakan branch default dari NEXT_PUBLIC_APP_NAME.
  */
 export function getBranchFromRequest(request: IncomingMessage): DatabaseBranch {
+  const cookies = (
+    request as IncomingMessage & { cookies?: Record<string, string> }
+  ).cookies;
+
+  const cookieBranch = cookies?.selected_branch?.trim();
+  if (cookieBranch && DATABASE_VALUES.has(cookieBranch)) {
+    return cookieBranch as DatabaseBranch;
+  }
+
   const clientIp = getClientIp(request);
 
   const branchFromIp = getBranchFromIp(clientIp);
