@@ -54,18 +54,15 @@ Buat `.env.local` di root:
 
 ```env
 # ── Koneksi Database per Branch ──────────────────────────
-DB_HOST_IGRCPG=192.168.1.1
-DB_HOST_ICMCPG=192.168.1.2
-DB_HOST_SPICPG1I=192.168.1.3
-DB_HOST_SPICPG4L=192.168.1.4
+# Format: DB_HOST_<BRANCH>=<host>
+DB_HOST_IGRCPG=your_db_host
+DB_HOST_ICMCPG=your_db_host
 DB_NAME_IGRCPG=igrcpg
 DB_NAME_ICMCPG=icmcpg
-DB_NAME_SPICPG1I=spicpg1i
-DB_NAME_SPICPG4L=spicpg4l
 
 # Credentials (shared)
-PG_USER=user
-PG_PASSWORD=password
+PG_USER=your_user
+PG_PASSWORD=your_password
 PG_PORT=5432
 
 # ── Daftar Branch (wajib) ────────────────────────────────
@@ -75,7 +72,7 @@ NEXT_PUBLIC_DATABASE_OPTIONS=[{"label":"IGRCPG","value":"IGRCPG"},{"label":"ICMC
 NEXT_PUBLIC_APP_NAME=IGRCPG
 
 # ── IP → Branch Mapping (opsional) ──────────────────────
-BRANCH_NETWORK_MAP={"192.168.226.":"IGRCPG","192.168.227.":"ICMCPG"}
+# BRANCH_NETWORK_MAP={"192.168.1.":"IGRCPG"}
 ```
 
 ---
@@ -211,9 +208,8 @@ File `src/configs/branch-network-map.ts` membaca env `BRANCH_NETWORK_MAP`:
 
 ```json
 {
-  "192.168.226." : "IGRCPG",
-  "192.168.227.0/24": "ICMCPG",
-  "10.0.0.5": "SPICPG1I"
+  "192.168.1." : "IGRCPG",
+  "10.0.0.0/24": "ICMCPG"
 }
 ```
 
