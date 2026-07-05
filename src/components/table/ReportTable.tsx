@@ -1,6 +1,6 @@
 //src/components/table/ReportTable.tsx
 import { formatNumber } from "@/utils/formatNumber";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -134,6 +134,19 @@ export function ReportTable<T extends Record<string, unknown>>({
 
   const hasSearch = Boolean(onSearchChange && onSearchReset);
 
+  const [localSearch, setLocalSearch] = useState(searchTerm ?? "");
+
+  useEffect(() => {
+    setLocalSearch(searchTerm ?? "");
+  }, [searchTerm]);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      onSearchChange?.(localSearch);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [localSearch, onSearchChange]);
+
   return (
     <div className="space-y-2">
       {/* ================= SEARCH & RESET ================= */}
@@ -151,8 +164,8 @@ export function ReportTable<T extends Record<string, unknown>>({
           <div className="relative">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              value={searchTerm ?? ""}
-              onChange={(e) => onSearchChange?.(e.target.value)}
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               placeholder={searchPlaceholder}
               className="h-8 pl-8 w-56 text-sm bg-accent hover:bg-accent/80 focus:bg-accent/80 dark:bg-accent dark:hover:bg-accent/80 dark:focus:bg-accent/80"
             />
