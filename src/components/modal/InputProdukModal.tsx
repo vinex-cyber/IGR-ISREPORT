@@ -4,6 +4,7 @@ import {
 } from "@/configs/input/daftar-produkConfig";
 import { GenericLookupModal } from "./GenericLookupModal";
 import { useFormContext } from "react-hook-form";
+import { getBranchCookie } from "@/utils/branchCookie";
 
 interface Props {
   show: boolean;
@@ -19,7 +20,7 @@ export default function InputProdukModal({
   namaBarang,
 }: Props) {
   const { setValue } = useFormContext();
-  // 🔥 ambil branch dari form
+  const branch = getBranchCookie();
 
   const onSelect = (row: DaftarProdukRows) => {
     if (prdcd) {
@@ -36,7 +37,7 @@ export default function InputProdukModal({
       onClose={onClose}
       endpoint={`/api/daftar-produk`} //
       columns={daftarProdukColumns}
-      title="Pilih Produk"
+      title={`Pilih Produk - ${branch || "..."}`}
       onSelect={onSelect}
     />
   );
