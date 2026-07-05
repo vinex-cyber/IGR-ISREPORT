@@ -45,7 +45,7 @@ export function getFilterLppSaatIniDefaultValues(
     namaSupplier: "",
 
     statusTag: "",
-    statusQty: "",
+    statusQty: undefined,
 
     lokasi: "",
     groupFlag: "",

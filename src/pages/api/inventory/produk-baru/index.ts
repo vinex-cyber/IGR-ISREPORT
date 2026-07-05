@@ -5,6 +5,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { getPool } from "@/lib/db";
 import { FilterProdukBaruSchema } from "@/schema/filterProdukBaru";
 import { buildFilterProdukBaru } from "@/utils/filters/FilterProdukBaru";
+import { getRequestBranch } from "@/utils/getRequestBranch";
 
 export default async function handler(
   req: NextApiRequest,
@@ -31,7 +32,8 @@ export default async function handler(
     }
 
     const filters = result.data;
-    const pool = getPool(filters.branch);
+    const branch = getRequestBranch(req);
+    const pool = getPool(branch);
 
     const { conditions, params } = buildFilterProdukBaru(filters);
 

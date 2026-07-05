@@ -8,20 +8,10 @@ import {
 } from "@/configs/produk-baru/produk-baru-config";
 import { useReportPage } from "@/hooks/useReportPage";
 import { buildReport } from "@/utils/reportBuilder";
-import { useRouter } from "next/router";
+import { getBranchCookie } from "@/utils/branchCookie";
 
 const ProdukBaruPage = () => {
-  const router = useRouter();
-
-  const branchQuery = router.query.branch;
-
-  const branch =
-    typeof branchQuery === "string"
-      ? branchQuery
-      : Array.isArray(branchQuery)
-        ? branchQuery[0]
-        : "";
-  // TODO : Masih ada branch di query
+  const branch = getBranchCookie();
   const reportTitle = branch ? `Produk Baru - ${branch}` : "Produk Baru";
 
   const config = buildReport<ProdukBaruRows>(produkBaruColumns);

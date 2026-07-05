@@ -3,6 +3,8 @@
 import type { InferGetServerSidePropsType } from "next";
 import { useRouter } from "next/router";
 
+import { useState } from "react";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -53,24 +55,28 @@ type ProdukBaruPageProps = InferGetServerSidePropsType<
 export default function ProdukBaruPage({ defaultBranch }: ProdukBaruPageProps) {
   const router = useRouter();
 
+  const [branch, setBranch] = useState(defaultBranch);
+
   const methods = useForm<FilterProdukBaruInput>({
     resolver: zodResolver(FilterProdukBaruSchema),
 
     /**
      * Branch diisi berdasarkan IP client.
      */
-    defaultValues: getFilterProdukBaruDefaultValues(defaultBranch),
+    defaultValues: getFilterProdukBaruDefaultValues(),
   });
 
-  const { control, reset, clearErrors, watch, handleSubmit } = methods;
-
-  const selectedBranch = watch("branch");
+  const { control, reset, clearErrors, handleSubmit } = methods;
 
   const onSubmit = async (data: FilterProdukBaruInput) => {
     try {
       const params = new URLSearchParams();
 
       Object.entries(data).forEach(([key, value]) => {
+        if (key === "branch") {
+          return;
+        }
+
         if (value === undefined || value === null || value === "") {
           return;
         }
@@ -115,7 +121,9 @@ export default function ProdukBaruPage({ defaultBranch }: ProdukBaruPageProps) {
      * Branch kembali ke hasil deteksi IP client.
      * Tanggal dihitung ulang menggunakan tanggal hari ini.
      */
-    reset(getFilterProdukBaruDefaultValues(defaultBranch));
+    reset(getFilterProdukBaruDefaultValues());
+
+    setBranch(defaultBranch);
 
     clearErrors();
 
@@ -126,18 +134,18 @@ export default function ProdukBaruPage({ defaultBranch }: ProdukBaruPageProps) {
   };
 
   return (
-    <Layout title="Produk Baru" branch={selectedBranch}>
+    <Layout title="Produk Baru" branch={branch}>
       <Form {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="flex items-center justify-between gap-4">
             <h1 className="text-2xl font-bold text-blue-500">
               Produk Baru
-              {selectedBranch ? ` - ${selectedBranch}` : ""}
+              {branch ? ` - ${branch}` : ""}
             </h1>
 
-            <SettingsDatabase<FilterProdukBaruInput>
-              control={control}
-              name="branch"
+            <SettingsDatabase
+              value={branch}
+              onChange={setBranch}
               options={DATABASE_OPTIONS}
             />
           </div>
