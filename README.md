@@ -1,59 +1,81 @@
 # Next CPG
 
-> Internal CPG (Consumer Packaged Goods) reporting and analytics app built with Next.js 15 (Pages Router) and PostgreSQL.
+> **Consumer Packaged Goods** — Internal reporting dan analytics aplikasi. Multi-branch PostgreSQL, export Excel/PDF, form filter interaktif.
+
+---
+
+## Daftar Isi
+
+- [Stack](#stack)
+- [Quick Start](#quick-start)
+- [Environment](#environment)
+- [Struktur Project](#struktur-project)
+- [Branch Database](#branch-database)
+- [Code Generator](#code-generator)
+- [API Route](#api-route)
+- [Halaman (Page)](#halaman-page)
+- [Komponen](#komponen)
+- [Form System](#form-system)
+- [Hooks](#hooks)
+- [Export](#export)
+- [Scripts](#scripts)
 
 ---
 
 ## Stack
 
-| Kategori            | Teknologi                                                                 |
-| ------------------- | ------------------------------------------------------------------------- |
-| Framework           | Next.js 15, React 19, TypeScript                                          |
-| Database            | PostgreSQL via `pg` (node-postgres), multi-branch connection pool         |
-| UI                  | Tailwind CSS v4, shadcn/ui (Radix primitives), `lucide-react`            |
-| Forms & Validation  | `react-hook-form`, `@hookform/resolvers`, `zod`                          |
-| Data Fetching       | `axios`, `@tanstack/react-query`                                         |
-| Charts              | `recharts`                                                               |
-| Export              | `exceljs` (Excel), `jspdf` + `jspdf-autotable` (PDF)                     |
-| Date                | `date-fns`, `react-day-picker`                                           |
+| Kategori | Teknologi |
+|----------|-----------|
+| **Framework** | Next.js 15 (Pages Router), React 19, TypeScript |
+| **Database** | PostgreSQL via `pg` — koneksi pool per branch |
+| **UI** | Tailwind CSS v4, shadcn/ui (Radix primitives), `lucide-react` |
+| **Form** | `react-hook-form` + `@hookform/resolvers` + `zod` |
+| **Data Fetching** | `axios`, `@tanstack/react-query` |
+| **Charts** | `recharts` |
+| **Export** | `exceljs` (Excel), `jspdf` + `jspdf-autotable` (PDF) |
+| **Date** | `date-fns`, `react-day-picker` |
 
 ---
 
-## Setup
-
-### Prerequisites
-
-- Node.js 18+
-- PostgreSQL (beberapa branch database)
-
-### Instalasi
+## Quick Start
 
 ```bash
 npm install
+npm run dev        # → http://localhost:3001
+npm run build      # production build
+npm run lint       # ESLint
 ```
 
-### Environment Variables
+---
 
-Buat file `.env.local` di root project:
+## Environment
+
+Buat `.env.local` di root:
 
 ```env
-# Database connection per branch (contoh format)
-IGRCPG_CONNECTION_STRING=postgresql://user:pass@host:5432/igrcpg
-ICMCPG_CONNECTION_STRING=postgresql://user:pass@host:5432/icmcpg
-SPICPG1I_CONNECTION_STRING=postgresql://user:pass@host:5432/spicpg1i
-SPICPG4L_CONNECTION_STRING=postgresql://user:pass@host:5432/spicpg4l
+# ── Koneksi Database per Branch ──────────────────────────
+DB_HOST_IGRCPG=192.168.1.1
+DB_HOST_ICMCPG=192.168.1.2
+DB_HOST_SPICPG1I=192.168.1.3
+DB_HOST_SPICPG4L=192.168.1.4
+DB_NAME_IGRCPG=igrcpg
+DB_NAME_ICMCPG=icmcpg
+DB_NAME_SPICPG1I=spicpg1i
+DB_NAME_SPICPG4L=spicpg4l
 
-# Optional: default app name untuk branch detection
+# Credentials (shared)
+PG_USER=user
+PG_PASSWORD=password
+PG_PORT=5432
+
+# ── Daftar Branch (wajib) ────────────────────────────────
+NEXT_PUBLIC_DATABASE_OPTIONS=[{"label":"IGRCPG","value":"IGRCPG"},{"label":"ICMCPG","value":"ICMCPG"}]
+
+# ── Branch Default ──────────────────────────────────────
 NEXT_PUBLIC_APP_NAME=IGRCPG
-```
 
-### Menjalankan
-
-```bash
-npm run dev        # development server (http://localhost:3001)
-npm run build      # production build
-npm run lint       # ESLint check
-npm run start      # start production server
+# ── IP → Branch Mapping (opsional) ──────────────────────
+BRANCH_NETWORK_MAP={"192.168.226.":"IGRCPG","192.168.227.":"ICMCPG"}
 ```
 
 ---
@@ -62,167 +84,339 @@ npm run start      # start production server
 
 ```
 src/
-├── components/        # UI + custom components
-│   ├── ui/            # shadcn/ui primitives
-│   ├── input/         # Custom inputs (InputProdukPlu, dll)
-│   ├── table/         # ReportTable
-│   ├── Settings/      # SettingsDatabase
-│   └── form/          # Shared form fields (PeriodeRange, SelectDivisi, dll)
-├── configs/           # Feature configs (columns, filters, defaults)
+├── components/
+│   ├── ui/                    # shadcn/ui primitives (46 komponen)
+│   ├── form/shared/           # Field form reusable
+│   │   ├── PeriodeRange.tsx    # Range date picker
+│   │   ├── SelectDivisi.tsx    # Select dengan dependensi
+│   │   ├── SelectDepartement.tsx
+│   │   ├── SelectKategori.tsx
+│   │   ├── CardMember.tsx      # Field member lengkap
+│   │   ├── CardProduk.tsx      # Field produk lengkap
+│   │   ├── CardKasir.tsx       # Field kasir lengkap
+│   │   └── ...                 # 25 total shared components
+│   ├── input/                  # Input dengan modal pencarian
+│   │   ├── InputProdukPlu.tsx
+│   │   ├── InputKodeGift.tsx
+│   │   ├── InputKodeMember.tsx
+│   │   ├── InputKodeCashback.tsx
+│   │   └── ...                 # 10 total input components
+│   ├── table/
+│   │   └── ReportTable.tsx    # Tabel laporan universal
+│   ├── Settings/
+│   │   └── SettingsDatabase.tsx # Pemilih branch (dropdown)
+│   ├── Layout.tsx              # Layout utama + Navbar
+│   ├── ReportHeader.tsx        # Header laporan (title + export + refresh)
+│   └── LoadingIgr.tsx          # Skeleton loading + spinner
+│
+├── configs/                   # Konfigurasi per fitur
+│   ├── database-options.ts     # Branch database dari env
+│   ├── branch-network-map.ts   # IP → branch mapping
+│   ├── produk-baru/            # Produk Baru config
+│   │   ├── produk-baru-config.ts
+│   │   └── filter-default-value.ts
+│   ├── evaluasi-sales/         # 12 file konfigurasi
 │   ├── form-so-harian/
-│   ├── evaluasi-sales/
-│   ├── inventory/
-│   └── database-options.ts
-├── hooks/             # Custom React hooks
-│   ├── useReportPage.ts
-│   ├── useFetchData.ts
-│   ├── useReportQueryEndpoint.ts
+│   ├── lpp-saat-ini/
+│   └── supplierConfig.ts
+│
+├── hooks/                     # React Hooks
+│   ├── useReportPage.ts        # Orchestrator utama halaman laporan
+│   ├── useFetchData.ts         # Generic data fetcher
+│   ├── useReportQueryEndpoint.ts # Baca query dari URL
+│   ├── useExportToExcel.ts     # Export Excel
+│   ├── useReportTableLogic.ts  # Filter + total + periode
+│   ├── useLookupData.ts        # Server/Client lookup dgn cache
+│   ├── useDependentSelect.ts   # Select cascading
+│   ├── useFilteredData.ts      # Client-side search filter
+│   ├── useGroupedOptions.ts    # Grouped select options
+│   ├── useTotalRow.ts          # Total baris kalkulasi
 │   └── ...
-├── lib/               # Core library
-│   ├── db.ts          # DB pool management
-│   ├── handlerFactory.ts
-│   ├── apiHandler.ts
-│   └── axiosClient.ts
-├── pages/             # Pages + API routes
-│   ├── api/           # API endpoints
-│   └── ...            # Frontend pages
-├── schema/            # Zod validation schemas
-├── types/             # TypeScript type definitions
-│   ├── api.ts
-│   ├── report.ts
-│   └── queryParams.ts
-└── utils/             # Utilities
-    ├── filters/       # SQL filter builders
-    ├── query/         # SQL query builders
-    ├── pagination/    # Pagination helpers
-    ├── server/        # Server-side helpers
+│
+├── lib/
+│   ├── db.ts                   # PostgreSQL pool manager
+│   ├── handlerFactory.ts       # Factory API handler
+│   ├── apiHandler.ts           # checkMethod + handleServerError
+│   └── axiosClient.ts          # Axios instance (baseURL: /api)
+│
+├── pages/                     # Pages + API routes
+│   ├── index.tsx               # Home
+│   ├── _app.tsx                # App wrapper
+│   ├── api/                    # API endpoints
+│   │   ├── daftar-produk.ts
+│   │   ├── select-divisi.ts
+│   │   ├── evaluasi-sales/     # 12 endpoint
+│   │   ├── form-so-harian/
+│   │   └── inventory/
+│   ├── evaluasi-sales/
+│   ├── form-so-harian/
+│   │   └── [prdcd]/
+│   ├── informasi-promosi/
+│   └── inventory/
+│       ├── produk-baru/
+│       │   └── table-produk-baru/
+│       └── lpp-saat-ini/
+│
+├── schema/                    # Zod validation schemas
+│   ├── filterProdukBaru.ts
+│   ├── filterLppSaatIni.ts
+│   ├── filterFormSoHarian.ts
+│   └── filterDetailStruk.ts
+│
+├── types/                     # TypeScript type definitions
+│   ├── api.ts                 # ApiResponse<T>, ApiSuccess, ApiError
+│   ├── report.ts              # ColumnConfig<T>
+│   └── queryParams.ts         # QueryParam type
+│
+└── utils/
+    ├── filters/               # SQL filter builders
+    ├── query/                 # SQL query builders
+    ├── pagination/            # Pagination helpers
+    ├── server/                # Server helpers
     ├── exportToPdf/
-    ├── branchCookie.ts
-    └── reportBuilder.ts
+    ├── ExportExcel/
+    ├── branchCookie.ts        # Client-side cookie (set/get)
+    ├── getRequestBranch.ts    # Server-side branch detection
+    └── reportBuilder.ts       # buildReport() dari ColumnConfig
 ```
 
 ---
 
-## Database Branch System
+## Branch Database
 
-Aplikasi ini terhubung ke **beberapa branch database** yang berbeda (IGRCPG, ICMCPG, SPICPG1I, SPICPG4L).
+Aplikasi terhubung ke **beberapa database branch** sekaligus. Sistem pendeteksian branch:
 
-**Cara menentukan branch:**
+### Alur Client
 
-1. **Cookie** — User memilih branch via `SettingsDatabase` → disimpan ke cookie `selected_branch` (30 hari)
-2. **IP** — Fallback: deteksi dari alamat IP client → mapping di `configs/branch-network-map.ts`
-3. **Default** — `NEXT_PUBLIC_APP_NAME` atau branch pertama dari `DATABASE_OPTIONS`
-
-**Server-side:** `getRequestBranch(req)` membaca cookie → IP → default
-**Client-side:** `getBranchCookie()` / `setBranchCookie()` via `utils/branchCookie.ts`
-
----
-
-## Code Generators
-
-```bash
-npm run create:api   <path/nama-endpoint>   # Generate API route
-npm run create:page  <path/nama-page>        # Generate halaman
-npm run create:config <path/nama-config>     # Generate column config
-npm run create:component <NamaComponent>     # Generate component
+```
+SettingsDatabase (dropdown)
+      │
+      ├── setBranchCookie(value)  → cookie "selected_branch"
+      └── onChange(value)         → state React
 ```
 
-Semua nama **wajib kebab-case** (contoh: `laporan/stok-masuk`, `informasi-promosi`).
+### Alur Server (API)
 
-### create:api
+```
+getRequestBranch(req)
+      │
+      ├── 1. Cookie "selected_branch"  (prioritas)
+      ├── 2. IP Address → branch-network-map
+      └── 3. Default (NEXT_PUBLIC_APP_NAME)
+```
 
-Membuat API route di `src/pages/api/`. Tersedia 2 prompt interaktif:
+### Konfigurasi Mapping IP
 
-1. **Jenis handler:**
-   - `Paginated` — list data dengan pagination + search (via `createPaginatedGetHandler`)
-   - `Simple` — ambil semua data tanpa pagination (via `createSimpleGetHandler`)
-   - `Manual` — handler dari nol
+File `src/configs/branch-network-map.ts` membaca env `BRANCH_NETWORK_MAP`:
 
-2. **Letak schema Zod:**
-   - `Inline` — schema di dalam file API route
-   - `Terpisah` — schema di `src/schema/`, API route import dari sana
+```json
+{
+  "192.168.226." : "IGRCPG",
+  "192.168.227.0/24": "ICMCPG",
+  "10.0.0.5": "SPICPG1I"
+}
+```
 
-### create:page
+3 tipe pattern: **exact** IP, **CIDR** (`/24`), **prefix** (tanpa slash).
 
-Membuat page di `src/pages/`. Tersedia prompt pemilihan jenis page:
-- `Report` — laporan tabel dengan `useReportPage` + `ReportTable`
-- `Form` — form filter dengan `react-hook-form` + `SettingsDatabase`
-- `Kosong` — page kosong dengan Layout
-
-### create:config
-
-Membuat konfigurasi kolom tabel di `src/configs/`:
-- Type `*Rows` (field data)
-- Array `*Columns` (ColumnConfig untuk UI + export)
-
-### create:component
-
-Membuat React component di `src/components/`:
-- **Client Component** (default) — dengan `"use client"` untuk interaktivitas
-- **Server Component** (flag `--server`) — tanpa `"use client"`
-
----
-
-## API Convention
-
-### Paginated Handler
+### Client-side Cookie
 
 ```typescript
+import { getBranchCookie, setBranchCookie } from "@/utils/branchCookie";
+
+setBranchCookie("IGRCPG");       // simpan 30 hari
+const branch = getBranchCookie(); // baca
+```
+
+---
+
+## Code Generator
+
+Semua generator ada di `scripts/`. Nama **wajib kebab-case**.
+
+```bash
+npm run create:api      <path/nama>    # → src/pages/api/...ts
+npm run create:page     <path/nama>    # → src/pages/...tsx
+npm run create:config   <path/nama>    # → src/configs/...Config.ts
+npm run create:component <Nama>        # → src/components/...tsx
+```
+
+### `create:api`
+
+Membuat API route di `src/pages/api/`. Prompt interaktif:
+
+**1. Jenis Handler:**
+
+| Pilihan | Fungsi | Response |
+|---------|--------|----------|
+| `Paginated` | List + search + pagination via `createPaginatedGetHandler` | `{ total, page, limit, totalPages, data }` |
+| `Simple` | Semua data tanpa pagination via `createSimpleGetHandler` | `{ total, data }` |
+| `Manual` | Handler custom dari nol | Terserah |
+
+**2. Letak Schema Zod:**
+
+| Pilihan | Hasil |
+|---------|-------|
+| `Inline` | Schema di dalam file API route |
+| `Terpisah` | Schema di `src/schema/`, API route import |
+
+### `create:page`
+
+Membuat page di `src/pages/`. Prompt interaktif:
+
+| Pilihan | Template | Cocok untuk |
+|---------|----------|-------------|
+| `Report` | `useReportPage` + `ReportTable` + `ReportHeader` | Laporan tabel dengan filter |
+| `Form` | `react-hook-form` + `zodResolver` + `SettingsDatabase` | Halaman filter yang redirect ke tabel |
+| `Kosong` | Layout + container kosong | Halaman statis / placeholder |
+
+### `create:config`
+
+Membuat file di `src/configs/`:
+
+```typescript
+// Output: src/configs/<path>/<nama>Config.ts
+export type MyFeatureRows = { field1: string; field2: number };
+export const myFeatureColumns: ColumnConfig<MyFeatureRows>[] = [ ... ];
+```
+
+### `create:component`
+
+Membuat React component di `src/components/`:
+
+```bash
+npm run create:component UserProfile           # Client Component
+npm run create:component UserProfile --server   # Server Component
+```
+
+---
+
+## API Route
+
+### Paginated Handler (via Factory)
+
+```typescript
+import { z } from "zod";
 import { createPaginatedGetHandler } from "@/lib/handlerFactory";
+import type { QueryParam } from "@/types/queryParams";
 
-// Schema Zod untuk validasi query params
-const MySchema = z.object({ search: z.string().optional() });
+const MySchema = z.object({
+  search: z.string().trim().optional().default(""),
+  startDate: z.string().optional(),
+});
 
-// Filter builder → SQL conditions + params
-function buildFilters(filters) { /* ... */ }
+type MyFilters = z.infer<typeof MySchema>;
 
-// Query builder → SQL string
-function buildQuery(conditions) { return `SELECT ... WHERE ${conditions}`; }
+function buildFilters(filters: MyFilters) {
+  const conditions = `1=1 AND ($1 = '' OR name ILIKE $1)`;
+  const params: QueryParam[] = [`%${filters.search}%`];
+  return { conditions, params };
+}
 
-export default createPaginatedGetHandler({
+function buildQuery(conditions: string) {
+  return `SELECT * FROM my_table WHERE ${conditions} ORDER BY id`;
+}
+
+export default createPaginatedGetHandler<MyFilters>({
   schema: MySchema,
   buildFilters,
   buildQuery,
-  successMessage: "...",
-  emptyMessage: (branch) => `...`,
+  successMessage: "Data berhasil diambil.",
+  emptyMessage: (branch) => `Tidak ada data untuk branch '${branch}'.`,
   errorContext: "MyFeature",
 });
 ```
 
-Response: `{ total, page, limit, totalPages, data }`
+**Response:** `{ success, message, total, page, limit, totalPages, data }`
 
-### Simple Handler
+### Simple Handler (via Factory)
+
+Sama seperti Paginated, bedanya:
 
 ```typescript
 export default createSimpleGetHandler({ ... });
 ```
 
-Response: `{ total, data }`
+**Response:** `{ success, message, total, data }` (tanpa page/limit)
 
-### Manual Handler
+### Manual Handler (Custom)
 
-Untuk kebutuhan khusus, bisa bikin handler sendiri — pastikan panggil `getRequestBranch(req)` untuk deteksi branch server-side.
+Untuk kebutuhan khusus yang tidak cocok dengan factory:
+
+```typescript
+import { NextApiRequest, NextApiResponse } from "next";
+import { getPool } from "@/lib/db";
+import { checkMethod, handleServerError } from "@/lib/apiHandler";
+import { getRequestBranch } from "@/utils/getRequestBranch";
+
+export default async function handler(req, res) {
+  if (!checkMethod(req, res, "GET")) return;
+
+  const branch = getRequestBranch(req);
+  try {
+    const pool = getPool(branch);
+    const { rows } = await pool.query("SELECT * FROM my_table");
+    return res.status(200).json({ success: true, data: rows });
+  } catch (error) {
+    return handleServerError(res, error, branch, "MyFeature");
+  }
+}
+```
+
+### Query Params Otomatis
+
+Factory handler otomatis mendeteksi:
+
+| Parameter | Fungsi | Default |
+|-----------|--------|---------|
+| `page` | Halaman ke- | `1` |
+| `limit` | Data per halaman | `100` |
+| `export` | `"true"` → ambil semua (skip pagination) | — |
+| `_total` | Skip COUNT query (gunakan nilai ini) | — |
 
 ---
 
-## Page Convention
+## Halaman (Page)
 
-### Report Page
+### Report Page (Tabel Laporan)
 
-Gunakan `useReportPage` untuk halaman laporan tabel:
+Gunakan `useReportPage` + `buildReport` + `ReportTable`:
 
 ```typescript
-const { filteredData, loading, error, title, periode, handleExport, handleRefresh }
-  = useReportPage<MyRows>({
-    endpoint: "fitur-saya",
-    reportTitle: "Laporan Saya",
-    ...config,   // dari buildReport(columns)
-  });
+import { useReportPage } from "@/hooks/useReportPage";
+import { buildReport } from "@/utils/reportBuilder";
+import { ReportTable } from "@/components/table/ReportTable";
+
+const config = buildReport<MyRows>(myColumns);
+const {
+  filteredData,    // T[] | undefined
+  loading,         // boolean
+  error,           // string | null
+  title,           // string
+  periode,         // string (format: "01 Jan - 05 Jul 2026")
+  handleExport,    // () => Promise<void>
+  handleRefresh,   // () => Promise<void>
+  isRefreshing,    // boolean
+  isExporting,     // boolean
+} = useReportPage<MyRows>({
+  endpoint: "my-feature",     // tanpa /api
+  reportTitle: "My Report",
+  ...config,                   // allFields, numericFields, searchableFields, headers, mapRow
+});
 ```
 
-- Query params (startDate, endDate, branch, dll) otomatis dibaca dari URL
-- Search, export Excel, refresh, dan total baris sudah built-in
-- Untuk pagination, tambah `paginated: true`
+Query params (`startDate`, `endDate`, `branch`, dll) otomatis terbaca dari URL melalui `useReportQueryEndpoint`.
+
+**Dengan Pagination:**
+
+```typescript
+const { page, setPage, limit, setLimit, total, totalPages } = useReportPage({
+  endpoint: "my-feature",
+  paginated: true,
+  defaultLimit: 100,
+  ...config,
+});
+```
 
 ### Form Filter Page
 
@@ -233,32 +427,316 @@ const methods = useForm<MyInput>({
   resolver: zodResolver(MySchema),
   defaultValues: getMyDefaultValues(),
 });
+
+const onSubmit = (data) => {
+  const params = new URLSearchParams();
+  Object.entries(data).forEach(([key, value]) => {
+    if (key === "branch" || !value) return;
+    params.append(key, String(value));
+  });
+  router.push(`/my-feature/table?${params}`);
+};
 ```
 
-- Field `SettingsDatabase` untuk memilih branch (tersimpan di cookie)
-- Submit redirect ke halaman tabel dengan params di URL
-- Branch **tidak perlu** dikirim via URL — dibaca dari cookie oleh API via `getRequestBranch(req)`
+**Komponen form yang tersedia:**
+
+| Komponen | Fungsi |
+|----------|--------|
+| `PeriodeRange` | Range date picker (DD-MM-YYYY) |
+| `SelectDivisi` | Cascading select divisi |
+| `SelectDepartement` | Cascading select departemen |
+| `SelectKategori` | Cascading select kategori |
+| `SelectBranch` | Pilih branch database |
+| `CardProduk` | Field produk lengkap (PLU, nama, barcode, dll) |
+| `CardMember` | Field member lengkap (kode, nama, outlet, dll) |
+| `CardKasir` | Field kasir lengkap (kode, station, method) |
+| `CardSupplier` | Field supplier (kode, nama) |
+| `CardPromo` | Field promo (gift, cashback) |
+
+Semua komponen form sudah **generic** (`<TFieldValues extends FieldValues>`) dan kompatibel dengan `react-hook-form` `control`.
+
+### SettingsDatabase
+
+Setiap halaman yang butuh pemilihan branch:
+
+```typescript
+<SettingsDatabase
+  value={branch}
+  onChange={setBranch}
+  options={DATABASE_OPTIONS}
+/>
+```
+
+Simpan branch di cookie via `setBranchCookie`, baca di server via `getRequestBranch(req)`.
+
+---
+
+## Komponen
+
+### ReportTable
+
+Tabel universal untuk semua laporan. Fitur:
+
+- Search bar client-side
+- Sticky header + footer
+- Column grouping (multi-row header)
+- Skeleton loading
+- Pagination (Prev/Next, limit selector)
+- Total row otomatis (numeric fields dijumlah)
+- Row numbering opsional
+- Action column per row
+
+```typescript
+<ReportTable
+  columns={myColumns}
+  data={filteredData ?? []}
+  keyField={(row) => row.id}
+  showRowNumber
+  searchTerm={searchTerm}
+  onSearchChange={setSearchTerm}
+  onSearchReset={() => setSearchTerm("")}
+  page={page}
+  limit={limit}
+  total={total}
+  totalPages={totalPages}
+  onPageChange={setPage}
+  onLimitChange={setLimit}
+  isRefreshing={isRefreshing}
+/>
+```
+
+### Layout
+
+Mengatur title, favicon (berubah per branch), background (berubah per branch), navbar.
+
+```typescript
+<Layout title="Produk Baru" branch={branch}>
+  {children}
+</Layout>
+```
+
+### ReportHeader
+
+Header laporan dengan title, periode, tombol export Excel, refresh, dan tombol kembali.
+
+```typescript
+<ReportHeader
+  title={title}
+  periode={periode}
+  onExport={handleExport}
+  onRefresh={handleRefresh}
+  isRefreshing={isRefreshing}
+  isExporting={isExporting}
+/>
+```
+
+### LoadingIgr
+
+Skeleton table 13×10 + spinner + logo IGR.
+
+### ColumnConfig (Tipe)
+
+```typescript
+type ColumnConfig<T> = {
+  field: keyof T;         // field dari data
+  label: string;          // label kolom
+  isNumeric?: boolean;    // auto format number + total
+  isSearchable?: boolean; // ikut pencarian client
+  group?: string;         // grouping header
+  groupColor?: string;    // warna header group (Tailwind)
+};
+```
+
+### Input dengan Modal Pencarian
+
+| Komponen | Modal | Search By |
+|----------|-------|-----------|
+| `InputProdukPlu` | `InputProdukModal` | PLU, barcode, nama |
+| `InputNamaProduk` | `InputProdukModal` | Nama barang |
+| `InputKodeGift` | `InputGiftModal` | Kode gift |
+| `InputKodeCashback` | `InputCashbackModal` | Kode cashback |
+| `InputKodeMember` | `InputKodeMemberModal` | No member, nama |
+| `InputSerchSupplier` | `SupplierModal` | Kode supplier |
+| `InputNamaSupplier` | `SupplierModal` | Nama supplier |
+| `InputKodeKair` | `InputKodeKasirModal` | Kode kasir |
+| `InputMonitoringPlu` | `InputMonitoringPluModal` | PLU |
+
+Semua mendukung mode `multiple`, `append`, `separator`, `allowManualInput`.
+
+---
+
+## Form System
+
+### useDependentSelect
+
+Hook untuk cascading select (parent-child). Digunakan oleh `SelectDivisi`, `SelectDepartement`, `SelectKategori`.
+
+```typescript
+const { options, parentValue } = useDependentSelect({
+  control,
+  name: "dept",
+  parentName: "div",
+  data: rawData,                 // T[]
+  filterFn: (item, parent) => ..., // filter logic
+  getOption: (item) => ({ label: item.name, value: item.code }),
+  includeAllOption: true,
+  allLabel: "All",
+});
+```
+
+### Form Field Convention
+
+Semua field form:
+
+1. Terima `control: Control<FormType>` dari react-hook-form
+2. Generic `<TFieldValues extends FieldValues>`
+3. Gunakan `Controller` atau `useController`
+4. Support `disabled`, `placeholder`, `className`
+
+---
+
+## Hooks
+
+### useReportPage (Orchestrator)
+
+Hook utama untuk halaman laporan. Menggabungkan:
+
+```
+useReportQueryEndpoint → useFetchData → useRefreshRouter → useReportTableLogic → useExportToExcel
+```
+
+**Input utama:**
+
+| Prop | Type | Default |
+|------|------|---------|
+| `endpoint` | `string` | — |
+| `reportTitle` | `string` | URL `selectedReport` |
+| `searchableFields` | `(keyof T)[]` | — |
+| `numericFields` | `(keyof T)[]` | — |
+| `headers` | `string[]` | — |
+| `allFields` | `(keyof T)[]` | — |
+| `mapRow` | `(row) => (string\|number)[]` | — |
+| `paginated` | `boolean` | `false` |
+| `customFetch` | `CustomFetchOptions` | — |
+
+**Return:**
+
+| Field | Type |
+|-------|------|
+| `data`, `filteredData` | `T[] \| null \| undefined` |
+| `loading`, `error`, `isRefreshing`, `isExporting` | `boolean \| string \| null` |
+| `title`, `periode` | `string` |
+| `handleExport`, `handleRefresh`, `refetch` | Function |
+| `searchTerm`, `setSearchTerm` | State |
+| `page`, `setPage`, `limit`, `setLimit`, `total`, `totalPages` | Pagination |
+
+### useFetchData
+
+Generic fetcher dengan `axiosClient`.
+
+```typescript
+const { data, loading, error, refetch } = useFetchData<T>({
+  endpoint: "inventory/produk-baru",
+  queryParams: { startDate, endDate, branch },
+  enabled: true,
+});
+```
+
+### useLookupData
+
+Lookup dengan caching + branch detection. Dua mode:
+
+| Mode | Behavior |
+|------|----------|
+| `"client"` | Fetch semua, filter di client |
+| `"server"` | Server-side paginated search (minSearch threshold) |
+
+Otomatis clear cache saat branch berubah (poll cookie tiap 300ms).
 
 ---
 
 ## Export
 
-| Format  | Library       | Fitur                                            |
-| ------- | ------------- | ------------------------------------------------ |
-| Excel   | `exceljs`     | Auto dari `useExportToExcel`, format number, total row |
-| PDF     | `jspdf` + `jspdf-autotable` | Manual via `utils/exportToPdf/`                |
+### Excel (Otomatis)
+
+`useExportToExcel` terintegrasi dengan `useReportPage`:
+
+```typescript
+const { handleExport, isExporting } = useExportToExcel({
+  title,
+  data: filteredData ?? [],
+  // atau fetchAll untuk paginated
+  mapRow: (row) => [row.field1, row.field2, ...],
+  totalRow,
+  columns,
+});
+```
+
+### PDF (Manual)
+
+```typescript
+import { exportToPdf } from "@/utils/exportToPdf";
+```
+
+---
+
+## Types
+
+### ApiResponse
+
+```typescript
+type ApiSuccess<T> = {
+  success: true;
+  message: string;
+  total: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+  data: T;
+};
+
+type ApiError = {
+  success: false;
+  message: string;
+  errors?: unknown;
+};
+
+type ApiResponse<T> = ApiSuccess<T> | ApiError;
+```
+
+### ColumnConfig
+
+```typescript
+type ColumnConfig<T> = {
+  field: keyof T;
+  label: string;
+  isNumeric?: boolean;
+  isSearchable?: boolean;
+  group?: string;
+  groupColor?: string;
+};
+```
 
 ---
 
 ## Scripts
 
-| Perintah              | Fungsi                                  |
-| --------------------- | --------------------------------------- |
-| `npm run dev`         | `next dev --turbopack`                  |
-| `npm run build`       | `next build`                            |
-| `npm run lint`        | `next lint`                             |
-| `npm run start`       | `next start`                            |
-| `npm run create:api`  | Generate API route                      |
-| `npm run create:page` | Generate page                           |
-| `npm run create:config` | Generate column config                  |
-| `npm run create:component` | Generate component                   |
+| Perintah | Fungsi |
+|----------|--------|
+| `npm run dev` | `next dev --turbopack` |
+| `npm run build` | `next build` |
+| `npm run lint` | `next lint` |
+| `npm run start` | `next start` |
+| `npm run create:api` | Generate API route (prompt interaktif) |
+| `npm run create:page` | Generate page (prompt interaktif) |
+| `npm run create:config` | Generate column config |
+| `npm run create:component` | Generate component |
+
+---
+
+## Catatan
+
+- Semua URL endpoint API menggunakan prefix `/api` (tidak perlu ditulis di hook)
+- Branch otomatis terbaca dari cookie → IP → default (tidak perlu dikirim manual)
+- Semua form field sudah generic dan reusable — jika perlu field baru, cek dulu di `components/form/shared/`
+- Nama file/folder **wajib kebab-case** (kecuali komponen React yang PascalCase)
