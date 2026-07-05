@@ -72,6 +72,15 @@ const typeName = toPascalCase(rawFileName);
 const handlerName = toCamelCase(rawFileName);
 const routePath = `/api/${apiName}`;
 
+// Schema paths
+const schemaFileName = `${rawFileName}Schema.ts`;
+const schemaFileDir = path.join(process.cwd(), "src", "schema", ...folders);
+const schemaFilePath = path.join(schemaFileDir, schemaFileName);
+const schemaImportPath =
+  folders.length > 0
+    ? `${folders.join("/")}/${rawFileName}Schema`
+    : `${rawFileName}Schema`;
+
 // ─────────────────────────────────────────────
 // 🎯 PROMPT: Pilih jenis handler
 // ─────────────────────────────────────────────
@@ -101,10 +110,38 @@ function askHandlerType(): Promise<"paginated" | "simple" | "manual"> {
   });
 }
 
+function askSchemaLocation(): Promise<"inline" | "separate"> {
+  return new Promise((resolve) => {
+    console.log("\n📐 Letak schema:");
+    console.log("   1. Inline   - Schema di dalam file API route");
+    console.log("   2. Terpisah - Schema di src/schema/ (import otomatis)\n");
+
+    rl.question("Pilihan (1/2) [default: 1]: ", (answer) => {
+      const choice = answer.trim() || "1";
+      resolve(choice === "2" ? "separate" : "inline");
+    });
+  });
+}
+
 // ─────────────────────────────────────────────
-// 📝 TEMPLATE: Paginated Handler
+// 📝 TEMPLATE: Schema file (terpisah)
 // ─────────────────────────────────────────────
-const paginatedTemplate = `import { z } from "zod";
+const schemaTemplate = `// schema/${apiName}Schema.ts
+import { z } from "zod";
+
+export const ${typeName}Schema = z.object({
+  search: z.string().trim().optional().default(""),
+  // TODO: tambah field filter lain sesuai kebutuhan
+  // div: z.string().trim().optional(),
+});
+
+export type ${typeName}Filters = z.infer<typeof ${typeName}Schema>;
+`;
+
+// ─────────────────────────────────────────────
+// 📝 TEMPLATE: Paginated Handler — Inline
+// ─────────────────────────────────────────────
+const paginatedInline = `import { z } from "zod";
 import { createPaginatedGetHandler } from "@/lib/handlerFactory";
 import type { QueryParam } from "@/types/queryParams";
 
@@ -117,6 +154,7 @@ import type { QueryParam } from "@/types/queryParams";
  * 📄 File: src/pages/api/${apiName}.ts
  *
  * 📌 Jenis: Paginated (list + search + pagination)
+ * 📐 Schema: Inline
  */
 
 // ============================================================
@@ -178,9 +216,75 @@ export default createPaginatedGetHandler<${typeName}Filters>({
 `;
 
 // ─────────────────────────────────────────────
-// 📝 TEMPLATE: Simple Handler
+// 📝 TEMPLATE: Paginated Handler — Terpisah
 // ─────────────────────────────────────────────
-const simpleTemplate = `import { z } from "zod";
+const paginatedSeparate = `import { createPaginatedGetHandler } from "@/lib/handlerFactory";
+import { ${typeName}Schema, type ${typeName}Filters } from "@/schema/${schemaImportPath}";
+import type { QueryParam } from "@/types/queryParams";
+
+/**
+ * =========================================
+ * 🔌 API ROUTE: ${typeName}
+ * =========================================
+ *
+ * 📍 Endpoint: ${routePath}
+ * 📄 File: src/pages/api/${apiName}.ts
+ *
+ * 📌 Jenis: Paginated (list + search + pagination)
+ * 📐 Schema: Terpisah (src/schema/${schemaImportPath})
+ */
+
+// ============================================================
+// Filter Builder
+// ============================================================
+function buildFilters(filters: ${typeName}Filters) {
+  const keywordLike = \`%\${filters.search}%\`;
+
+  const conditions = \`
+    -- TODO: ganti dengan kondisi WHERE sesuai tabel
+    1 = 1
+    AND (
+      $1 = ''
+      OR your_column ILIKE $1
+    )
+  \`;
+
+  const params: QueryParam[] = [keywordLike];
+
+  return { conditions, params };
+}
+
+// ============================================================
+// Query Builder
+// ============================================================
+function buildQuery(conditions: string) {
+  return \`
+    SELECT
+      *
+    FROM your_table
+    WHERE \${conditions}
+    ORDER BY 1
+  \`;
+}
+
+// ============================================================
+// Handler
+// ============================================================
+export default createPaginatedGetHandler<${typeName}Filters>({
+  schema: ${typeName}Schema,
+  buildFilters,
+  buildQuery,
+  successMessage: "Data ${rawFileName.replace(/-/g, " ")} berhasil diambil.",
+  emptyMessage: (branch) => \`Tidak ada data untuk branch '\${branch}'.\`,
+  errorContext: "${typeName}",
+  return404IfEmpty: false,
+});
+`;
+
+// ─────────────────────────────────────────────
+// 📝 TEMPLATE: Simple Handler — Inline
+// ─────────────────────────────────────────────
+const simpleInline = `import { z } from "zod";
 import { createSimpleGetHandler } from "@/lib/handlerFactory";
 
 /**
@@ -192,6 +296,7 @@ import { createSimpleGetHandler } from "@/lib/handlerFactory";
  * 📄 File: src/pages/api/${apiName}.ts
  *
  * 📌 Jenis: Simple (ambil semua data tanpa pagination)
+ * 📐 Schema: Inline
  */
 
 // ============================================================
@@ -225,9 +330,51 @@ export default createSimpleGetHandler({
 `;
 
 // ─────────────────────────────────────────────
-// 📝 TEMPLATE: Manual Handler
+// 📝 TEMPLATE: Simple Handler — Terpisah
 // ─────────────────────────────────────────────
-const manualTemplate = `import { NextApiRequest, NextApiResponse } from "next";
+const simpleSeparate = `import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { ${typeName}Schema } from "@/schema/${schemaImportPath}";
+
+/**
+ * =========================================
+ * 🔌 API ROUTE: ${typeName}
+ * =========================================
+ *
+ * 📍 Endpoint: ${routePath}
+ * 📄 File: src/pages/api/${apiName}.ts
+ *
+ * 📌 Jenis: Simple (ambil semua data tanpa pagination)
+ * 📐 Schema: Terpisah (src/schema/${schemaImportPath})
+ */
+
+// ============================================================
+// Query
+// ============================================================
+const buildQuery = () => \`
+  SELECT
+    *
+  FROM your_table
+  ORDER BY 1
+\`;
+
+// ============================================================
+// Handler
+// ============================================================
+export default createSimpleGetHandler({
+  schema: ${typeName}Schema,
+  buildFilters: () => ({ conditions: "", params: [] }),
+  buildQuery,
+  successMessage: "Data ${rawFileName.replace(/-/g, " ")} berhasil diambil.",
+  emptyMessage: (branch) => \`Tidak ada data untuk branch '\${branch}'.\`,
+  errorContext: "${typeName}",
+});
+`;
+
+// ─────────────────────────────────────────────
+// 📝 TEMPLATE: Manual Handler — Inline
+// ─────────────────────────────────────────────
+const manualInline = `import { NextApiRequest, NextApiResponse } from "next";
+import { z } from "zod";
 import { getPool } from "@/lib/db";
 import { checkMethod, handleServerError } from "@/lib/apiHandler";
 import { getRequestBranch } from "@/utils/getRequestBranch";
@@ -243,12 +390,22 @@ import type { ApiResponse } from "@/types/api";
  * 📄 File: src/pages/api/${apiName}.ts
  *
  * 📌 Jenis: Manual (handler kosong)
+ * 📐 Schema: Inline
  */
+
+// ============================================================
+// Schema
+// ============================================================
+const ${typeName}Schema = z.object({
+  // TODO: tambah field filter sesuai kebutuhan
+});
+
+type ${typeName}Filters = z.infer<typeof ${typeName}Schema>;
 
 // ============================================================
 // Query Builder
 // ============================================================
-const buildQuery = () => \`
+const buildQuery = (filters: ${typeName}Filters) => \`
   SELECT *
   FROM your_table
   LIMIT 10
@@ -263,11 +420,90 @@ export default async function handler(
 ) {
   if (!checkMethod(req, res, "GET")) return;
 
+  const parsed = ${typeName}Schema.safeParse(req.query);
+  if (!parsed.success) {
+    return res.status(400).json({
+      success: false,
+      message: "Parameter query tidak valid.",
+      errors: parsed.error.flatten(),
+    });
+  }
+
+  const filters = parsed.data;
   const branch = getRequestBranch(req);
 
   try {
     const pool = getPool(branch);
-    const { rows } = await pool.query(buildQuery());
+    const { rows } = await pool.query(buildQuery(filters));
+
+    return res.status(200).json({
+      success: true,
+      message: "Data ${rawFileName.replace(/-/g, " ")} berhasil diambil.",
+      total: rows.length,
+      data: rows,
+    });
+  } catch (error) {
+    return handleServerError(res, error, branch, "${typeName}");
+  }
+}
+`;
+
+// ─────────────────────────────────────────────
+// 📝 TEMPLATE: Manual Handler — Terpisah
+// ─────────────────────────────────────────────
+const manualSeparate = `import { NextApiRequest, NextApiResponse } from "next";
+import { getPool } from "@/lib/db";
+import { checkMethod, handleServerError } from "@/lib/apiHandler";
+import { getRequestBranch } from "@/utils/getRequestBranch";
+import { ${typeName}Schema, type ${typeName}Filters } from "@/schema/${schemaImportPath}";
+
+import type { ApiResponse } from "@/types/api";
+
+/**
+ * =========================================
+ * 🔌 API ROUTE: ${typeName}
+ * =========================================
+ *
+ * 📍 Endpoint: ${routePath}
+ * 📄 File: src/pages/api/${apiName}.ts
+ *
+ * 📌 Jenis: Manual (handler kosong)
+ * 📐 Schema: Terpisah (src/schema/${schemaImportPath})
+ */
+
+// ============================================================
+// Query Builder
+// ============================================================
+const buildQuery = (filters: ${typeName}Filters) => \`
+  SELECT *
+  FROM your_table
+  LIMIT 10
+\`;
+
+// ============================================================
+// Handler
+// ============================================================
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<ApiResponse<unknown>>,
+) {
+  if (!checkMethod(req, res, "GET")) return;
+
+  const parsed = ${typeName}Schema.safeParse(req.query);
+  if (!parsed.success) {
+    return res.status(400).json({
+      success: false,
+      message: "Parameter query tidak valid.",
+      errors: parsed.error.flatten(),
+    });
+  }
+
+  const filters = parsed.data;
+  const branch = getRequestBranch(req);
+
+  try {
+    const pool = getPool(branch);
+    const { rows } = await pool.query(buildQuery(filters));
 
     return res.status(200).json({
       success: true,
@@ -286,30 +522,43 @@ export default async function handler(
 // ─────────────────────────────────────────────
 async function main() {
   const handlerType = await askHandlerType();
+  const schemaLocation = await askSchemaLocation();
   rl.close();
 
   let template: string;
   let typeLabel: string;
+  let hasSeparateSchema = false;
 
   if (handlerType === "paginated") {
-    template = paginatedTemplate;
+    template = schemaLocation === "separate" ? paginatedSeparate : paginatedInline;
     typeLabel = "Paginated (search + pagination)";
+    hasSeparateSchema = schemaLocation === "separate";
   } else if (handlerType === "simple") {
-    template = simpleTemplate;
+    template = schemaLocation === "separate" ? simpleSeparate : simpleInline;
     typeLabel = "Simple (tanpa pagination)";
+    hasSeparateSchema = schemaLocation === "separate";
   } else {
-    template = manualTemplate;
+    template = schemaLocation === "separate" ? manualSeparate : manualInline;
     typeLabel = "Manual";
+    hasSeparateSchema = schemaLocation === "separate";
   }
 
+  // Buat file API
   fs.mkdirSync(baseDir, { recursive: true });
   fs.writeFileSync(filePath, template);
+
+  // Buat file schema terpisah jika dipilih
+  if (hasSeparateSchema) {
+    fs.mkdirSync(schemaFileDir, { recursive: true });
+    fs.writeFileSync(schemaFilePath, schemaTemplate);
+  }
 
   console.log(`\n✅ API route berhasil dibuat:`);
   console.log(`   📄 File        : ${filePath}`);
   console.log(`   🔌 Endpoint    : ${routePath}`);
   console.log(`   🧩 Handler     : ${handlerName}Handler`);
   console.log(`   📦 Jenis       : ${typeLabel}`);
+  console.log(`   📐 Schema      : ${schemaLocation === "separate" ? `Terpisah (${schemaFilePath})` : "Inline"}`);
   console.log(
     `   🗂️  Folder      : ${folders.length > 0 ? folders.join("/") : "(root api)"}`,
   );
