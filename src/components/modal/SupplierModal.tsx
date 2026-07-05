@@ -24,13 +24,17 @@ export interface SupplierModalProps {
   endpoint?: string;
 }
 
+import { getBranchCookie } from "@/utils/branchCookie";
+
 export default function SupplierModal({
   show,
   onClose,
   onSelect,
-  title = "Pilih Supplier",
+  title,
   endpoint = "/api/daftar-supplier",
 }: SupplierModalProps) {
+  const branch = getBranchCookie();
+  const resolvedTitle = title ?? `Pilih Supplier - ${branch || "..."}`;
   const resolvedEndpoint = `${endpoint}`;
 
   const filterFn = (item: SupplierRows, keyword: string): boolean => {
@@ -63,7 +67,7 @@ export default function SupplierModal({
       onClose={onClose}
       endpoint={resolvedEndpoint}
       columns={supplierColumns}
-      title={title}
+      title={resolvedTitle}
       onSelect={handleSelect}
       filterFn={filterFn}
       mode="client"
