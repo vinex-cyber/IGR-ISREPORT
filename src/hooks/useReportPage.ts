@@ -9,126 +9,25 @@ import { useReportQueryEndpoint } from "@/hooks/useReportQueryEndpoint";
 import { useReportTableLogic } from "@/hooks/useReportTableLogic";
 import { useExportToExcel } from "@/hooks/useExportToExcel";
 
-/**
- * Konfigurasi untuk mengganti proses fetch bawaan useReportPage.
- *
- * customFetch mempunyai prioritas lebih tinggi daripada:
- * - endpoint
- * - basePath
- * - reportType
- * - query dari router
- */
 interface CustomFetchOptions {
-  /**
-   * Endpoint API khusus tanpa awalan `/api`.
-   *
-   * @example
-   * "form-so-harian"
-   *
-   * @example
-   * "evaluasi-sales/per-divisi"
-   */
   endpoint: string;
-
-  /**
-   * Query parameter khusus yang dikirim ke endpoint.
-   *
-   * Ketika diisi, query dari URL/router tidak digunakan.
-   *
-   * @example
-   * {
-   *   startDate: "2026-06-21",
-   *   endDate: "2026-06-21",
-   *   branch: "IGRCPG"
-   * }
-   */
   queryParams?: Record<string, string>;
-
-  /**
-   * Menentukan apakah request boleh dijalankan.
-   *
-   * @default true jika endpoint tersedia
-   */
   enabled?: boolean;
 }
 
-/**
- * Konfigurasi utama untuk hook useReportPage.
- */
 interface UseReportPageOptions<T> {
-  /**
-   * Endpoint API yang sudah pasti tanpa awalan `/api`.
-   */
   endpoint?: string;
-
-  /**
-   * Path utama API untuk laporan yang memiliki beberapa jenis laporan.
-   */
   basePath?: string;
-
-  /**
-   * Jenis laporan tetap atau fallback untuk `selectedReport`.
-   */
   reportType?: string;
-
-  /**
-   * Judul laporan.
-   */
   reportTitle?: string;
-
-  /**
-   * Daftar field yang digunakan untuk pencarian global.
-   */
-  searchableFields: (keyof T)[];
-
-  /**
-   * Daftar field angka yang akan dihitung pada total/footer.
-   */
-  numericFields: (keyof T)[];
-
-  /**
-   * Judul kolom untuk export Excel.
-   */
+  searchableFields: string[];
+  numericFields: string[];
   headers: string[];
-
-  /**
-   * Seluruh field yang digunakan pada laporan dan export.
-   */
-  allFields: (keyof T)[];
-
-  /**
-   * Mengubah satu object data menjadi array untuk export Excel.
-   */
+  allFields: string[];
   mapRow: (row: T) => (string | number | null)[];
-
-  /**
-   * Menentukan apakah proses fetch boleh dijalankan.
-   */
   enabled?: boolean;
-
-  /**
-   * Konfigurasi fetch khusus.
-   */
   customFetch?: CustomFetchOptions;
-
-  // ── Pagination (opsional) ──────────────────────────────────
-
-  /**
-   * Aktifkan pagination.
-   *
-   * Jika false, semua data diambil sekaligus (perilaku lama).
-   *
-   * @default false
-   */
   paginated?: boolean;
-
-  /**
-   * Jumlah data per halaman.
-   *
-   * Hanya digunakan ketika paginated=true.
-   *
-   * @default 100
-   */
   defaultLimit?: number;
 }
 
@@ -212,21 +111,25 @@ export function useReportPage<T extends object>(
   // Reset ke halaman 1 ketika query berubah
   const baseQueryString = JSON.stringify(baseQuery);
 
+  const [searchTerm, setSearchTerm] = useState("");
+
   // ── Query yang dikirim ke API ────────────────────────────────
   const query = useMemo(() => {
     if (!paginated) return baseQuery; // perilaku lama, tidak ada page/limit
 
-    return {
+    const q: Record<string, string> = {
       ...baseQuery,
       page: String(page),
       limit: String(limit),
     };
+    if (searchTerm.trim()) {
+      q.search = searchTerm.trim();
+    }
+    return q;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseQueryString, paginated, page, limit]);
+  }, [baseQueryString, paginated, page, limit, searchTerm]);
 
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const { data, loading, error, refetch, total, totalPages } = useFetchData<
+  const { data, loading, error, refetch, total, totalPages, totals } = useFetchData<
     T[]
   >({
     endpoint,
@@ -244,34 +147,37 @@ export function useReportPage<T extends object>(
     allFields,
     reportTitle,
     paginated,
+    totals,
   );
 
   const columns = allFields.map((field, index) => ({
-    field,
+    field: field as string,
     label: headers[index] ?? String(field),
     isNumeric: numericFields.includes(field),
   }));
 
   // ── fetchAll untuk export Excel ──────────────────────────────
-  const fetchAll = useCallback(async (): Promise<T[]> => {
+  const fetchAll = useCallback(async (): Promise<Record<string, unknown>[]> => {
     if (!endpoint) return [];
 
-    const response = await axiosClient.get(endpoint, {
-      params: {
-        ...baseQuery,
-        export: "true", // ambil semua data tanpa pagination
-      },
-    });
+    const params: Record<string, string> = {
+      ...baseQuery,
+      export: "true",
+    };
+    if (searchTerm.trim()) {
+      params.search = searchTerm.trim();
+    }
+
+    const response = await axiosClient.get(endpoint, { params });
 
     return response.data.data ?? [];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [endpoint, baseQueryString]);
+  }, [endpoint, baseQueryString, searchTerm]);
 
-  const { handleExport, isExporting } = useExportToExcel<T>({
+  const { handleExport, isExporting } = useExportToExcel({
     title,
-    // Kalau paginated → pakai fetchAll, kalau tidak → pakai data langsung (perilaku lama)
-    ...(paginated ? { fetchAll } : { data: filteredData ?? [] }),
-    mapRow: (row) => mapRow(row).map((cell) => cell ?? ""),
+    ...(paginated ? { fetchAll } : { data: (filteredData ?? []) as Record<string, unknown>[] }),
+    mapRow: (row: Record<string, unknown>) => mapRow(row as T).map((cell) => cell ?? ""),
     totalRow,
     columns,
   });
@@ -285,6 +191,13 @@ export function useReportPage<T extends object>(
       setPage(1);
     }
   }, [baseQueryString]);
+
+  // Reset ke halaman 1 saat pencarian berubah (hanya mode paginated)
+  useEffect(() => {
+    if (paginated) {
+      setPage(1);
+    }
+  }, [searchTerm, paginated]);
 
   return {
     // ── Yang sudah ada (tidak berubah) ───────────────────────

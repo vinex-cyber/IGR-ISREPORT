@@ -40,6 +40,8 @@ import SelectGroupFlag from "@/components/form/shared/SelectGroupFlag";
 import SelectStatusTag from "@/components/form/shared/SelectStatusTag";
 import CardSupplier from "@/components/form/shared/CardSupplier";
 import SelectStatusQty from "@/components/form/shared/SelectStatusQty";
+import SelectReport from "@/components/form/shared/SelectReport";
+import { LPP_SAAT_INI_REPORT_OPTIONS } from "@/configs/lpp-saat-ini/report-options";
 
 /**
  * Dijalankan oleh server pada setiap request halaman.
@@ -72,7 +74,7 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
       const params = new URLSearchParams();
 
       Object.entries(data).forEach(([key, value]) => {
-        if (key === "branch") {
+        if (key === "branch" || key === "selectedReport") {
           return;
         }
 
@@ -93,7 +95,13 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
         params.append(key, String(value));
       });
 
-      await router.push(`/inventory/lpp-saat-ini/laporan?${params.toString()}`);
+      const report = data.selectedReport ?? "per-divisi";
+
+      params.set("selectedReport", report);
+
+      await router.push(
+        `/inventory/lpp-saat-ini/laporan?${params.toString()}`,
+      );
     } catch (error) {
       console.error("Submit error:", error);
 
@@ -256,6 +264,14 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
                     name: "namaSupplier",
                   },
                 }}
+              />
+            </div>
+
+            <div>
+              <SelectReport<FilterLppSaatIniInput>
+                control={control}
+                name="selectedReport"
+                options={LPP_SAAT_INI_REPORT_OPTIONS}
               />
             </div>
           </div>

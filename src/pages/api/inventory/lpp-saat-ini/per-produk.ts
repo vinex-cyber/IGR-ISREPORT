@@ -1,5 +1,5 @@
 // /src/pages/api/inventory/lpp-saat-ini/per-produk.ts
-import { createPaginatedGetHandler } from "@/lib/handlerFactory"; // Sesuaikan path
+import { createSimpleGetHandler } from "@/lib/handlerFactory";
 import { FilterLppSaatIniSchema } from "@/schema/filterLppSaatIni";
 import { buildFilterLppSaatIni } from "@/utils/filters/FilterLppSaatIni";
 import { QueryLppSaatIni } from "@/utils/query/queryLppSaatIni";
@@ -12,7 +12,7 @@ const buildQuery = (conditions: string) => `
   ORDER BY st_div,st_dept,st_katb,st_prdcd
 `;
 
-export default createPaginatedGetHandler({
+export default createSimpleGetHandler({
   schema: FilterLppSaatIniSchema,
   buildFilters: buildFilterLppSaatIni,
   buildQuery,

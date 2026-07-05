@@ -2,30 +2,29 @@
 import { ColumnConfig } from "@/types/report";
 
 export function buildReport<T>(columns: ColumnConfig<T>[]) {
-    const allFields = columns.map(c => c.field);
+    const allFields: string[] = columns.map(c => c.field as string);
 
-    const numericFields = columns
+    const numericFields: string[] = columns
         .filter(c => c.isNumeric)
-        .map(c => c.field);
+        .map(c => c.field as string);
 
-    const searchableFields = columns
+    const searchableFields: string[] = columns
         .filter(c => c.isSearchable)
-        .map(c => c.field);
+        .map(c => c.field as string);
 
     const headers = allFields;
 
-    const mapRow = (row: T) =>
+    const mapRow: (row: Record<string, unknown>) => (string | number)[] = (row) =>
         columns.map(col =>
-            col.isNumeric ? Number(row[col.field]) : row[col.field]
+            col.isNumeric ? Number(row[col.field as string]) : (row[col.field as string] as string | number)
         );
 
     const tableColumns = columns.map(c => ({
-        field: c.field,
+        field: c.field as string,
         label: c.label,
         isNumeric: c.isNumeric,
     }));
 
-    // 🔥 AUTO HEADER GROUP
     const headerGroups = buildHeaderGroups(columns);
 
     return {
@@ -40,6 +39,10 @@ export function buildReport<T>(columns: ColumnConfig<T>[]) {
 }
 
 function buildHeaderGroups<T>(columns: ColumnConfig<T>[]) {
+    const hasAnyGroup = columns.some(c => c.group);
+
+    if (!hasAnyGroup) return [];
+
     const groups: { name: string; span: number; color?: string }[] = [];
 
     let currentGroup = "";

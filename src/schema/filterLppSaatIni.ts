@@ -1,8 +1,5 @@
 // src/schema/filterLppSaatIni.ts
 import { z } from "zod";
-import { DATABASE_OPTIONS } from "@/configs/database-options";
-
-const DATABASE_VALUES = new Set(DATABASE_OPTIONS.map((option) => option.value));
 
 export const FilterLppSaatIniSchema = z.object({
   prdcd: z
@@ -27,14 +24,9 @@ export const FilterLppSaatIniSchema = z.object({
   statusQty: z.enum(["1", "2", "3", "4", "5"]).optional(),
   lokasi: z.string().optional(),
   groupFlag: z.string().optional(),
-  branch: z
-    .string()
-    .trim()
-    .min(1, "Database wajib dipilih")
-    .refine((value) => DATABASE_VALUES.has(value), {
-      message: "Database tidak valid",
-    }),
   selectedReport: z.string().optional(),
+  branch: z.string().trim().optional(),
+  search: z.string().optional(),
 });
 
 export type FilterLppSaatIniInput = z.infer<typeof FilterLppSaatIniSchema>;

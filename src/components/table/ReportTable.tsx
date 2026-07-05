@@ -13,15 +13,15 @@ const LIMIT_OPTIONS = [50, 100, 250, 500];
 // ============================================================
 // Types
 // ============================================================
-interface Column<T> {
-  field: keyof T;
+interface Column {
+  field: string;
   label: string;
   isNumeric?: boolean;
   group?: string;
 }
 
 interface ReportTableProps<T> {
-  columns: Column<T>[];
+  columns: Column[];
   data: T[];
   totalRow?: T | (string | number)[];
   customFooter?: (data: T[]) => React.ReactNode;
@@ -241,8 +241,8 @@ export function ReportTable<T extends Record<string, unknown>>({
                         col.isNumeric ? "text-right" : ""
                       }`}>
                       {col.isNumeric
-                        ? formatNumber(Number(row[col.field]))
-                        : String(row[col.field] ?? "")}
+                        ? formatNumber(Number(row[col.field as keyof T]))
+                        : String(row[col.field as keyof T] ?? "")}
                     </td>
                   ))}
 
@@ -282,7 +282,7 @@ export function ReportTable<T extends Record<string, unknown>>({
 
                     const value = isArrayTotal
                       ? (totalRow as (string | number)[])[idx]
-                      : (totalRow as T)[col.field];
+                      : (totalRow as T)[col.field as keyof T];
 
                     return (
                       <td

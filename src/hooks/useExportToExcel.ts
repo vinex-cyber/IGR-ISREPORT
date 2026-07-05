@@ -5,46 +5,34 @@ import { useState } from "react";
 import getDays from "@/hooks/getDays";
 import { exportToStyledExcel } from "@/utils/ExportExcel/exportToExcel";
 
-type Column<T> = {
-  field: keyof T;
+interface Column {
+  field: string;
   label: string;
   isNumeric?: boolean;
-};
+}
 
-interface UseExportToExcelProps<T extends object> {
+interface UseExportToExcelProps {
   title: string;
 
-  /**
-   * Data yang akan diexport.
-   *
-   * Jika fetchAll tidak diberikan,
-   * maka data ini yang digunakan.
-   */
-  data?: T[];
+  data?: Record<string, unknown>[];
 
-  /**
-   * Ambil seluruh data dari server.
-   *
-   * Cocok untuk report yang menggunakan
-   * pagination atau lazy loading.
-   */
-  fetchAll?: () => Promise<T[]>;
+  fetchAll?: () => Promise<Record<string, unknown>[]>;
 
-  mapRow: (row: T) => (string | number | null)[];
+  mapRow: (row: Record<string, unknown>) => (string | number | null)[];
 
   totalRow?: (string | number | null)[];
 
-  columns: Column<T>[];
+  columns: Column[];
 }
 
-export function useExportToExcel<T extends object>({
+export function useExportToExcel({
   title,
   data = [],
   fetchAll,
   mapRow,
   totalRow,
   columns,
-}: UseExportToExcelProps<T>) {
+}: UseExportToExcelProps) {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async () => {

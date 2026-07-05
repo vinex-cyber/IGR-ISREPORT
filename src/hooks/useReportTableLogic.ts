@@ -11,15 +11,16 @@ import { formatReportPeriod } from "@/utils/formatReportPeriode";
 export const useReportTableLogic = <T extends object>(
   data: T[] | undefined,
   searchTerm: string,
-  excludeTotalFields: (keyof T)[],
-  totalFields: (keyof T)[],
-  allFields: (keyof T)[],
+  excludeTotalFields: string[],
+  totalFields: string[],
+  allFields: string[],
   reportTitle?: string,
   paginated?: boolean,
+  totals?: Record<string, unknown> | null,
 ) => {
   const router = useRouter();
 
-  const filteredData = useFilteredData(data ?? undefined, searchTerm);
+  const filteredData = useFilteredData(data ?? undefined, searchTerm, excludeTotalFields);
 
   const titleFromQuery = useTitleFromQuery();
 
@@ -33,15 +34,17 @@ export const useReportTableLogic = <T extends object>(
 
   const periode = formatReportPeriod(startDate, endDate);
 
-  const rawTotalRow = useTotalRow<T>(
-    paginated ? [] : filteredData, // ← kalau paginated, jangan hitung total
+  const rawTotalRow = useTotalRow(
+    paginated ? (totals ? [totals as T] : []) : filteredData,
     excludeTotalFields,
     totalFields,
     allFields,
   );
 
   const totalRow = paginated
-    ? undefined // ← tidak tampilkan total kalau paginated
+    ? rawTotalRow.length > 0
+      ? rawTotalRow
+      : undefined
     : rawTotalRow.length > 0
       ? rawTotalRow
       : undefined;

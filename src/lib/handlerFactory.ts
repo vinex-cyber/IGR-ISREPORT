@@ -30,6 +30,7 @@ interface PaginatedConfig<TFilters> extends BaseConfig<TFilters> {
   successMessage: string | ((branch: string) => string);
   emptyMessage: string | ((branch: string) => string);
   return404IfEmpty?: boolean;
+  buildTotalsQuery?: (conditions: string, params: QueryParam[]) => string;
 }
 
 export function createPaginatedGetHandler<TFilters>(
@@ -78,6 +79,14 @@ export function createPaginatedGetHandler<TFilters>(
 
       const { rows } = await pool.query(query, values);
 
+      let totals = null;
+
+      if (config.buildTotalsQuery) {
+        const totalsQuery = config.buildTotalsQuery(conditions, params);
+        const { rows: totalsRows } = await pool.query(totalsQuery, params);
+        totals = totalsRows[0] ?? null;
+      }
+
       // Handle jika data kosong (404)
       if (config.return404IfEmpty !== false && rows.length === 0) {
         const msg =
@@ -105,6 +114,7 @@ export function createPaginatedGetHandler<TFilters>(
         limit: exportAll ? total : limit,
         totalPages: exportAll ? 1 : Math.ceil(total / limit),
         data: rows,
+        totals,
       });
     } catch (error) {
       return handleServerError(res, error, branch, config.errorContext);

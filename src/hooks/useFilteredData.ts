@@ -20,7 +20,7 @@ import { useMemo } from "react";
 export function useFilteredData<T>(
     data: T[] | undefined,
     searchTerm: string,
-    searchableKeys?: (keyof T)[]
+    searchableKeys?: string[]
 ): T[] | undefined {
     return useMemo(() => {
         if (!data || !searchTerm) return data;

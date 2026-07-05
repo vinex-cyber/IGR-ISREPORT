@@ -15,6 +15,7 @@ interface FetchDataResult<T> {
   total: number;
   totalPages: number;
   page: number;
+  totals: Record<string, unknown> | null;
   refetch: () => Promise<void>;
 }
 
@@ -29,6 +30,7 @@ export function useFetchData<T>({
   const [total, setTotal] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [page, setPage] = useState<number>(1);
+  const [totals, setTotals] = useState<Record<string, unknown> | null>(null);
 
   const paramsString = useMemo(
     () => (queryParams ? JSON.stringify(queryParams) : ""),
@@ -61,6 +63,7 @@ export function useFetchData<T>({
       setTotal(response.data.total ?? 0);
       setTotalPages(response.data.totalPages ?? 1);
       setPage(response.data.page ?? 1);
+      setTotals(response.data.totals ?? null);
     } catch (err: unknown) {
       if (err instanceof Error) {
         console.error("Fetch error:", err.message);
@@ -79,5 +82,5 @@ export function useFetchData<T>({
     fetchData();
   }, [endpoint, stableParams, enabled, fetchData]);
 
-  return { data, error, loading, total, totalPages, page, refetch: fetchData };
+  return { data, error, loading, total, totalPages, page, totals, refetch: fetchData };
 }

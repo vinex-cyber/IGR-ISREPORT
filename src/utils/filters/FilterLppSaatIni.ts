@@ -81,6 +81,18 @@ export const buildFilterLppSaatIni = (
     params.push(filters.namaSupplier);
   }
 
+  // Pencarian teks (server-side untuk paginated endpoint)
+  if (filters.search) {
+    const term = `%${filters.search}%`;
+    conditions.push(`(
+      prd.prd_prdcd ILIKE $${params.length + 1}
+      OR prd.prd_deskripsipanjang ILIKE $${params.length + 1}
+      OR hgb.hgb_kodesupplier ILIKE $${params.length + 1}
+      OR hgb.hgb_namasupplier ILIKE $${params.length + 1}
+    )`);
+    params.push(term);
+  }
+
   // Filter Status Qty
   if (filters.statusQty) {
     switch (filters.statusQty) {

@@ -11,6 +11,8 @@ export type ApiSuccess<T> = {
   totalPages?: number;
 
   data: T;
+
+  totals?: Record<string, unknown> | null;
 };
 
 export type ApiError = {
