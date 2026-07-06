@@ -259,11 +259,27 @@ Membuat API route di `src/pages/api/`. Prompt interaktif:
 
 Membuat page di `src/pages/`. Prompt interaktif:
 
-| Pilihan | Template | Cocok untuk |
-|---------|----------|-------------|
-| `Report` | `useReportPage` + `ReportTable` + `ReportHeader` | Laporan tabel dengan filter |
-| `Form` | `react-hook-form` + `zodResolver` + `SettingsDatabase` | Halaman filter yang redirect ke tabel |
-| `Kosong` | Layout + container kosong | Halaman statis / placeholder |
+**1. Format File:**
+
+| Pilihan | Hasil | Contoh |
+|---------|-------|--------|
+| `Folder` | `src/pages/.../nama/index.tsx` | `master-lokasi/index.tsx` |
+| `Flat` | `src/pages/.../nama.tsx` | `master-lokasi.tsx` |
+
+**2. Template (dulu ada pilihan Report/Form/Kosong, sekarang minimal):**
+
+```tsx
+// src/pages/nama/index.tsx
+import Layout from "@/components/Layout";
+
+export default function NamaPage() {
+  return (
+    <Layout title="Nama">
+      <h1 className="text-2xl font-bold mb-4">Nama</h1>
+    </Layout>
+  );
+}
+```
 
 ### `create:config`
 
