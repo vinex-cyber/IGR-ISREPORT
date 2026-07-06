@@ -392,6 +392,44 @@ Pagination ditangani di client oleh `useReportPage`. API cukup mengembalikan sem
 
 ---
 
+## Navbar / Menu
+
+Menu navbar ada di `src/components/navbar/menus/`. Setiap menu dikelompokkan per modul:
+
+```
+src/components/navbar/menus/
+├── index.ts              # Re-export semua menu
+├── inventory-menu.ts     # Menu Inventory
+├── store-menu.ts         # Menu Store
+├── logistik-menu.ts      # Menu Logistik
+└── web-ho-menu.ts        # Menu Web HO
+```
+
+### Menambahkan Route Baru
+
+Edit file menu yang sesuai, tambah item:
+
+```ts
+{
+  title: "Nama Menu",
+  href: "/path/halaman",
+  description: "Penjelasan singkat halaman ini.",
+}
+```
+
+Contoh — `inventory-menu.ts`:
+
+```ts
+export const INVENTORY_MENU = [
+  { title: "Produk Baru", href: "/inventory/produk-baru", description: "..." },
+  { title: "Master Lokasi", href: "/inventory/master-lokasi", description: "..." },
+] satisfies readonly NavbarMenuItem[];
+```
+
+Tidak perlu edit `index.ts` — dia otomatis re-export semua file menu.
+
+---
+
 ## Halaman (Page)
 
 ### Report Page (Tabel Laporan)
