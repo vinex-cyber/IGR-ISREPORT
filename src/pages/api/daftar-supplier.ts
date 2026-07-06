@@ -1,4 +1,4 @@
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 import { z } from "zod";
 
 //===============================================================
@@ -22,7 +22,7 @@ const buildQuery = () => `
       group by hgb_kodesupplier, sup_namasupplier
     `;
 
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: DaftarSupplierSchema,
   buildFilters: () => ({ conditions: "", params: [] }),
   buildQuery,

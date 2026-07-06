@@ -2,7 +2,7 @@
 import { FilterLppSaatIniSchema } from "@/schema/filterLppSaatIni";
 import { buildFilterLppSaatIni } from "@/utils/filters/FilterLppSaatIni";
 import { QueryLppSaatIni } from "@/utils/query/queryLppSaatIni";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 
 // ============================================================
 // Query Builder
@@ -35,7 +35,7 @@ const buildQuery = (conditions: string) => `
 // ============================================================
 // Handler
 // ============================================================
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: FilterLppSaatIniSchema,
   buildFilters: buildFilterLppSaatIni,
   buildQuery,

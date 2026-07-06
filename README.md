@@ -245,7 +245,7 @@ Membuat API route di `src/pages/api/`. Prompt interaktif:
 
 | Pilihan | Fungsi | Response |
 |---------|--------|----------|
-| `Simple` | Semua data tanpa pagination via `createSimpleGetHandler` | `{ total, data }` |
+| `Simple` | Semua data tanpa pagination via `createGetHandler` | `{ total, data }` |
 | `Manual` | Handler custom dari nol | Terserah |
 
 **2. Letak Schema Zod:**
@@ -291,14 +291,14 @@ npm run create:component UserProfile --server   # Server Component
 ### Simple Handler (via Factory)
 
 ```typescript
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 import type { QueryParam } from "@/types/queryParams";
 
 const buildQuery = () => `
   SELECT * FROM my_table ORDER BY id
 `;
 
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: z.object({}),
   buildFilters: () => ({ conditions: "1=1", params: [] }),
   buildQuery,
@@ -314,7 +314,7 @@ Dengan filter:
 
 ```typescript
 import { z } from "zod";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 import type { QueryParam } from "@/types/queryParams";
 
 const MySchema = z.object({
@@ -336,7 +336,7 @@ function buildQuery(conditions: string) {
   return `SELECT * FROM my_table WHERE ${conditions} ORDER BY id`;
 }
 
-export default createSimpleGetHandler<MyFilters>({
+export default createGetHandler<MyFilters>({
   schema: MySchema,
   buildFilters,
   buildQuery,
@@ -372,7 +372,7 @@ export default async function handler(req, res) {
 
 ### Pagination (Client-side)
 
-Pagination ditangani di client oleh `useReportPage`. API cukup mengembalikan semua data (via `createSimpleGetHandler`).
+Pagination ditangani di client oleh `useReportPage`. API cukup mengembalikan semua data (via `createGetHandler`).
 
 ---
 

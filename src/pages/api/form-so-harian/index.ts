@@ -2,7 +2,7 @@
 import { formSoHarianQuery } from "@/utils/query/formSoHarian";
 import { FilterFormSoHarianSchema } from "@/schema/filterFormSoHarian";
 import { FilterFormSoHarian } from "@/utils/filters/FiltersFormSoHarian";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 
 const buildQuery = (conditions: string) => `
                         select
@@ -26,7 +26,7 @@ const buildQuery = (conditions: string) => `
                         order by area asc
         `;
 
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: FilterFormSoHarianSchema,
   buildFilters: FilterFormSoHarian,
   buildQuery,

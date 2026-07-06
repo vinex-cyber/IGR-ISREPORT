@@ -1,6 +1,6 @@
 // /src/pages/api/daftar-kodekasir.ts
 import { z } from "zod";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 
 //===============================================================
 // Schema
@@ -21,7 +21,7 @@ const buildQuery = () => `
         order by userid;
     `;
 
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: DaftarKodeKasirSchema,
   buildFilters: () => ({ conditions: "", params: [] }),
   buildQuery,

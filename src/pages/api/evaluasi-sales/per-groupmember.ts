@@ -2,7 +2,7 @@
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk"; // pastikan import benar
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk"; // pastikan import benar
 import { DetailStruk } from "@/utils/query/detailStruk";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 import { QueryParam } from "@/types/queryParams";
 
 const buildQuery = (conditions: string, params: QueryParam[]) => `
@@ -26,7 +26,7 @@ const buildQuery = (conditions: string, params: QueryParam[]) => `
         having coalesce(SUM(dtl_netto),0) <> 0
         ORDER BY dtl_tipemember, dtl_outlet, dtl_suboutlet
         `;
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: FilterDetailStrukSchema,
   buildFilters: FilterDetailStruk,
   buildQuery,

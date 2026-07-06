@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 
 //===============================================================
 // Schema
@@ -20,7 +20,7 @@ const buildQuery = () => `
 //===============================================================
 // Handler
 //===============================================================
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: SelectTagSchema,
   buildQuery,
   buildFilters: () => ({ conditions: "", params: [] }),

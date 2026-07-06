@@ -1,6 +1,6 @@
 // src/pages/api/select-outlet-member.ts
 import { z } from "zod";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 
 //===============================================================
 // Schema
@@ -20,7 +20,7 @@ const buildQuery = () => `
                 out_kodeoutlet
         `;
 
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: SelectOutletMemberSchema,
   buildFilters: () => ({ conditions: "", params: [] }),
   buildQuery,

@@ -1,6 +1,6 @@
 // api/daftar-monitoringplu.ts
 import { z } from "zod";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 //===============================================================
 // Schema
 //===============================================================
@@ -20,7 +20,7 @@ const buildQuery = () => `
       order by 1 asc;
     `;
 
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: DaftarMonitoringPLuSchema,
   buildFilters: () => ({ conditions: "", params: [] }),
   buildQuery,

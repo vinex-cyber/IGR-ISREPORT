@@ -1,7 +1,7 @@
 // ============================================================
 // Schema
 
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 import { z } from "zod";
 
 // ============================================================
@@ -23,7 +23,7 @@ const buildQuery = () => `
       order by st_lokasi
     `;
 
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: DaftarLokasiSchema,
   buildFilters: () => ({ conditions: "", params: [] }),
   buildQuery,

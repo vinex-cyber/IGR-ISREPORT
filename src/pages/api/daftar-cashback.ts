@@ -1,6 +1,6 @@
 // src/pages/api/daftar-cashback.ts
 import { z } from "zod";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 import type { QueryParam } from "@/types/queryParams";
 
 // ============================================================
@@ -78,7 +78,7 @@ function buildQuery(conditions: string) {
 // ============================================================
 // Handler
 // ============================================================
-export default createSimpleGetHandler<DaftarCashbackFilters>({
+export default createGetHandler<DaftarCashbackFilters>({
   schema: DaftarCashbackSchema,
   buildFilters,
   buildQuery,

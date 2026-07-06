@@ -1,6 +1,6 @@
 // src/pages/api/select-suboutlet-member.ts
 import { z } from "zod";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 
 //===============================================================
 // Schema
@@ -28,7 +28,7 @@ const buildQuery = () => `
                 tbmaster_outlet ON sub_kodeoutlet = out_kodeoutlet
         `;
 
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: SelectSubOutletMemberSchema,
   buildFilters: () => ({ conditions: "", params: [] }),
   buildQuery,

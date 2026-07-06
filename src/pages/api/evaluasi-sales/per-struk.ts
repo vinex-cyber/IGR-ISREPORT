@@ -3,7 +3,7 @@ import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk"; // pasti
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk"; // pastikan import benar
 import { DetailStruk } from "@/utils/query/detailStruk";
 import { QueryParam } from "@/types/queryParams";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 
 const buildQuery = (conditions: string, params: QueryParam[]) => `
 SELECT
@@ -49,7 +49,7 @@ SELECT
 // Handler
 // ============================================================
 
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: FilterDetailStrukSchema,
   buildFilters: FilterDetailStruk,
   buildQuery,

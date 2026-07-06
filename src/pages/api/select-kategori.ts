@@ -1,6 +1,6 @@
 // src/pages/api/select-kategori.ts
 import { z } from "zod";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 
 //===============================================================
 // Schema
@@ -26,7 +26,7 @@ const buildQuery = () => `
       order by div_kodedivisi, dep_kodedepartement, kat_kodekategori;
     `;
 
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: SelectKategoriSchema,
   buildQuery,
   buildFilters: () => ({ conditions: "", params: [] }),

@@ -1,4 +1,4 @@
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 import { z } from "zod";
 
 //===============================================================
@@ -19,7 +19,7 @@ const buildQuery = () => `
       order by grp_group desc, grp_kategori asc;
     `;
 
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: SelectKategoriMemberSchema,
   buildFilters: () => ({ conditions: "", params: [] }),
   buildQuery,

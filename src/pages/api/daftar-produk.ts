@@ -1,6 +1,6 @@
 // src/pages/api/daftar-produk.ts
 import { z } from "zod";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 import type { QueryParam } from "@/types/queryParams";
 
 // ============================================================
@@ -72,7 +72,7 @@ function buildQuery(conditions: string) {
 // ============================================================
 // Handler
 // ============================================================
-export default createSimpleGetHandler<DaftarProdukFilters>({
+export default createGetHandler<DaftarProdukFilters>({
   schema: DaftarProdukSchema,
   buildFilters,
   buildQuery,

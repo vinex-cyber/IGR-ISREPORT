@@ -1,7 +1,7 @@
 // src/pages/api/select-group-flag.ts
 import { z } from "zod";
 import { QueryGroupFlag } from "@/utils/query/queryGroupFlag";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 
 // ============================================================
 // Schema (kosong karena tidak ada filter)
@@ -14,7 +14,7 @@ const buildQuery = () => `
             FROM
                 (${QueryGroupFlag()}) AS Flag
         `;
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: SelectGroupFlagSchema,
   buildFilters: () => ({ conditions: "", params: [] }),
   buildQuery,

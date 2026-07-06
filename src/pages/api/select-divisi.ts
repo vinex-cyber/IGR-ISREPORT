@@ -1,6 +1,6 @@
 // src/pages/api/select-divisi.ts
 import { z } from "zod";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 
 // ============================================================
 // Schema (kosong karena tidak ada filter)
@@ -23,7 +23,7 @@ const buildQuery = () => `
 // ============================================================
 // Handler
 // ============================================================
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: SelectDivisiSchema,
   buildFilters: () => ({ conditions: "", params: [] }),
   buildQuery,

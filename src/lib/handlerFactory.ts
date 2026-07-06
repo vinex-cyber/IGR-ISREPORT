@@ -20,16 +20,16 @@ interface BaseConfig<TFilters> {
 }
 
 // ============================================================
-// Handler TANPA Pagination (Simple / Ambil Semua Data)
+// Handler GET (Ambil Semua Data)
 // ============================================================
-interface SimpleConfig<TFilters> extends BaseConfig<TFilters> {
+interface GetHandlerConfig<TFilters> extends BaseConfig<TFilters> {
   successMessage: string | ((branch: string) => string);
   emptyMessage: string | ((branch: string) => string);
   return404IfEmpty?: boolean;
 }
 
-export function createSimpleGetHandler<TFilters>(
-  config: SimpleConfig<TFilters>,
+export function createGetHandler<TFilters>(
+  config: GetHandlerConfig<TFilters>,
 ) {
   return async function handler(
     req: NextApiRequest,

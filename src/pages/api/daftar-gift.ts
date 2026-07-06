@@ -1,6 +1,6 @@
 // src/pages/api/daftar-gift.ts
 import { z } from "zod";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 import type { QueryParam } from "@/types/queryParams";
 
 // ============================================================
@@ -90,7 +90,7 @@ function buildQuery(conditions: string) {
 // ============================================================
 // Handler
 // ============================================================
-export default createSimpleGetHandler<DaftarGiftFilters>({
+export default createGetHandler<DaftarGiftFilters>({
   schema: DaftarGiftSchema,
   buildFilters,
   buildQuery,

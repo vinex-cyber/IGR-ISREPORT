@@ -1,5 +1,5 @@
 // /src/pages/api/evaluasi-sales/per-divisi.ts
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk";
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk";
 import { DetailStruk } from "@/utils/query/detailStruk";
@@ -22,7 +22,7 @@ const buildQuery = (conditions: string, params: QueryParam[]) => `
   ORDER BY dtl_k_div
 `;
 
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: FilterDetailStrukSchema,
   buildFilters: FilterDetailStruk,
   buildQuery,

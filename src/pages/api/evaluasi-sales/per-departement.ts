@@ -1,5 +1,5 @@
 // /src/pages/api/evaluasi-sales/per-departement.ts
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk";
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk";
 import { DetailStruk } from "@/utils/query/detailStruk";
@@ -26,7 +26,7 @@ const buildQuery = (conditions: string, params: QueryParam[]) => `
         having coalesce(SUM(dtl_netto),0) <> 0
         ORDER BY dtl_k_div, dtl_k_dept
 `;
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: FilterDetailStrukSchema,
   buildFilters: FilterDetailStruk,
   buildQuery,

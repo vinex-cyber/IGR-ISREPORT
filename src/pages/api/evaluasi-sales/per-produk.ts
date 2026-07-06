@@ -1,5 +1,5 @@
 // /src/pages/api/evaluasi-sales/per-produk.ts
-import { createSimpleGetHandler } from "@/lib/handlerFactory"; // Sesuaikan path
+import { createGetHandler } from "@/lib/handlerFactory"; // Sesuaikan path
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk";
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk";
 import { DetailStruk } from "@/utils/query/detailStruk";
@@ -30,7 +30,7 @@ const buildQuery = (conditions: string, params: QueryParam[]) => `
     ORDER BY total_margin DESC
 `;
 
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: FilterDetailStrukSchema,
   buildFilters: FilterDetailStruk,
   buildQuery,

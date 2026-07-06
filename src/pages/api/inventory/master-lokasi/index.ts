@@ -1,4 +1,4 @@
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 import {
   MasterLokasiSchema,
   type MasterLokasiFilters,
@@ -20,7 +20,8 @@ import { MasterLokasiQuery } from "@/utils/query/inventory/master-lokasi-query";
 // ============================================================
 // Filter Builder
 // ============================================================
-function buildFilters(_filters: MasterLokasiFilters) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function buildFilters(filters: MasterLokasiFilters) {
   return { conditions: "1 = 1", params: [] };
 }
 
@@ -34,7 +35,7 @@ function buildQuery(conditions: string) {
 // ============================================================
 // Handler
 // ============================================================
-export default createSimpleGetHandler<MasterLokasiFilters>({
+export default createGetHandler<MasterLokasiFilters>({
   schema: MasterLokasiSchema,
   buildFilters,
   buildQuery,

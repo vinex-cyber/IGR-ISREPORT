@@ -3,7 +3,7 @@ import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk"; // pasti
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk"; // pastikan import benar
 import { DetailStruk } from "@/utils/query/detailStruk";
 import { QueryParam } from "@/types/queryParams";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 
 const buildQuery = (conditions: string, params: QueryParam[]) => `
         SELECT
@@ -24,7 +24,7 @@ const buildQuery = (conditions: string, params: QueryParam[]) => `
         HAVING count(dtl_netto) > 0
         ORDER BY dtl_k_div, dtl_k_dept, dtl_k_katb
         `;
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: FilterDetailStrukSchema,
   buildFilters: FilterDetailStruk,
   buildQuery,

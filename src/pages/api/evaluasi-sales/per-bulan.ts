@@ -2,7 +2,7 @@
 import { FilterDetailStruk } from "@/utils/filters/FiltersDetailStruk"; // pastikan import benar
 import { FilterDetailStrukSchema } from "@/schema/filterDetailStruk"; // pastikan import benar
 import { DetailStruk } from "@/utils/query/detailStruk";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 import { QueryParam } from "@/types/queryParams";
 
 const buildQuery = (conditions: string, params: QueryParam[]) => `
@@ -23,7 +23,7 @@ const buildQuery = (conditions: string, params: QueryParam[]) => `
         ORDER BY to_char(dtl_tanggal, 'yyyymm')
         `;
 
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: FilterDetailStrukSchema,
   buildFilters: FilterDetailStruk,
   buildQuery,

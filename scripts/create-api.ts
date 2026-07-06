@@ -93,7 +93,7 @@ function askHandlerType(): Promise<"simple" | "manual"> {
   return new Promise((resolve) => {
     console.log("\n📦 Pilih jenis handler:");
     console.log(
-      "   1. Simple     - Ambil semua data tanpa pagination (createSimpleGetHandler)",
+      "   1. Simple     - Ambil semua data (createGetHandler)",
     );
     console.log("   2. Manual     - Handler kosong, tulis sendiri\n");
 
@@ -140,7 +140,7 @@ export type ${typeName}Filters = z.infer<typeof ${typeName}Schema>;
 // 📝 TEMPLATE: Simple Handler — Inline
 // ─────────────────────────────────────────────
 const simpleInline = `import { z } from "zod";
-import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import { createGetHandler } from "@/lib/handlerFactory";
 
 /**
  * =========================================
@@ -150,7 +150,7 @@ import { createSimpleGetHandler } from "@/lib/handlerFactory";
  * 📍 Endpoint: ${routePath}
  * 📄 File: src/pages/api/${apiName}.ts
  *
- * 📌 Jenis: Simple (ambil semua data tanpa pagination)
+ * 📌 Jenis: Simple (ambil semua data)
  * 📐 Schema: Inline
  */
 
@@ -174,7 +174,7 @@ const buildQuery = () => \`
 // ============================================================
 // Handler
 // ============================================================
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: ${typeName}Schema,
   buildFilters: () => ({ conditions: "", params: [] }),
   buildQuery,
@@ -187,7 +187,7 @@ export default createSimpleGetHandler({
 // ─────────────────────────────────────────────
 // 📝 TEMPLATE: Simple Handler — Terpisah
 // ─────────────────────────────────────────────
-const simpleSeparate = `import { createSimpleGetHandler } from "@/lib/handlerFactory";
+const simpleSeparate = `import { createGetHandler } from "@/lib/handlerFactory";
 import { ${typeName}Schema } from "@/schema/${schemaImportPath}";
 
 /**
@@ -198,7 +198,7 @@ import { ${typeName}Schema } from "@/schema/${schemaImportPath}";
  * 📍 Endpoint: ${routePath}
  * 📄 File: src/pages/api/${apiName}.ts
  *
- * 📌 Jenis: Simple (ambil semua data tanpa pagination)
+ * 📌 Jenis: Simple (ambil semua data)
  * 📐 Schema: Terpisah (src/schema/${schemaImportPath})
  */
 
@@ -215,7 +215,7 @@ const buildQuery = () => \`
 // ============================================================
 // Handler
 // ============================================================
-export default createSimpleGetHandler({
+export default createGetHandler({
   schema: ${typeName}Schema,
   buildFilters: () => ({ conditions: "", params: [] }),
   buildQuery,
