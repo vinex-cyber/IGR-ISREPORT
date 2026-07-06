@@ -1,14 +1,11 @@
 // src/pages/inventory/produk-baru/index.tsx
 
 import type { InferGetServerSidePropsType } from "next";
-import { useRouter } from "next/router";
 
 import { useState } from "react";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import { toast } from "sonner";
 
 import Layout from "@/components/Layout";
 import SettingsDatabase from "@/components/Settings/SettingsDatabase";
@@ -36,8 +33,9 @@ import { DATABASE_OPTIONS } from "@/configs/database-options";
 
 import { getFilterProdukBaruDefaultValues } from "@/configs/produk-baru/filter-default-value";
 
-import { FormatTanggal } from "@/utils/formatTanggal";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
+import { useFormSubmit } from "@/hooks/useFormPage";
+import { FormatTanggal } from "@/utils/formatTanggal";
 
 /**
  * Dijalankan pada server setiap halaman dibuka.
@@ -53,85 +51,28 @@ type ProdukBaruPageProps = InferGetServerSidePropsType<
 >;
 
 export default function ProdukBaruPage({ defaultBranch }: ProdukBaruPageProps) {
-  const router = useRouter();
-
   const [branch, setBranch] = useState(defaultBranch);
 
   const methods = useForm<FilterProdukBaruInput>({
     resolver: zodResolver(FilterProdukBaruSchema),
-
-    /**
-     * Branch diisi berdasarkan IP client.
-     */
     defaultValues: getFilterProdukBaruDefaultValues(),
   });
 
   const { control, reset, clearErrors, handleSubmit } = methods;
 
-  const onSubmit = async (data: FilterProdukBaruInput) => {
-    try {
-      const params = new URLSearchParams();
-
-      Object.entries(data).forEach(([key, value]) => {
-        if (key === "branch") {
-          return;
-        }
-
-        if (value === undefined || value === null || value === "") {
-          return;
-        }
-
-        if (Array.isArray(value)) {
-          value.forEach((item) => {
-            if (item !== "") {
-              params.append(key, String(item));
-            }
-          });
-
-          return;
-        }
-
-        params.append(key, String(value));
-      });
-
-      await router.push(
-        `/inventory/produk-baru/table-produk-baru?${params.toString()}`,
-      );
-
-      toast.success("Laporan produk baru sedang diproses", {
-        duration: 2000,
-        position: "top-right",
-        description: `Periode: ${FormatTanggal(
-          data.startDate ?? "",
-        )} - ${FormatTanggal(data.endDate ?? "")}`,
-        icon: "📊",
-        closeButton: true,
-      });
-    } catch (error) {
-      console.error("Submit error:", error);
-
-      toast.error("Terjadi kesalahan saat submit", {
-        position: "top-right",
-      });
-    }
-  };
-
-  const handleReset = () => {
-    /**
-     * Branch kembali ke hasil deteksi IP client.
-     * Tanggal dihitung ulang menggunakan tanggal hari ini.
-     */
-    reset(getFilterProdukBaruDefaultValues());
-
-    setBranch(defaultBranch);
-
-    clearErrors();
-
-    toast.success("Filter berhasil direset", {
-      duration: 1500,
-      position: "top-right",
-    });
-  };
+  const { onSubmit, handleReset } = useFormSubmit<FilterProdukBaruInput>({
+    getDefaultValues: getFilterProdukBaruDefaultValues,
+    redirectPath: "/inventory/produk-baru/table-produk-baru",
+    defaultBranch,
+    setBranch,
+    reset,
+    clearErrors,
+    successMessage: "Laporan produk baru sedang diproses",
+    successDescription: (data) =>
+      `Periode: ${FormatTanggal(
+        data.startDate ?? "",
+      )} - ${FormatTanggal(data.endDate ?? "")}`,
+  });
 
   return (
     <Layout title="Produk Baru" branch={branch}>

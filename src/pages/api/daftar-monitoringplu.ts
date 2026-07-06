@@ -28,4 +28,5 @@ export default createGetHandler({
   emptyMessage: (branch) =>
     `Tidak ada data Daftar Monitoring PLU untuk branch '${branch}'.`,
   errorContext: "Daftar Monitoring PLU",
+  paginated: true,
 });

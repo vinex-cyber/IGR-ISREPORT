@@ -1,7 +1,6 @@
 // src/pages/inventory/lpp-saat-ini/index.tsx
 
 import type { InferGetServerSidePropsType } from "next";
-import { useRouter } from "next/router";
 
 import { useState } from "react";
 
@@ -9,7 +8,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { RotateCcw } from "lucide-react";
-import { toast } from "sonner";
 
 import Layout from "@/components/Layout";
 import SettingsDatabase from "@/components/Settings/SettingsDatabase";
@@ -36,6 +34,7 @@ import {
   CardTitleLegend,
 } from "@/components/ui/card";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
+import { useFormSubmit } from "@/hooks/useFormPage";
 import SelectGroupFlag from "@/components/form/shared/SelectGroupFlag";
 import SelectStatusTag from "@/components/form/shared/SelectStatusTag";
 import CardSupplier from "@/components/form/shared/CardSupplier";
@@ -53,79 +52,29 @@ type LppSaatIniPageProps = InferGetServerSidePropsType<
 >;
 
 export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
-  const router = useRouter();
-
   const [branch, setBranch] = useState(defaultBranch);
 
   const methods = useForm<FilterLppSaatIniInput>({
     resolver: zodResolver(FilterLppSaatIniSchema),
-
-    /**
-     * Gunakan default values khusus LPP Saat Ini
-     * dan kirim branch hasil pembacaan IP client.
-     */
-    defaultValues: getFilterLppSaatIniDefaultValues(defaultBranch),
+    defaultValues: getFilterLppSaatIniDefaultValues(),
   });
 
   const { control, reset, clearErrors, handleSubmit } = methods;
 
-  const onSubmit = async (data: FilterLppSaatIniInput) => {
-    try {
-      const params = new URLSearchParams();
-
-      Object.entries(data).forEach(([key, value]) => {
-        if (key === "branch" || key === "selectedReport") {
-          return;
-        }
-
-        if (value === undefined || value === null || value === "") {
-          return;
-        }
-
-        if (Array.isArray(value)) {
-          value.forEach((item) => {
-            if (item !== "") {
-              params.append(key, String(item));
-            }
-          });
-
-          return;
-        }
-
-        params.append(key, String(value));
-      });
-
-      const report = data.selectedReport ?? "per-divisi";
-
-      params.set("selectedReport", report);
-
-      await router.push(
-        `/inventory/lpp-saat-ini/laporan?${params.toString()}`,
-      );
-    } catch (error) {
-      console.error("Submit error:", error);
-
-      toast.error("Terjadi kesalahan saat menampilkan laporan", {
-        position: "top-right",
-      });
-    }
-  };
-
-  const handleReset = () => {
-    /**
-     * Reset menggunakan branch hasil deteksi IP.
-     */
-    reset(getFilterLppSaatIniDefaultValues(defaultBranch));
-
-    setBranch(defaultBranch);
-
-    clearErrors();
-
-    toast.success("Filter berhasil direset", {
-      position: "top-right",
-      duration: 1500,
-    });
-  };
+  const { onSubmit, handleReset } = useFormSubmit<FilterLppSaatIniInput>({
+    getDefaultValues: getFilterLppSaatIniDefaultValues,
+    redirectPath: "/inventory/lpp-saat-ini/laporan",
+    defaultBranch,
+    setBranch,
+    reset,
+    clearErrors,
+    skipKeys: ["branch", "selectedReport"],
+    onBeforeRedirect: (data, params) => {
+      params.set("selectedReport", data.selectedReport ?? "per-divisi");
+    },
+    successMessage: "",
+    errorMessage: "Terjadi kesalahan saat menampilkan laporan",
+  });
 
   return (
     <Layout title="LPP Saat Ini" branch={branch}>

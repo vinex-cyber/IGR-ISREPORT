@@ -254,7 +254,9 @@ export function ReportTable<T extends Record<string, unknown>>({
                         col.isNumeric ? "text-right" : ""
                       }`}>
                       {col.isNumeric
-                        ? formatNumber(Number(row[col.field as keyof T]))
+                        ? row[col.field as keyof T] != null
+                          ? formatNumber(Number(row[col.field as keyof T]))
+                          : ""
                         : String(row[col.field as keyof T] ?? "")}
                     </td>
                   ))}

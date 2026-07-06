@@ -80,4 +80,5 @@ export default createGetHandler<DaftarProdukFilters>({
   emptyMessage: (branch) => `Tidak ada data produk untuk branch '${branch}'.`,
   errorContext: "Daftar Produk",
   return404IfEmpty: false,
+  paginated: true,
 });

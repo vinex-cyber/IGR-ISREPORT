@@ -98,4 +98,5 @@ export default createGetHandler<DaftarGiftFilters>({
   emptyMessage: (branch) => `Tidak ada data gift untuk branch '${branch}'.`,
   errorContext: "Daftar Gift",
   return404IfEmpty: true,
+  paginated: true,
 });

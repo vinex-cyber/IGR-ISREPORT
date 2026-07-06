@@ -86,4 +86,5 @@ export default createGetHandler<DaftarCashbackFilters>({
   emptyMessage: (branch) => `Tidak ada data cashback untuk branch '${branch}'.`,
   errorContext: "Daftar Cashback",
   return404IfEmpty: false,
+  paginated: true,
 });

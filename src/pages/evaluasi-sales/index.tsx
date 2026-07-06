@@ -1,10 +1,7 @@
 // src/pages/evaluasi-sales/index.tsx
-import { useRouter } from "next/router";
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { toast } from "sonner";
 import { ArrowRightIcon, RotateCcw } from "lucide-react";
 
 import Layout from "@/components/Layout";
@@ -37,6 +34,7 @@ import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranch
 import { InferGetServerSidePropsType } from "next";
 import CardSupplier from "@/components/form/shared/CardSupplier";
 import { useState } from "react";
+import { useFormSubmit } from "@/hooks/useFormPage";
 
 /**
  * Dijalankan pada server setiap kali halaman dibuka.
@@ -52,84 +50,31 @@ type EvaluasiSalesPageProps = InferGetServerSidePropsType<
 export default function EvaluasiSales({
   defaultBranch,
 }: EvaluasiSalesPageProps) {
-  const router = useRouter();
   const [branch, setBranch] = useState(defaultBranch);
+
   const methods = useForm<FilterDetailStrukInput>({
     resolver: zodResolver(FilterDetailStrukSchema),
-
-    /**
-     * Branch pertama diisi berdasarkan IP client.
-     */
     defaultValues: getFilterDetailStrukDefaultValues(),
   });
 
   const { control, reset, clearErrors, handleSubmit } = methods;
 
-  const onSubmit = async (data: FilterDetailStrukInput) => {
-    try {
-      const reportType = data.selectedReport ?? "per-divisi";
-
-      const params = new URLSearchParams();
-
-      Object.entries(data).forEach(([key, value]) => {
-        if (value === undefined || value === null || value === "") {
-          return;
-        }
-
-        if (Array.isArray(value)) {
-          value.forEach((item) => {
-            if (item !== "") {
-              params.append(key, String(item));
-            }
-          });
-
-          return;
-        }
-
-        params.append(key, String(value));
-      });
-
-      await router.push(
-        `/evaluasi-sales/laporan/${reportType}?${params.toString()}`,
-      );
-
-      toast.success(`Laporan ${reportType} sedang diproses`, {
-        duration: 2000,
-        position: "top-right",
-
-        description: `Periode: ${FormatTanggal(
-          data.startDate ?? "",
-        )} - ${FormatTanggal(data.endDate ?? "")}`,
-
-        icon: "📊",
-        closeButton: true,
-      });
-    } catch (error) {
-      console.error("Submit error:", error);
-
-      toast.error("Terjadi kesalahan saat submit");
-    }
-  };
-
-  const handleReset = () => {
-    /**
-     * Reset kembali ke default values.
-     *
-     * Branch tetap memakai hasil deteksi IP client,
-     * bukan hanya nilai NEXT_PUBLIC_APP_NAME.
-     *
-     * Tanggal dihitung kembali agar selalu memakai
-     * tanggal ketika tombol reset ditekan.
-     */
-    reset(getFilterDetailStrukDefaultValues());
-
-    clearErrors();
-
-    toast.success("Semua filter berhasil direset", {
-      position: "top-right",
-      duration: 1500,
-    });
-  };
+  const { onSubmit, handleReset } = useFormSubmit<FilterDetailStrukInput>({
+    getDefaultValues: getFilterDetailStrukDefaultValues,
+    redirectPath: (data) =>
+      `/evaluasi-sales/laporan/${data.selectedReport ?? "per-divisi"}`,
+    defaultBranch,
+    reset,
+    clearErrors,
+    skipKeys: ["selectedReport"],
+    successMessage: (data) =>
+      `Laporan ${data.selectedReport ?? "per-divisi"} sedang diproses`,
+    successDescription: (data) =>
+      `Periode: ${FormatTanggal(
+        data.startDate ?? "",
+      )} - ${FormatTanggal(data.endDate ?? "")}`,
+    errorMessage: "Terjadi kesalahan saat submit",
+  });
 
   return (
     <Layout title="Evaluasi Sales" branch={branch}>

@@ -16,14 +16,23 @@ type DaftarMemberFilters = z.infer<typeof DaftarMemberSchema>;
 // Filter Builder
 // ============================================================
 function buildFilters(filters: DaftarMemberFilters) {
+  if (!filters.search) {
+    return {
+      conditions: `
+        cus_recordid IS NULL
+        AND COALESCE(cus_namamember, '') <> 'NEW'
+      `,
+      params: [],
+    };
+  }
+
   const keywordLike = `%${filters.search}%`;
 
   const conditions = `
     cus_recordid IS NULL
     AND COALESCE(cus_namamember, '') <> 'NEW'
     AND (
-      $1 = ''
-      OR TO_TSVECTOR('simple', COALESCE(cus_namamember, '')) @@ PLAINTO_TSQUERY('simple', $1)
+      TO_TSVECTOR('simple', COALESCE(cus_namamember, '')) @@ PLAINTO_TSQUERY('simple', $1)
       OR COALESCE(cus_kodemember, '') ILIKE $2
     )
   `;
@@ -36,7 +45,24 @@ function buildFilters(filters: DaftarMemberFilters) {
 // ============================================================
 // Query Builder
 // ============================================================
-function buildQuery(conditions: string) {
+function buildQuery(conditions: string, params: QueryParam[]) {
+  if (params.length === 0) {
+    return `
+      SELECT
+        cus_kodeigr,
+        cus_kodemember,
+        cus_namamember,
+        CASE
+          WHEN COALESCE(cus_flagmemberkhusus, 'N') = 'Y'
+          THEN 'MERAH'
+          ELSE 'BIRU'
+        END AS jenis_member
+      FROM tbmaster_customer
+      WHERE ${conditions}
+      ORDER BY cus_namamember ASC
+    `;
+  }
+
   return `
     SELECT
       cus_kodeigr,
@@ -84,4 +110,5 @@ export default createGetHandler<DaftarMemberFilters>({
   emptyMessage: (branch) => `Tidak ada data member untuk branch '${branch}'.`,
   errorContext: "Daftar Member",
   return404IfEmpty: false,
+  paginated: true,
 });
