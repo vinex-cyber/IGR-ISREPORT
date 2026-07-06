@@ -88,16 +88,7 @@ async function main() {
       rl.close();
       process.exit(1);
     }
-    // push new branch upstream
-    const pushNew = run(`git push -u origin ${targetBranch}`);
-    if (!pushNew.ok) {
-      console.error("❌ Gagal push branch baru:\n" + pushNew.output);
-      rl.close();
-      process.exit(1);
-    }
-    console.log(`✅ Branch baru '${targetBranch}' dibuat & di-push`);
-    rl.close();
-    return;
+    console.log(`✅ Branch baru '${targetBranch}' dibuat`);
   }
 
   // 5. Switch if different
@@ -129,7 +120,9 @@ async function main() {
   console.log(`✅ Commit: ${commit.output}`);
 
   console.log(`🚀 Push ke origin/${targetBranch}...`);
-  const push = run(`git push origin ${targetBranch}`);
+  const push = run(
+    `git push -u origin ${targetBranch}`
+  );
   if (!push.ok) {
     console.error("❌ Gagal push:\n" + push.output);
     rl.close();
