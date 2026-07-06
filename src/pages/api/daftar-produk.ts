@@ -1,6 +1,6 @@
 // src/pages/api/daftar-produk.ts
 import { z } from "zod";
-import { createPaginatedGetHandler } from "@/lib/handlerFactory";
+import { createSimpleGetHandler } from "@/lib/handlerFactory";
 import type { QueryParam } from "@/types/queryParams";
 
 // ============================================================
@@ -72,12 +72,12 @@ function buildQuery(conditions: string) {
 // ============================================================
 // Handler
 // ============================================================
-export default createPaginatedGetHandler<DaftarProdukFilters>({
+export default createSimpleGetHandler<DaftarProdukFilters>({
   schema: DaftarProdukSchema,
   buildFilters,
   buildQuery,
   successMessage: "Data daftar produk berhasil diambil.",
   emptyMessage: (branch) => `Tidak ada data produk untuk branch '${branch}'.`,
   errorContext: "Daftar Produk",
-  return404IfEmpty: false, // search kosong tetap return 200, bukan 404
+  return404IfEmpty: false,
 });

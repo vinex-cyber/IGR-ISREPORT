@@ -1,11 +1,7 @@
-// /src/lib/handlerFactory.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
 import { getPool } from "@/lib/db";
 import { checkMethod, handleServerError } from "@/lib/apiHandler";
-import { getTotalData } from "@/utils/pagination/getTotalData";
-import { buildPaginationQuery } from "@/utils/pagination/buildPaginationQuery";
-import { getPaginationParams } from "@/utils/pagination/getPaginationParams";
 import type { ApiResponse } from "@/types/api";
 import type { QueryParam } from "@/types/queryParams";
 import { getRequestBranch } from "@/utils/getRequestBranch";
@@ -14,7 +10,7 @@ import { getRequestBranch } from "@/utils/getRequestBranch";
 // Shared Base Config
 // ============================================================
 interface BaseConfig<TFilters> {
-  schema: z.ZodType<TFilters, z.ZodTypeDef, unknown>; // ← unknown, bukan any
+  schema: z.ZodType<TFilters, z.ZodTypeDef, unknown>;
   buildFilters: (filters: TFilters) => {
     conditions: string;
     params: QueryParam[];
@@ -24,106 +20,7 @@ interface BaseConfig<TFilters> {
 }
 
 // ============================================================
-// 1. Handler DENGAN Pagination
-// ============================================================
-interface PaginatedConfig<TFilters> extends BaseConfig<TFilters> {
-  successMessage: string | ((branch: string) => string);
-  emptyMessage: string | ((branch: string) => string);
-  return404IfEmpty?: boolean;
-  buildTotalsQuery?: (conditions: string, params: QueryParam[]) => string;
-}
-
-export function createPaginatedGetHandler<TFilters>(
-  config: PaginatedConfig<TFilters>,
-) {
-  return async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse<ApiResponse<unknown>>,
-  ) {
-    if (!checkMethod(req, res, "GET")) return;
-
-    const parsed = config.schema.safeParse(req.query);
-    if (!parsed.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Query parameter tidak valid.",
-        errors: parsed.error.flatten(),
-      });
-    }
-
-    const filters = parsed.data;
-    const branch = getRequestBranch(req);
-
-    try {
-      const pool = getPool(branch);
-      const { page, limit, exportAll } = getPaginationParams(req);
-
-      const { conditions, params } = config.buildFilters(filters);
-      const baseQuery = config.buildQuery(conditions, params);
-
-      // Ambil total dari query param kalau ada (skip COUNT)
-      const clientTotal = req.query._total ? Number(req.query._total) : null;
-
-      const total =
-        clientTotal && clientTotal > 0
-          ? clientTotal
-          : await getTotalData(pool, baseQuery, params);
-
-      const { query, values } = buildPaginationQuery({
-        baseQuery,
-        params,
-        page,
-        limit,
-        exportAll,
-      });
-
-      const { rows } = await pool.query(query, values);
-
-      let totals = null;
-
-      if (config.buildTotalsQuery) {
-        const totalsQuery = config.buildTotalsQuery(conditions, params);
-        const { rows: totalsRows } = await pool.query(totalsQuery, params);
-        totals = totalsRows[0] ?? null;
-      }
-
-      // Handle jika data kosong (404)
-      if (config.return404IfEmpty !== false && rows.length === 0) {
-        const msg =
-          typeof config.emptyMessage === "function"
-            ? config.emptyMessage(branch)
-            : config.emptyMessage;
-
-        return res.status(404).json({
-          success: false,
-          message: msg,
-        });
-      }
-
-      // Handle successMessage yang bisa berupa string atau fungsi
-      const successMsg =
-        typeof config.successMessage === "function"
-          ? config.successMessage(branch)
-          : config.successMessage;
-
-      return res.status(200).json({
-        success: true,
-        message: successMsg,
-        total,
-        page: exportAll ? 1 : page,
-        limit: exportAll ? total : limit,
-        totalPages: exportAll ? 1 : Math.ceil(total / limit),
-        data: rows,
-        totals,
-      });
-    } catch (error) {
-      return handleServerError(res, error, branch, config.errorContext);
-    }
-  };
-}
-
-// ============================================================
-// 2. Handler TANPA Pagination (Simple / Ambil Semua Data)
+// Handler TANPA Pagination (Simple / Ambil Semua Data)
 // ============================================================
 interface SimpleConfig<TFilters> extends BaseConfig<TFilters> {
   successMessage: string | ((branch: string) => string);

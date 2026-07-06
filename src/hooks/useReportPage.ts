@@ -1,12 +1,10 @@
-// hooks/useReportPage.ts
+import { useState, useMemo, useRef, useEffect } from "react";
 
-import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-
-import axiosClient from "@/lib/axiosClient";
 import { useFetchData } from "@/hooks/useFetchData";
 import { useRefreshRouter } from "@/hooks/useRefreshRouter";
 import { useReportQueryEndpoint } from "@/hooks/useReportQueryEndpoint";
 import { useReportTableLogic } from "@/hooks/useReportTableLogic";
+import { useTotalRow } from "@/hooks/useTotalRow";
 import { useExportToExcel } from "@/hooks/useExportToExcel";
 
 interface CustomFetchOptions {
@@ -31,46 +29,6 @@ interface UseReportPageOptions<T> {
   defaultLimit?: number;
 }
 
-/**
- * Hook reusable untuk halaman laporan.
- *
- * Hook ini menangani:
- * - penentuan endpoint API;
- * - selectedReport;
- * - query parameter dari URL;
- * - fetch data;
- * - pencarian data;
- * - perhitungan total;
- * - refresh data;
- * - export Excel;
- * - pagination (opsional).
- *
- * Terdapat tiga cara pemakaian.
- *
- * @example
- * // 1. Endpoint tetap, tanpa selectedReport
- * useReportPage<FormSoHarianRows>({
- *   endpoint: "form-so-harian",
- *   ...config,
- * });
- *
- * @example
- * // 2. Endpoint dinamis menggunakan selectedReport dari URL
- * useReportPage<PerDivisiRows>({
- *   basePath: "evaluasi-sales",
- *   ...config,
- * });
- *
- * @example
- * // 3. Dengan pagination
- * useReportPage<PerProdukRows>({
- *   basePath: "evaluasi-sales",
- *   reportType: "per-produk",
- *   paginated: true,
- *   defaultLimit: 100,
- *   ...config,
- * });
- */
 export function useReportPage<T extends object>(
   options: UseReportPageOptions<T>,
 ) {
@@ -86,7 +44,7 @@ export function useReportPage<T extends object>(
     allFields,
     enabled,
     customFetch,
-    paginated = false, // ← default false, tidak ubah perilaku lama
+    paginated = false,
     defaultLimit = 100,
   } = options;
 
@@ -104,34 +62,21 @@ export function useReportPage<T extends object>(
     ? (customFetch.enabled ?? Boolean(customFetch.endpoint))
     : (enabled ?? defaultFetchEnabled);
 
-  // ── Pagination state ────────────────────────────────────────
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(defaultLimit);
 
-  // Reset ke halaman 1 ketika query berubah
   const baseQueryString = JSON.stringify(baseQuery);
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  // ── Query yang dikirim ke API ────────────────────────────────
+  // ── Query ke API: selalu export=true biar dapet semua data ──
   const query = useMemo(() => {
-    if (!paginated) return baseQuery; // perilaku lama, tidak ada page/limit
-
-    const q: Record<string, string> = {
-      ...baseQuery,
-      page: String(page),
-      limit: String(limit),
-    };
-    if (searchTerm.trim()) {
-      q.search = searchTerm.trim();
-    }
-    return q;
+    if (!paginated) return baseQuery as Record<string, string>;
+    return { ...baseQuery, export: "true" } as Record<string, string>;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseQueryString, paginated, page, limit, searchTerm]);
+  }, [baseQueryString, paginated]);
 
-  const { data, loading, error, refetch, total, totalPages, totals } = useFetchData<
-    T[]
-  >({
+  const { data, loading, error, refetch } = useFetchData<T[]>({
     endpoint,
     queryParams: query,
     enabled: fetchEnabled,
@@ -139,16 +84,33 @@ export function useReportPage<T extends object>(
 
   const { isRefreshing, handleRefresh } = useRefreshRouter(loading, refetch);
 
-  const { filteredData, title, periode, totalRow } = useReportTableLogic<T>(
+  // ── Client-side filter (dari semua data) ────────────────────
+  const {
+    filteredData: fullFiltered,
+    title,
+    periode,
+    totalRow,
+  } = useReportTableLogic<T>(
     data ?? [],
     searchTerm,
     searchableFields,
     numericFields,
     allFields,
     reportTitle,
-    paginated,
-    totals,
+    false,
+    undefined,
   );
+
+  // ── Client-side pagination ──────────────────────────────────
+  const displayData = useMemo(() => {
+    if (!fullFiltered) return undefined;
+    if (!paginated) return fullFiltered;
+    const start = (page - 1) * limit;
+    return fullFiltered.slice(start, start + limit);
+  }, [fullFiltered, paginated, page, limit]);
+
+  const clientTotal = fullFiltered?.length ?? 0;
+  const clientTotalPages = paginated ? Math.ceil(clientTotal / limit) : 1;
 
   const columns = allFields.map((field, index) => ({
     field: field as string,
@@ -156,29 +118,21 @@ export function useReportPage<T extends object>(
     isNumeric: numericFields.includes(field),
   }));
 
-  // ── fetchAll untuk export Excel ──────────────────────────────
-  const fetchAll = useCallback(async (): Promise<Record<string, unknown>[]> => {
-    if (!endpoint) return [];
+  // ── Total untuk export (dari raw data, tanpa filter search) ──
+  const exportTotalRow = useTotalRow(
+    data ?? undefined,
+    searchableFields,
+    numericFields,
+    allFields,
+  );
 
-    const params: Record<string, string> = {
-      ...baseQuery,
-      export: "true",
-    };
-    if (searchTerm.trim()) {
-      params.search = searchTerm.trim();
-    }
-
-    const response = await axiosClient.get(endpoint, { params });
-
-    return response.data.data ?? [];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [endpoint, baseQueryString, searchTerm]);
-
+  // ── Export: pakai raw data ────────────────────────────────────
   const { handleExport, isExporting } = useExportToExcel({
     title,
-    ...(paginated ? { fetchAll } : { data: (filteredData ?? []) as Record<string, unknown>[] }),
-    mapRow: (row: Record<string, unknown>) => mapRow(row as T).map((cell) => cell ?? ""),
-    totalRow,
+    data: (data ?? []) as Record<string, unknown>[],
+    mapRow: (row: Record<string, unknown>) =>
+      mapRow(row as T).map((cell) => cell ?? ""),
+    totalRow: exportTotalRow.length > 0 ? exportTotalRow : undefined,
     columns,
   });
 
@@ -192,7 +146,6 @@ export function useReportPage<T extends object>(
     }
   }, [baseQueryString]);
 
-  // Reset ke halaman 1 saat pencarian berubah (hanya mode paginated)
   useEffect(() => {
     if (paginated) {
       setPage(1);
@@ -200,14 +153,13 @@ export function useReportPage<T extends object>(
   }, [searchTerm, paginated]);
 
   return {
-    // ── Yang sudah ada (tidak berubah) ───────────────────────
     query,
     selectedReport: routerResult.selectedReport,
     endpoint,
     searchTerm,
     setSearchTerm,
     data,
-    filteredData,
+    filteredData: displayData,
     loading,
     error,
     title,
@@ -218,13 +170,12 @@ export function useReportPage<T extends object>(
     handleRefresh,
     refetch,
 
-    // ── Tambahan pagination ──────────────────────────────────
     page,
     setPage,
     limit,
     setLimit,
-    total,
-    totalPages,
+    total: clientTotal,
+    totalPages: clientTotalPages,
     isExporting,
   };
 }

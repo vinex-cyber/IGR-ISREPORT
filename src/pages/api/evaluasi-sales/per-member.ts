@@ -54,13 +54,6 @@ export default createSimpleGetHandler({
   return404IfEmpty: true,
 });
 
-// export default createPaginatedGetHandler({
-//   schema: FilterDetailStrukSchema,
-//   buildFilters: FilterDetailStruk,
-//   buildQuery,
-//   // Kedua pesan menggunakan fungsi untuk interpolasi branch
-//   successMessage: (branch) =>
-//     `Data evaluasi sales Per Member branch '${branch}' berhasil diambil.`,
 //   emptyMessage: (branch) =>
 //     `Tidak ada data evaluasi sales Per Member untuk branch '${branch}'.`,
 

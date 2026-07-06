@@ -41,13 +41,6 @@ export default createSimpleGetHandler({
     `Tidak ada data evaluasi sales per produk untuk branch '${branch}'.`,
 });
 
-// export default createPaginatedGetHandler({
-//   schema: FilterDetailStrukSchema,
-//   buildFilters: FilterDetailStruk,
-//   buildQuery,
-//   successMessage: (branch) =>
-//     `Data evaluasi sales per produk branch '${branch}' berhasil diambil.`,
-//   errorContext: "Evaluasi Sales Per Produk",
 //   emptyMessage: (branch) =>
 //     `Tidak ada data evaluasi sales per produk untuk branch '${branch}'.`,
 // });

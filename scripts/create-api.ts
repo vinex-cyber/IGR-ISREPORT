@@ -89,23 +89,19 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-function askHandlerType(): Promise<"paginated" | "simple" | "manual"> {
+function askHandlerType(): Promise<"simple" | "manual"> {
   return new Promise((resolve) => {
     console.log("\n📦 Pilih jenis handler:");
     console.log(
-      "   1. Paginated  - List data dengan pagination + search (createPaginatedGetHandler)",
+      "   1. Simple     - Ambil semua data tanpa pagination (createSimpleGetHandler)",
     );
-    console.log(
-      "   2. Simple     - Ambil semua data tanpa pagination (createSimpleGetHandler)",
-    );
-    console.log("   3. Manual     - Handler kosong, tulis sendiri\n");
+    console.log("   2. Manual     - Handler kosong, tulis sendiri\n");
 
-    rl.question("Pilihan (1/2/3) [default: 1]: ", (answer) => {
+    rl.question("Pilihan (1/2) [default: 1]: ", (answer) => {
       const choice = answer.trim() || "1";
 
-      if (choice === "2") resolve("simple");
-      else if (choice === "3") resolve("manual");
-      else resolve("paginated");
+      if (choice === "2") resolve("manual");
+      else resolve("simple");
     });
   });
 }
@@ -138,148 +134,7 @@ export const ${typeName}Schema = z.object({
 export type ${typeName}Filters = z.infer<typeof ${typeName}Schema>;
 `;
 
-// ─────────────────────────────────────────────
-// 📝 TEMPLATE: Paginated Handler — Inline
-// ─────────────────────────────────────────────
-const paginatedInline = `import { z } from "zod";
-import { createPaginatedGetHandler } from "@/lib/handlerFactory";
-import type { QueryParam } from "@/types/queryParams";
 
-/**
- * =========================================
- * 🔌 API ROUTE: ${typeName}
- * =========================================
- *
- * 📍 Endpoint: ${routePath}
- * 📄 File: src/pages/api/${apiName}.ts
- *
- * 📌 Jenis: Paginated (list + search + pagination)
- * 📐 Schema: Inline
- */
-
-// ============================================================
-// Schema
-// ============================================================
-const ${typeName}Schema = z.object({
-  search: z.string().trim().optional().default(""),
-  // TODO: tambah field filter lain sesuai kebutuhan
-  // div: z.string().trim().optional(),
-});
-
-type ${typeName}Filters = z.infer<typeof ${typeName}Schema>;
-
-// ============================================================
-// Filter Builder
-// ============================================================
-function buildFilters(filters: ${typeName}Filters) {
-  const keywordLike = \`%\${filters.search}%\`;
-
-  const conditions = \`
-    -- TODO: ganti dengan kondisi WHERE sesuai tabel
-    1 = 1
-    AND (
-      $1 = ''
-      OR your_column ILIKE $1
-    )
-  \`;
-
-  const params: QueryParam[] = [keywordLike];
-
-  return { conditions, params };
-}
-
-// ============================================================
-// Query Builder
-// ============================================================
-function buildQuery(conditions: string) {
-  return \`
-    SELECT
-      *
-    FROM your_table
-    WHERE \${conditions}
-    ORDER BY 1
-  \`;
-}
-
-// ============================================================
-// Handler
-// ============================================================
-export default createPaginatedGetHandler<${typeName}Filters>({
-  schema: ${typeName}Schema,
-  buildFilters,
-  buildQuery,
-  successMessage: "Data ${rawFileName.replace(/-/g, " ")} berhasil diambil.",
-  emptyMessage: (branch) => \`Tidak ada data untuk branch '\${branch}'.\`,
-  errorContext: "${typeName}",
-  return404IfEmpty: false,
-});
-`;
-
-// ─────────────────────────────────────────────
-// 📝 TEMPLATE: Paginated Handler — Terpisah
-// ─────────────────────────────────────────────
-const paginatedSeparate = `import { createPaginatedGetHandler } from "@/lib/handlerFactory";
-import { ${typeName}Schema, type ${typeName}Filters } from "@/schema/${schemaImportPath}";
-import type { QueryParam } from "@/types/queryParams";
-
-/**
- * =========================================
- * 🔌 API ROUTE: ${typeName}
- * =========================================
- *
- * 📍 Endpoint: ${routePath}
- * 📄 File: src/pages/api/${apiName}.ts
- *
- * 📌 Jenis: Paginated (list + search + pagination)
- * 📐 Schema: Terpisah (src/schema/${schemaImportPath})
- */
-
-// ============================================================
-// Filter Builder
-// ============================================================
-function buildFilters(filters: ${typeName}Filters) {
-  const keywordLike = \`%\${filters.search}%\`;
-
-  const conditions = \`
-    -- TODO: ganti dengan kondisi WHERE sesuai tabel
-    1 = 1
-    AND (
-      $1 = ''
-      OR your_column ILIKE $1
-    )
-  \`;
-
-  const params: QueryParam[] = [keywordLike];
-
-  return { conditions, params };
-}
-
-// ============================================================
-// Query Builder
-// ============================================================
-function buildQuery(conditions: string) {
-  return \`
-    SELECT
-      *
-    FROM your_table
-    WHERE \${conditions}
-    ORDER BY 1
-  \`;
-}
-
-// ============================================================
-// Handler
-// ============================================================
-export default createPaginatedGetHandler<${typeName}Filters>({
-  schema: ${typeName}Schema,
-  buildFilters,
-  buildQuery,
-  successMessage: "Data ${rawFileName.replace(/-/g, " ")} berhasil diambil.",
-  emptyMessage: (branch) => \`Tidak ada data untuk branch '\${branch}'.\`,
-  errorContext: "${typeName}",
-  return404IfEmpty: false,
-});
-`;
 
 // ─────────────────────────────────────────────
 // 📝 TEMPLATE: Simple Handler — Inline
@@ -529,11 +384,7 @@ async function main() {
   let typeLabel: string;
   let hasSeparateSchema = false;
 
-  if (handlerType === "paginated") {
-    template = schemaLocation === "separate" ? paginatedSeparate : paginatedInline;
-    typeLabel = "Paginated (search + pagination)";
-    hasSeparateSchema = schemaLocation === "separate";
-  } else if (handlerType === "simple") {
+  if (handlerType === "simple") {
     template = schemaLocation === "separate" ? simpleSeparate : simpleInline;
     typeLabel = "Simple (tanpa pagination)";
     hasSeparateSchema = schemaLocation === "separate";

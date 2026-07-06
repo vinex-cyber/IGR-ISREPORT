@@ -1,3 +1,4 @@
+// src/pages/evaluasi-sales/laporan/[reportType].tsx
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Layout from "@/components/Layout";
@@ -14,7 +15,7 @@ import {
   REPORT_CONFIG,
   type ModalType,
   type ActionItem,
-} from "@/configs/evaluasi-sales/laporan-config";
+} from "@/configs/evaluasi-sales/laporan";
 
 const LaporanPage = () => {
   const router = useRouter();
@@ -37,6 +38,12 @@ const LaporanPage = () => {
     isRefreshing,
     isExporting,
     handleRefresh,
+    page,
+    setPage,
+    limit,
+    setLimit,
+    total,
+    totalPages,
   } = useReportPage({
     basePath: "evaluasi-sales",
     reportType,
@@ -45,9 +52,12 @@ const LaporanPage = () => {
     ...config,
   });
 
-  const branch = (query.branch as string) || getBranchCookie();
+  const branch = getBranchCookie();
 
-  const [selectedRow, setSelectedRow] = useState<Record<string, unknown> | null>(null);
+  const [selectedRow, setSelectedRow] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const [activeModal, setActiveModal] = useState<ModalType | null>(null);
 
   const closeModal = () => {
@@ -88,6 +98,12 @@ const LaporanPage = () => {
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
                 onSearchReset={() => setSearchTerm("")}
+                page={page}
+                limit={limit}
+                total={total}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                onLimitChange={setLimit}
                 renderActions={(r) => (
                   <RowDropdownMenu
                     label={reportDef.rowLabel(r)}

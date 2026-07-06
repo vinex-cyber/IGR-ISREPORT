@@ -47,10 +47,10 @@ export function getFilterLppSaatIniDefaultValues(
     statusTag: "",
     statusQty: undefined,
 
-    lokasi: "",
+    lokasi: "01",
     groupFlag: "",
 
-    selectedReport: "per-divisi",
+    selectedReport: "per-produk",
 
     branch: resolveDefaultBranch(branch),
   };

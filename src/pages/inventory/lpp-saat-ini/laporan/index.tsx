@@ -44,9 +44,16 @@ const LppSaatIniLaporanPage = () => {
     isRefreshing,
     isExporting,
     handleRefresh,
+    page,
+    setPage,
+    limit,
+    setLimit,
+    total,
+    totalPages,
   } = useReportPage({
     basePath: "inventory/lpp-saat-ini",
     reportType: report,
+    paginated: true,
     ...config,
   });
 
@@ -79,6 +86,12 @@ const LppSaatIniLaporanPage = () => {
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
                 onSearchReset={() => setSearchTerm("")}
+                page={page}
+                limit={limit}
+                total={total}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                onLimitChange={setLimit}
               />
             )}
           </>

@@ -1,6 +1,6 @@
 // src/pages/api/daftar-cashback.ts
 import { z } from "zod";
-import { createPaginatedGetHandler } from "@/lib/handlerFactory";
+import { createSimpleGetHandler } from "@/lib/handlerFactory";
 import type { QueryParam } from "@/types/queryParams";
 
 // ============================================================
@@ -78,7 +78,7 @@ function buildQuery(conditions: string) {
 // ============================================================
 // Handler
 // ============================================================
-export default createPaginatedGetHandler<DaftarCashbackFilters>({
+export default createSimpleGetHandler<DaftarCashbackFilters>({
   schema: DaftarCashbackSchema,
   buildFilters,
   buildQuery,

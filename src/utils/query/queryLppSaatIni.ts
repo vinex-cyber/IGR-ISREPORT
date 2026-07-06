@@ -43,9 +43,11 @@ SELECT     prd.prd_kodedivisi AS st_div,
            pkm.pkm_pkmt AS st_pkm,
            spd.spd_qty AS st_spd,
            CASE
-             WHEN COALESCE(spd.spd_qty, 0) > 0
-             THEN ROUND(stk.st_saldoakhir / spd.spd_qty)
-             ELSE 999999
+            WHEN st_saldoakhir > 0
+            AND st_sales > 0 THEN
+            round((((coalesce(st_saldoawal, 1) + nullif(st_saldoakhir, 0)) / 2) / nullif(st_sales, 0)) *(EXTRACT(DAY FROM now())))
+           ELSE
+            0
            END AS st_dsi,
            poo.tpod_qtypo AS st_po_qty,
            sii.flag AS st_flag,

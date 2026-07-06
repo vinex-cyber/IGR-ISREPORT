@@ -3,7 +3,7 @@ import ProdukTanggalModal from "@/components/modal/evaluasi-sales/ProdukTanggalM
 import ProdukModal from "@/components/modal/evaluasi-sales/ProdukModal";
 import StrukModal from "@/components/modal/evaluasi-sales/StrukModal";
 import StrukViewModal from "@/components/modal/ViewStrukModal";
-import { convertToISODate, getMonthRange, type ModalType } from "@/configs/evaluasi-sales/laporan-config";
+import { convertToISODate, getMonthRange, type ModalType } from "@/configs/evaluasi-sales/laporan";
 
 interface LaporanModalsProps {
   reportType: string;

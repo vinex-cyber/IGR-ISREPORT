@@ -245,7 +245,6 @@ Membuat API route di `src/pages/api/`. Prompt interaktif:
 
 | Pilihan | Fungsi | Response |
 |---------|--------|----------|
-| `Paginated` | List + search + pagination via `createPaginatedGetHandler` | `{ total, page, limit, totalPages, data }` |
 | `Simple` | Semua data tanpa pagination via `createSimpleGetHandler` | `{ total, data }` |
 | `Manual` | Handler custom dari nol | Terserah |
 
@@ -289,11 +288,33 @@ npm run create:component UserProfile --server   # Server Component
 
 ## API Route
 
-### Paginated Handler (via Factory)
+### Simple Handler (via Factory)
+
+```typescript
+import { createSimpleGetHandler } from "@/lib/handlerFactory";
+import type { QueryParam } from "@/types/queryParams";
+
+const buildQuery = () => `
+  SELECT * FROM my_table ORDER BY id
+`;
+
+export default createSimpleGetHandler({
+  schema: z.object({}),
+  buildFilters: () => ({ conditions: "1=1", params: [] }),
+  buildQuery,
+  successMessage: "Data berhasil diambil.",
+  emptyMessage: (branch) => `Tidak ada data untuk branch '${branch}'.`,
+  errorContext: "MyFeature",
+});
+```
+
+**Response:** `{ success, message, total, data }`
+
+Dengan filter:
 
 ```typescript
 import { z } from "zod";
-import { createPaginatedGetHandler } from "@/lib/handlerFactory";
+import { createSimpleGetHandler } from "@/lib/handlerFactory";
 import type { QueryParam } from "@/types/queryParams";
 
 const MySchema = z.object({
@@ -304,7 +325,9 @@ const MySchema = z.object({
 type MyFilters = z.infer<typeof MySchema>;
 
 function buildFilters(filters: MyFilters) {
-  const conditions = `1=1 AND ($1 = '' OR name ILIKE $1)`;
+  if (!filters.search) return { conditions: "1=1", params: [] };
+
+  const conditions = `name ILIKE $1`;
   const params: QueryParam[] = [`%${filters.search}%`];
   return { conditions, params };
 }
@@ -313,7 +336,7 @@ function buildQuery(conditions: string) {
   return `SELECT * FROM my_table WHERE ${conditions} ORDER BY id`;
 }
 
-export default createPaginatedGetHandler<MyFilters>({
+export default createSimpleGetHandler<MyFilters>({
   schema: MySchema,
   buildFilters,
   buildQuery,
@@ -322,18 +345,6 @@ export default createPaginatedGetHandler<MyFilters>({
   errorContext: "MyFeature",
 });
 ```
-
-**Response:** `{ success, message, total, page, limit, totalPages, data }`
-
-### Simple Handler (via Factory)
-
-Sama seperti Paginated, bedanya:
-
-```typescript
-export default createSimpleGetHandler({ ... });
-```
-
-**Response:** `{ success, message, total, data }` (tanpa page/limit)
 
 ### Manual Handler (Custom)
 
@@ -359,16 +370,9 @@ export default async function handler(req, res) {
 }
 ```
 
-### Query Params Otomatis
+### Pagination (Client-side)
 
-Factory handler otomatis mendeteksi:
-
-| Parameter | Fungsi | Default |
-|-----------|--------|---------|
-| `page` | Halaman ke- | `1` |
-| `limit` | Data per halaman | `100` |
-| `export` | `"true"` → ambil semua (skip pagination) | — |
-| `_total` | Skip COUNT query (gunakan nilai ini) | — |
+Pagination ditangani di client oleh `useReportPage`. API cukup mengembalikan semua data (via `createSimpleGetHandler`).
 
 ---
 
@@ -403,7 +407,7 @@ const {
 
 Query params (`startDate`, `endDate`, `branch`, dll) otomatis terbaca dari URL melalui `useReportQueryEndpoint`.
 
-**Dengan Pagination:**
+**Dengan Pagination (client-side):**
 
 ```typescript
 const { page, setPage, limit, setLimit, total, totalPages } = useReportPage({
@@ -413,6 +417,8 @@ const { page, setPage, limit, setLimit, total, totalPages } = useReportPage({
   ...config,
 });
 ```
+
+Saat `paginated: true`, `useReportPage` mengirim `export: true` ke API (ambil semua data), lalu melakukan filter & pagination di client. Eksport Excel menggunakan seluruh data (tanpa filter search).
 
 ### Form Filter Page
 

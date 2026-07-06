@@ -1,3 +1,4 @@
+// src/pages/inventory/produk-baru/table-produk-baru/index.tsx
 import Layout from "@/components/Layout";
 import LoadingIgr from "@/components/LoadingIgr";
 import ReportHeader from "@/components/ReportHeader";
@@ -27,9 +28,16 @@ const ProdukBaruPage = () => {
     isRefreshing,
     isExporting,
     handleRefresh,
+    page,
+    setPage,
+    limit,
+    setLimit,
+    total,
+    totalPages,
   } = useReportPage<ProdukBaruRows>({
     endpoint: "inventory/produk-baru",
     reportTitle,
+    paginated: true,
     ...config,
   });
 
@@ -61,6 +69,12 @@ const ProdukBaruPage = () => {
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
                 onSearchReset={() => setSearchTerm("")}
+                page={page}
+                limit={limit}
+                total={total}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                onLimitChange={setLimit}
               />
             )}
           </>

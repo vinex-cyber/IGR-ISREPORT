@@ -1,6 +1,6 @@
 // src/pages/api/daftar-member.ts
 import { z } from "zod";
-import { createPaginatedGetHandler } from "@/lib/handlerFactory";
+import { createSimpleGetHandler } from "@/lib/handlerFactory";
 import type { QueryParam } from "@/types/queryParams";
 
 // ============================================================
@@ -76,7 +76,7 @@ function buildQuery(conditions: string) {
 // ============================================================
 // Handler
 // ============================================================
-export default createPaginatedGetHandler<DaftarMemberFilters>({
+export default createSimpleGetHandler<DaftarMemberFilters>({
   schema: DaftarMemberSchema,
   buildFilters,
   buildQuery,
