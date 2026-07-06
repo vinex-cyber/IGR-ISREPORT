@@ -18,6 +18,7 @@ interface Column {
   label: string;
   isNumeric?: boolean;
   group?: string;
+  render?: (value: unknown, row: Record<string, unknown>) => React.ReactNode;
 }
 
 interface ReportTableProps<T> {
@@ -253,11 +254,13 @@ export function ReportTable<T extends Record<string, unknown>>({
                       className={`border px-2 py-2 ${
                         col.isNumeric ? "text-right" : ""
                       }`}>
-                      {col.isNumeric
-                        ? row[col.field as keyof T] != null
-                          ? formatNumber(Number(row[col.field as keyof T]))
-                          : ""
-                        : String(row[col.field as keyof T] ?? "")}
+                      {col.render
+                        ? col.render(row[col.field as keyof T], row)
+                        : col.isNumeric
+                          ? row[col.field as keyof T] != null
+                            ? formatNumber(Number(row[col.field as keyof T]))
+                            : ""
+                          : String(row[col.field as keyof T] ?? "")}
                     </td>
                   ))}
 

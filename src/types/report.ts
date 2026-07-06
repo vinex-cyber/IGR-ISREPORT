@@ -6,5 +6,6 @@ export type ColumnConfig<T> = {
     isNumeric?: boolean;
     isSearchable?: boolean;
     group?: string;
-    groupColor?: string; // 🔥 tambah ini
+    groupColor?: string;
+    render?: (value: unknown, row: Record<string, unknown>) => React.ReactNode;
 };

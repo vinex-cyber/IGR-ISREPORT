@@ -1,4 +1,5 @@
 // utils/reportBuilder.ts
+import React from "react";
 import { ColumnConfig } from "@/types/report";
 
 export function buildReport<T>(columns: ColumnConfig<T>[]) {
@@ -19,10 +20,16 @@ export function buildReport<T>(columns: ColumnConfig<T>[]) {
             col.isNumeric ? Number(row[col.field as string]) : (row[col.field as string] as string | number)
         );
 
-    const tableColumns = columns.map(c => ({
+    const tableColumns: {
+        field: string;
+        label: string;
+        isNumeric: boolean | undefined;
+        render: ((value: unknown, row: Record<string, unknown>) => React.ReactNode) | undefined;
+    }[] = columns.map(c => ({
         field: c.field as string,
         label: c.label,
         isNumeric: c.isNumeric,
+        render: c.render as ((value: unknown, row: Record<string, unknown>) => React.ReactNode) | undefined,
     }));
 
     const headerGroups = buildHeaderGroups(columns);

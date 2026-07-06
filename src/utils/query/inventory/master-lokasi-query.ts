@@ -41,7 +41,7 @@ export const MasterLokasiQuery = () //   conditions: string,
             LKS_MAXDISPLAY as lks_maxdisplay,
             LKS_MAXPLANO as lks_maxplano,
             LKS_MINPCT as lks_minpct,
-            TO_CHAR(LKS_EXPDATE, 'YYYY-MM-DD') as lks_expdate,
+            LKS_EXPDATE as lks_expdate,
             MAXPALET as maxpalet
             FROM TBMASTER_PRODMAST
             LEFT JOIN (

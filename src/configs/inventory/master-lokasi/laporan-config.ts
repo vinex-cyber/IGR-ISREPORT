@@ -1,3 +1,4 @@
+import { FormatTanggalISO } from "@/utils/formatTanggal";
 import { ColumnConfig } from "@/types/report";
 
 export type MasterLokasiRows = {
@@ -46,6 +47,6 @@ export const masterLokasiColumns: ColumnConfig<MasterLokasiRows>[] = [
   { field: "lks_maxdisplay", label: "Max Display", isNumeric: true },
   { field: "lks_maxplano", label: "Max Plano", isNumeric: true },
   { field: "lks_minpct", label: "Min PCT", isNumeric: true },
-  { field: "lks_expdate", label: "Exp Date" },
+  { field: "lks_expdate", label: "Exp Date", render: (v) => FormatTanggalISO(v as string | Date) },
   { field: "maxpalet", label: "Max Palet", isNumeric: true },
 ];
