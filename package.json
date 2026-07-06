@@ -10,7 +10,8 @@
     "create:page": "tsx scripts/create-page.ts",
     "create:config": "tsx scripts/create-config.ts",
     "create:api": "tsx scripts/create-api.ts",
-    "create:component": "tsx scripts/create-component.ts"
+    "create:component": "tsx scripts/create-component.ts",
+    "push": "tsx scripts/git-push.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
