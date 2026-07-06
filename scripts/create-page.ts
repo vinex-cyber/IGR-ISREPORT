@@ -72,10 +72,10 @@ for (const folder of folders) {
 }
 
 // ─────────────────────────────────────────────
-// 📁 BUILD PATH
+// 📁 BUILD PATH (folder/index.tsx)
 // ─────────────────────────────────────────────
-const baseDir = path.join(process.cwd(), "src", "pages", ...folders);
-const filePath = path.join(baseDir, `${rawFileName}.tsx`);
+const baseDir = path.join(process.cwd(), "src", "pages", ...folders, rawFileName);
+const filePath = path.join(baseDir, "index.tsx");
 
 // 🔐 Cek jika file sudah ada
 if (fs.existsSync(filePath)) {
@@ -90,38 +90,18 @@ const componentName = toPascalCase(rawFileName);  // InformasiPromosi
 const titleName = toTitleCase(rawFileName);       // Informasi Promosi
 
 // ─────────────────────────────────────────────
-// 📝 TEMPLATE (Next.js Page + Layout)
+// 📝 TEMPLATE (minimal, seperti master-lokasi)
 // ─────────────────────────────────────────────
-const template = `import Layout from "@/components/Layout";
-import { NextPage } from "next";
+const template = `// src/pages/${pageName}/index.tsx
+import Layout from "@/components/Layout";
 
-/**
- * =========================================
- * 📄 PAGE: ${titleName}
- * =========================================
- * 
- * 📍 Path: src/pages/${pageName}.tsx
- * 🧩 Component: ${componentName}
- */
-
-type ${componentName}Props = {};
-
-const ${componentName}: NextPage<${componentName}Props> = () => {
-    return (
-        <Layout title="${titleName}">
-            <div className="container mx-auto px-4 py-6">
-                <h1 className="text-2xl font-bold mb-4">${titleName}</h1>
-                
-                {/* 🔥 Konten halaman dimulai di sini */}
-                <div className="bg-white rounded-lg shadow p-6">
-                    <p>Silakan mulai membangun halaman ini.</p>
-                </div>
-            </div>
-        </Layout>
-    );
-};
-
-export default ${componentName};
+export default function ${componentName}Page() {
+  return (
+    <Layout title="${titleName}">
+      <h1 className="text-2xl font-bold mb-4">${titleName}</h1>
+    </Layout>
+  );
+}
 `;
 
 // ─────────────────────────────────────────────
@@ -132,6 +112,6 @@ fs.writeFileSync(filePath, template);
 
 console.log(`✅ Page berhasil dibuat:`);
 console.log(`   📄 File        : ${filePath}`);
-console.log(`   🧩 Component   : ${componentName}`);
+console.log(`   🧩 Component   : ${componentName}Page`);
 console.log(`   🏷️  UI Title    : ${titleName}`);
-console.log(`   🗂️  Folder      : ${folders.length > 0 ? folders.join("/") : "(root pages)"}`);
+console.log(`   🗂️  Folder      : src/pages/${pageName}`);
