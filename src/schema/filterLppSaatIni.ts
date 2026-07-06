@@ -26,7 +26,6 @@ export const FilterLppSaatIniSchema = z.object({
   groupFlag: z.string().optional(),
   selectedReport: z.string().optional(),
   branch: z.string().trim().optional(),
-  search: z.string().optional(),
 });
 
 export type FilterLppSaatIniInput = z.infer<typeof FilterLppSaatIniSchema>;
