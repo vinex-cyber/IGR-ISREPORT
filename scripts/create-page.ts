@@ -1,6 +1,12 @@
 // scripts/create-page.ts
 import fs from "fs";
 import path from "path";
+import readline from "readline";
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 
 const pageName = process.argv[2];
 
@@ -72,27 +78,60 @@ for (const folder of folders) {
 }
 
 // ─────────────────────────────────────────────
-// 📁 BUILD PATH (folder/index.tsx)
+// 🎯 PROMPT: Pilih format file
 // ─────────────────────────────────────────────
-const baseDir = path.join(process.cwd(), "src", "pages", ...folders, rawFileName);
-const filePath = path.join(baseDir, "index.tsx");
+function askFormat(): Promise<"folder" | "flat"> {
+  return new Promise((resolve) => {
+    console.log("\n📦 Pilih format file:");
+    console.log("   1. Folder   - Buat folder/index.tsx (contoh: uji-coba/index.tsx)");
+    console.log("   2. Flat     - Buat file langsung (contoh: uji-coba.tsx)\n");
 
-// 🔐 Cek jika file sudah ada
-if (fs.existsSync(filePath)) {
-    console.error(`❌ Page sudah ada: ${filePath}`);
-    process.exit(1);
+    rl.question("Pilihan (1/2) [default: 1]: ", (answer) => {
+      const choice = answer.trim() || "1";
+      resolve(choice === "2" ? "flat" : "folder");
+      rl.close();
+    });
+  });
 }
 
 // ─────────────────────────────────────────────
-// 🏷️ NAMING UNTUK COMPONENT & UI
+// 🚀 MAIN
 // ─────────────────────────────────────────────
-const componentName = toPascalCase(rawFileName);  // InformasiPromosi
-const titleName = toTitleCase(rawFileName);       // Informasi Promosi
+async function main() {
+  const format = await askFormat();
 
-// ─────────────────────────────────────────────
-// 📝 TEMPLATE (minimal, seperti master-lokasi)
-// ─────────────────────────────────────────────
-const template = `// src/pages/${pageName}/index.tsx
+  // ─────────────────────────────────────────────
+  // 📁 BUILD PATH
+  // ─────────────────────────────────────────────
+  let baseDir: string;
+  let filePath: string;
+
+  if (format === "folder") {
+    baseDir = path.join(process.cwd(), "src", "pages", ...folders, rawFileName);
+    filePath = path.join(baseDir, "index.tsx");
+  } else {
+    baseDir = path.join(process.cwd(), "src", "pages", ...folders);
+    filePath = path.join(baseDir, `${rawFileName}.tsx`);
+  }
+
+  // 🔐 Cek jika file sudah ada
+  if (fs.existsSync(filePath)) {
+    console.error(`❌ Page sudah ada: ${filePath}`);
+    process.exit(1);
+  }
+
+  // ─────────────────────────────────────────────
+  // 🏷️ NAMING UNTUK COMPONENT & UI
+  // ─────────────────────────────────────────────
+  const componentName = toPascalCase(rawFileName);  // InformasiPromosi
+  const titleName = toTitleCase(rawFileName);       // Informasi Promosi
+
+  const relativePath = format === "folder" ? `${pageName}/index` : pageName;
+
+  // ─────────────────────────────────────────────
+  // 📝 TEMPLATE
+  // ─────────────────────────────────────────────
+  const template = `// src/pages/${relativePath}.tsx
 import Layout from "@/components/Layout";
 
 export default function ${componentName}Page() {
@@ -104,14 +143,17 @@ export default function ${componentName}Page() {
 }
 `;
 
-// ─────────────────────────────────────────────
-// 🚀 EKSEKUSI: Buat folder + tulis file
-// ─────────────────────────────────────────────
-fs.mkdirSync(baseDir, { recursive: true });
-fs.writeFileSync(filePath, template);
+  // ─────────────────────────────────────────────
+  // 🚀 EKSEKUSI: Buat folder + tulis file
+  // ─────────────────────────────────────────────
+  fs.mkdirSync(baseDir, { recursive: true });
+  fs.writeFileSync(filePath, template);
 
-console.log(`✅ Page berhasil dibuat:`);
-console.log(`   📄 File        : ${filePath}`);
-console.log(`   🧩 Component   : ${componentName}Page`);
-console.log(`   🏷️  UI Title    : ${titleName}`);
-console.log(`   🗂️  Folder      : src/pages/${pageName}`);
+  console.log(`\n✅ Page berhasil dibuat:`);
+  console.log(`   📄 File      : ${filePath}`);
+  console.log(`   🧩 Component : ${componentName}Page`);
+  console.log(`   🏷️  Title    : ${titleName}`);
+  console.log(`   📦 Format    : ${format === "folder" ? "Folder (index.tsx)" : "Flat (file langsung)"}`);
+}
+
+main();
