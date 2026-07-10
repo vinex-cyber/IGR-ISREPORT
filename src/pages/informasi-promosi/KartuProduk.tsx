@@ -23,10 +23,10 @@ interface KartuProdukProps {
   plu?: string;
 }
 
-export default function KartuProduk({ plu = "0060410" }: KartuProdukProps) {
+export default function KartuProduk({ plu }: KartuProdukProps) {
   const { data, isLoading, error } = useQueryData<KartuProdukRow[]>({
     endpoint: "/informasi-promosi/data-produk",
-    queryParams: { prdcd: plu },
+    queryParams: plu ? { prdcd: plu } : undefined,
     enabled: Boolean(plu),
   });
 
@@ -42,13 +42,15 @@ export default function KartuProduk({ plu = "0060410" }: KartuProdukProps) {
   const pcsCount = useAnimeCounter({ to: pcs, duration: 800 });
   const salesCount = useAnimeCounter({ to: avg, duration: 1200 });
 
-  const title = row?.prd_deskripsipanjang
-    ? row.prd_deskripsipanjang
-    : isLoading
-      ? "Memuat..."
-      : error
-        ? "Gagal memuat"
-        : "Produk tidak ditemukan";
+  const title = !plu
+    ? "Pilih PLU untuk melihat detail"
+    : row?.prd_deskripsipanjang
+      ? row.prd_deskripsipanjang
+      : isLoading
+        ? "Memuat..."
+        : error
+          ? "Gagal memuat"
+          : "Produk tidak ditemukan";
 
   return (
     <div className="flex flex-col rounded-lg border bg-gray-50 shadow-xl h-full">
