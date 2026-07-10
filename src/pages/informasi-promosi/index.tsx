@@ -37,7 +37,6 @@ function useScrollReveal<T extends HTMLElement>() {
             duration: 500,
             ease: "outQuad",
           });
-          observer.unobserve(el);
         });
       },
       { threshold: 0.1 },
