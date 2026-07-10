@@ -39,6 +39,8 @@ const FormInformasiPromosi = ({
     methods.reset({ prdcd: "" });
   };
 
+  const onDisbled = !methods.watch("prdcd");
+
   return (
     <FormProvider {...methods}>
       <form
@@ -49,11 +51,13 @@ const FormInformasiPromosi = ({
           <div>
             <Button
               type="submit"
+              disabled={onDisbled}
               className="ml-2 hover:cursor-pointer bg-blue-500 text-white hover:bg-blue-600 dark:bg-accent dark:text-accent-foreground dark:hover:bg-accent/80">
               Submit
             </Button>
             <Button
               type="button"
+              disabled={onDisbled}
               onClick={onReset}
               className="ml-2 hover:cursor-pointer bg-red-500 text-white hover:bg-red-600 dark:bg-accent dark:text-accent-foreground dark:hover:bg-accent/80">
               Reset
