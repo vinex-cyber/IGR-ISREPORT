@@ -51,6 +51,9 @@ export default function KartuProduk({ plu }: KartuProdukProps) {
         : error
           ? "Gagal memuat"
           : "Produk tidak ditemukan";
+  const onClick = (buttonText: string) => {
+    console.log(`Clicked  ${buttonText}`);
+  };
 
   return (
     <div className="flex flex-col rounded-lg border bg-gray-50 shadow-xl h-full">
@@ -111,7 +114,8 @@ export default function KartuProduk({ plu }: KartuProdukProps) {
           {["Sales", "Lokasi", "So Ic", "Pb", "BTB"].map((btn) => (
             <button
               key={btn}
-              className="btn-hover rounded bg-blue-500 px-2 py-0.5 text-xxs text-white">
+              onClick={() => onClick(btn)}
+              className="btn-hover hover:cursor-pointer rounded bg-blue-500 px-2 py-0.5 text-xxs text-white">
               {btn}
             </button>
           ))}

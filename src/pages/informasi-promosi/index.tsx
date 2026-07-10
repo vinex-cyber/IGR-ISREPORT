@@ -22,6 +22,8 @@ type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
 export default function InformasiPromosi({ defaultBranch }: Props) {
   const [branch, setBranch] = useState(defaultBranch);
 
+  const durationAnimasi = 900;
+
   return (
     <Layout title="Informasi Promosi" branch={branch}>
       <div className="px-4">
@@ -59,16 +61,16 @@ export default function InformasiPromosi({ defaultBranch }: Props) {
         </section>
 
         <section className="mt-5 space-y-5">
-          <Reveal direction="left" duration={650} ease="outCubic">
+          <Reveal direction="left" duration={durationAnimasi} ease="outCubic">
             <TabelPromoCashback />
           </Reveal>
-          <Reveal direction="right" duration={650} ease="outCubic">
+          <Reveal direction="right" duration={durationAnimasi} ease="outCubic">
             <TabelPromoGift />
           </Reveal>
-          <Reveal direction="left" duration={650} ease="outCubic">
+          <Reveal direction="left" duration={durationAnimasi} ease="outCubic">
             <TabelPromoInstore />
           </Reveal>
-          <Reveal direction="right" duration={650} ease="outCubic">
+          <Reveal direction="right" duration={durationAnimasi} ease="outCubic">
             <TabelPromoHJK />
           </Reveal>
         </section>

@@ -7,6 +7,7 @@ import Layout from "@/components/Layout";
 import Reveal from "@/components/animation/Reveal";
 import FormInformasiPromosi from "@/components/form/informasi-promosi/FormInformasiPromosi";
 import KartuProduk from "@/pages/informasi-promosi/KartuProduk";
+import TabelTrendSales from "@/pages/informasi-promosi/TabelTrendSales";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
 
 export const getServerSideProps = getDefaultBranchServerSideProps;
@@ -43,6 +44,9 @@ export default function InformasiPromosiPrdcd({ defaultBranch }: Props) {
           <div className="flex w-2/5 flex-col gap-5">
             <Reveal>
               <KartuProduk plu={prdcd} />
+            </Reveal>
+            <Reveal>
+              <TabelTrendSales plu={prdcd} />
             </Reveal>
           </div>
         </section>
