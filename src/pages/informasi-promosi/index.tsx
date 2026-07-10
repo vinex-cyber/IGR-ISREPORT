@@ -17,20 +17,24 @@ import TabelPromoGift from "./TabelPromoGift";
 import TabelPromoInstore from "./TabelPromoInstore";
 import TabelPromoHJK from "./TabelPromoHJK";
 import TabelTrendSales from "./TabelTrendSales";
+import { InformasiPromosiFilters } from "@/schema/store/informasiPromosiSchema";
 
 export const getServerSideProps = getDefaultBranchServerSideProps;
 type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
 export default function InformasiPromosi({ defaultBranch }: Props) {
   const [branch, setBranch] = useState(defaultBranch);
-  const pluForm = useForm<{ plu: string }>({ defaultValues: { plu: "" } });
+
+  const methods = useForm<InformasiPromosiFilters>({
+    defaultValues: { prdcd: "" },
+  });
 
   return (
     <Layout title="Informasi Promosi" branch={branch}>
       <div className="px-4">
         <section className="flex w-full gap-5 items-stretch">
           <div className="flex w-3/5 flex-col gap-5">
-            <FormProvider {...pluForm}>
+            <FormProvider {...methods}>
               <div>
                 <h1 className="font-mono text-xl text-blue-500 font-bold">
                   Informasi Promosi - {branch}

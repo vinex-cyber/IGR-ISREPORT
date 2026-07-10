@@ -15,6 +15,7 @@ import {
 } from "@/schema/filterFormSoHarian";
 
 import { useReportPage } from "@/hooks/report/useReportPage";
+import { formatPlu } from "@/utils/formatPlu";
 import {
   formSoHarianColumns,
   FormSoHarianRows,
@@ -80,32 +81,9 @@ export default function FormSoHarianDetail({
     defaultValues: { prdcd: "" },
   });
 
-  const formatPluGrup = (value: string) => {
-    const items = value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-
-    const invalid = items.find((item) => !/^\d+$/.test(item));
-
-    if (invalid) {
-      throw new Error(
-        `PLU tidak valid: ${invalid} (hanya angka diperbolehkan)`,
-      );
-    }
-
-    return items
-      .map((item) => {
-        let formatted = item.padStart(7, "0");
-        formatted = formatted.slice(0, 6) + "0";
-        return formatted;
-      })
-      .join(",");
-  };
-
   const onSubmit = (formData: FilterFormSoHarianInput) => {
     try {
-      const formattedPlu = formatPluGrup(formData.prdcd || "");
+      const formattedPlu = formatPlu(formData.prdcd || "", { validate: true });
       router.push(`/form-so-harian/${formattedPlu}`);
     } catch (err) {
       if (err instanceof Error) {

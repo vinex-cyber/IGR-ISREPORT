@@ -18,6 +18,7 @@ import SettingsDatabase from "@/components/Settings/SettingsDatabase";
 import { DATABASE_OPTIONS } from "@/configs/database-options";
 
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
+import { formatPlu } from "@/utils/formatPlu";
 import {
   CardContent,
   CardFieldset,
@@ -40,32 +41,9 @@ export default function FormSoHarian({ defaultBranch }: FormSoHarianPageProps) {
     defaultValues: { prdcd: "" },
   });
 
-  const formatPluGrup = (value: string) => {
-    const items = value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-
-    const invalid = items.find((item) => !/^\d+$/.test(item));
-
-    if (invalid) {
-      throw new Error(
-        `PLU tidak valid: ${invalid} (hanya angka diperbolehkan)`,
-      );
-    }
-
-    return items
-      .map((item) => {
-        let formatted = item.padStart(7, "0");
-        formatted = formatted.slice(0, 6) + "0";
-        return formatted;
-      })
-      .join(",");
-  };
-
   const onSubmit = (formData: FilterFormSoHarianInput) => {
     try {
-      const formattedPlu = formatPluGrup(formData.prdcd || "");
+      const formattedPlu = formatPlu(formData.prdcd || "", { validate: true });
       router.push(`/form-so-harian/${formattedPlu}`);
     } catch (err) {
       if (err instanceof Error) {

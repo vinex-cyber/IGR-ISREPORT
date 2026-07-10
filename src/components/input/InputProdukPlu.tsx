@@ -11,6 +11,7 @@ import { Search } from "lucide-react";
 
 import FormInput from "../FormInput";
 import InputProdukModal from "../modal/InputProdukModal";
+import { formatPlu } from "@/utils/formatPlu";
 
 type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
   TFieldValues,
@@ -40,27 +41,10 @@ const InputProdukPlu = <TFieldValues extends FieldValues>({
     setPluModal((previous) => !previous);
   };
 
-  const formatPrdcdGrup = (value: string) => {
-    return value
-      .split(",")
-      .map((item) => item.trim())
-      .filter((item) => item !== "")
-      .map((item) => {
-        let formatted = item.padStart(7, "0");
-
-        if (formatted[6] !== "0") {
-          formatted = `${formatted.slice(0, 6)}0`;
-        }
-
-        return formatted;
-      })
-      .join(",");
-  };
-
   const handleBlur = () => {
     const currentValue = getValues(name);
 
-    const formatted = formatPrdcdGrup(String(currentValue ?? ""));
+    const formatted = formatPlu(String(currentValue ?? ""));
 
     setValue(name, formatted as FieldPathValue<TFieldValues, typeof name>, {
       shouldDirty: true,
