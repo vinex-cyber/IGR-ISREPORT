@@ -17,6 +17,10 @@
 - [Komponen](#komponen)
 - [Form System](#form-system)
 - [Hooks](#hooks)
+  - [useAnimeCounter](#useanimecounter)
+  - [useAnimeOnScroll](#useanimeonscroll)
+  - [useAnimeHover](#useanimehover)
+  - [animePresets](#animepresets)
 - [Export](#export)
 - [Scripts](#scripts)
 
@@ -708,6 +712,109 @@ Lookup dengan caching + branch detection. Dua mode:
 | `"server"` | Server-side paginated search (minSearch threshold) |
 
 Otomatis clear cache saat branch berubah (poll cookie tiap 300ms).
+
+### useAnimeCounter
+
+Animated counter dengan anime.js. Cocok untuk angka statistik, stock, sales.
+
+```typescript
+import { useAnimeCounter } from "@/hooks/useAnimeCounter";
+
+const stock = useAnimeCounter({ to: 2067, duration: 1200 });
+const sales = useAnimeCounter({ to: 565186, duration: 1200, delay: 300 });
+
+return (
+  <div>
+    <p>Stock: {stock.value.toLocaleString()}</p>
+    <p>Sales: {sales.value.toLocaleString()}</p>
+  </div>
+);
+```
+
+| Option | Type | Default |
+|--------|------|---------|
+| `to` | `number` | — |
+| `from` | `number` | `0` |
+| `duration` | `number` (ms) | `1000` |
+| `ease` | `string` | `"outExpo"` |
+| `autoplay` | `boolean` | `true` |
+| `delay` | `number` (ms) | `0` |
+
+Return: `{ value: number, start: () => void }` — `.start()` bisa dipanggil manual ulang.
+
+### useAnimeOnScroll
+
+Animasi entry saat elemen masuk viewport (IntersectionObserver).
+
+```typescript
+import { useAnimeOnScroll } from "@/hooks/useAnimeOnScroll";
+import { presets } from "@/hooks/animePresets";
+
+useAnimeOnScroll(".section-scroll", presets.staggerFadeUp(80), {
+  childSelector: ".anim-child",
+  triggerOnce: true,
+});
+
+useAnimeOnScroll(".section-scroll", presets.staggerFadeLeft(60), {
+  childSelector: ".row-fade",
+  threshold: 0.3,
+});
+```
+
+**Cara kerja:**
+
+1. Class `.section-scroll` dipasang di `<section>` target
+2. Anak-anak elemen yang mau dianimasi dikasih class sesuai `childSelector` (misal `.anim-child` / `.row-fade`)
+3. Saat section masuk viewport, anime.js jalan ke semua anak sekaligus
+
+| Option | Type | Default |
+|--------|------|---------|
+| `threshold` | `number` | `0.2` |
+| `rootMargin` | `string` | `"0px"` |
+| `triggerOnce` | `boolean` | `true` |
+| `staggerDelay` | `number` | — |
+| `childSelector` | `string` | `".anim-item"` |
+
+### useAnimeHover
+
+Hover scale effect untuk tombol/kartu.
+
+```typescript
+import { useAnimeHover } from "@/hooks/useAnimeHover";
+
+useAnimeHover(".btn-hover", { scale: 1.08 });
+```
+
+| Option | Type | Default |
+|--------|------|---------|
+| `scale` | `number` | `1.06` |
+| `duration` | `number` (ms) | `200` |
+| `ease` | `string` | `"outQuad"` |
+
+### animePresets
+
+Preset konfigurasi siap pakai — tinggal pilih:
+
+| Preset | Efek |
+|--------|------|
+| `presets.fadeUp` | opacity 0→1, translateY 30→0 |
+| `presets.fadeLeft` | opacity 0→1, translateX -20→0 |
+| `presets.scaleIn` | scale 0→1, opacity 0→1 |
+| `presets.bounceIn` | scale 0→1 dengan easing bounce |
+| `presets.staggerFadeUp(delay)` | fadeUp + `stagger(delay)` per elemen |
+| `presets.staggerFadeLeft(delay)` | fadeLeft + `stagger(delay)` per elemen |
+| `presets.staggerScaleIn(delay)` | scaleIn + `stagger(delay)` per elemen |
+
+Bisa juga pakai `AnimationParams` biasa kalau preset gak cocok:
+
+```typescript
+useAnimeOnScroll(".section-scroll", {
+  opacity: [0, 1],
+  scale: [0.8, 1],
+  duration: 600,
+  ease: "outBack",
+}, { childSelector: ".anim-child" });
+```
 
 ---
 

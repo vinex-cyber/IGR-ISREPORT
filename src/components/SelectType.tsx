@@ -213,7 +213,7 @@ export default function SelectType({
   return (
     <div className={cn("w-full", className)}>
       {label && (
-        <label className="mb-1 block text-sm font-medium">{label}</label>
+        <label className="mb-1 block text-xxs font-medium">{label}</label>
       )}
 
       <Select
@@ -267,7 +267,7 @@ export default function SelectType({
 
           <div className="max-h-64 overflow-y-auto p-1">
             {filteredOptions.length === 0 ? (
-              <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+              <div className="px-3 py-6 text-center text-xxs text-muted-foreground">
                 {emptyMessage}
               </div>
             ) : (
@@ -284,7 +284,7 @@ export default function SelectType({
                           key={`${item.groupLabel}-${option.value}`}
                           value={option.value}
                           disabled={option.disabled}
-                          className="pl-6 text-sm">
+                          className="pl-6 text-xxs">
                           {option.label}
                         </SelectItem>
                       ))}
@@ -297,7 +297,7 @@ export default function SelectType({
                     key={item.value}
                     value={item.value}
                     disabled={item.disabled}
-                    className="text-sm font-medium">
+                    className="text-xxs font-medium">
                     {item.label}
                   </SelectItem>
                 );

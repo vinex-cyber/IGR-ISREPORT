@@ -1,6 +1,7 @@
 // src/pages/evaluasi-sales/index.tsx
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 
 import { ArrowRightIcon, RotateCcw } from "lucide-react";
 
@@ -33,7 +34,6 @@ import SelectReport from "@/components/form/shared/SelectReport";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
 import { InferGetServerSidePropsType } from "next";
 import CardSupplier from "@/components/form/shared/CardSupplier";
-import { useState } from "react";
 import { useFormSubmit } from "@/hooks/useFormPage";
 
 /**
@@ -80,7 +80,7 @@ export default function EvaluasiSales({
     <Layout title="Evaluasi Sales" branch={branch}>
       <Form {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="mb-6 flex items-center justify-between gap-4">
+          <div className="mb-2 flex items-center justify-between gap-4">
             <h1 className="flex items-center gap-1 text-2xl font-bold text-blue-500">
               Evaluasi Sales
               <ArrowRightIcon size={22} />
@@ -94,7 +94,7 @@ export default function EvaluasiSales({
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4 lg:[&_input]:!text-xxs lg:[&_[role=combobox]>span]:!text-xxs lg:[&_label]:!text-xxs lg:[&_[data-slot=card-fieldset]]:!py-2 lg:[&_[data-slot=card-fieldset]]:!gap-2 lg:[&_[data-slot=card-content]]:!px-2 lg:[&_[data-slot=card-content]]:!space-y-1">
             {/* KOLOM PERTAMA */}
             <div className="space-y-4">
               <PeriodeRange<FilterDetailStrukInput>
@@ -268,13 +268,13 @@ export default function EvaluasiSales({
             </div>
           </div>
 
-          <div className="mt-4 border-t border-black pt-4 dark:border-white">
+          <div className="mt-2 border-t border-gray-400 pt-2 dark:border-white">
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleReset}
-                className="gap-2 border-red-500 text-red-500 hover:cursor-pointer hover:bg-red-500 hover:text-white">
+                className="gap-2 border-red-500 text-xs text-red-500 hover:cursor-pointer hover:bg-red-500 hover:text-white">
                 <RotateCcw size={16} />
                 Reset
               </Button>
@@ -282,7 +282,7 @@ export default function EvaluasiSales({
               <Button
                 type="submit"
                 variant="outline"
-                className="border-blue-500 bg-blue-500 text-white hover:cursor-pointer hover:bg-green-500">
+                className="border-blue-500 bg-blue-500 text-xs text-white hover:cursor-pointer hover:bg-green-500">
                 Submit
               </Button>
             </div>

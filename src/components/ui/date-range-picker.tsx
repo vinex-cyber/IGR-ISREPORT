@@ -62,7 +62,7 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
   return (
     <div className={cn("grid gap-2")}>
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild className="text-xs">
+        <PopoverTrigger asChild className="text-xxs">
           <Button
             id="date"
             variant="outline"
@@ -85,11 +85,11 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-2 space-y-2" align="start">
+        <PopoverContent className="w-auto p-2 space-y-2 text-xxs" align="start">
           {/* 🔼 Dropdown Bulan & Tahun */}
           <div className="flex items-center justify-center gap-2 px-2">
             <select
-              className="border rounded px-2 py-1 text-sm"
+              className="border rounded px-2 py-1 text-xxs"
               value={month.getMonth()}
               onChange={(e) =>
                 setMonth(new Date(month.getFullYear(), Number(e.target.value)))
@@ -101,7 +101,7 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
               ))}
             </select>
             <select
-              className="border rounded px-2 py-1 text-sm"
+              className="border rounded px-2 py-1 text-xxs"
               value={month.getFullYear()}
               onChange={(e) =>
                 setMonth(new Date(Number(e.target.value), month.getMonth()))

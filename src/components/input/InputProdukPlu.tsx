@@ -19,6 +19,7 @@ type StringFieldName<TFieldValues extends FieldValues> = FieldPathByValue<
 
 interface InputProdukPluProps<TFieldValues extends FieldValues> {
   name: StringFieldName<TFieldValues>;
+  className?: string;
   placeholder?: string;
   disabled?: boolean;
 }
@@ -27,6 +28,7 @@ const InputProdukPlu = <TFieldValues extends FieldValues>({
   name,
   placeholder = "Input PLU",
   disabled = false,
+  className,
 }: InputProdukPluProps<TFieldValues>) => {
   const [pluModal, setPluModal] = useState(false);
 
@@ -76,6 +78,7 @@ const InputProdukPlu = <TFieldValues extends FieldValues>({
         iconRight={<Search className="h-4 w-4" />}
         onBlur={handleBlur}
         onIconClick={handlePluModal}
+        className={className}
       />
 
       {!disabled && (

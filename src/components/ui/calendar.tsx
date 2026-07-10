@@ -5,6 +5,7 @@ import {
   ChevronRightIcon,
 } from "lucide-react"
 import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker"
+import { animate } from "animejs"
 
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -17,11 +18,40 @@ function Calendar({
   buttonVariant = "ghost",
   formatters,
   components,
+  onMonthChange,
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
 }) {
   const defaultClassNames = getDefaultClassNames()
+  const [monthKey, setMonthKey] = React.useState(0)
+
+  React.useEffect(() => {
+    const el = document.querySelector<HTMLElement>('[data-slot="calendar"]')
+    if (!el) return
+    animate(el, {
+      opacity: [0, 1],
+      y: [-8, 0],
+      duration: 300,
+      ease: "outQuad",
+    })
+  }, [])
+
+  React.useEffect(() => {
+    const monthsEl = document.querySelector<HTMLElement>(".rdp-months")
+    if (!monthsEl) return
+    animate(monthsEl, {
+      opacity: [0, 1],
+      y: [12, 0],
+      duration: 300,
+      ease: "outExpo",
+    })
+  }, [monthKey])
+
+  const handleMonthChange: typeof onMonthChange = (date) => {
+    setMonthKey((k) => k + 1)
+    onMonthChange?.(date)
+  }
 
   return (
     <DayPicker
@@ -33,6 +63,7 @@ function Calendar({
         className
       )}
       captionLayout={captionLayout}
+      onMonthChange={handleMonthChange}
       formatters={{
         formatMonthDropdown: (date) =>
           date.toLocaleString("default", { month: "short" }),
@@ -82,7 +113,7 @@ function Calendar({
         table: "w-full border-collapse",
         weekdays: cn("flex", defaultClassNames.weekdays),
         weekday: cn(
-          "text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem] select-none",
+          "text-muted-foreground rounded-md flex-1 font-normal text-xs select-none",
           defaultClassNames.weekday
         ),
         week: cn("flex w-full mt-2", defaultClassNames.week),
@@ -91,7 +122,7 @@ function Calendar({
           defaultClassNames.week_number_header
         ),
         week_number: cn(
-          "text-[0.8rem] select-none text-muted-foreground",
+          "text-xs select-none text-muted-foreground",
           defaultClassNames.week_number
         ),
         day: cn(
@@ -179,6 +210,28 @@ function CalendarDayButton({
   React.useEffect(() => {
     if (modifiers.focused) ref.current?.focus()
   }, [modifiers.focused])
+
+  React.useEffect(() => {
+    if (!ref.current) return
+    const el = ref.current
+    const onEnter = () => animate(el, { scale: 1.12, duration: 150, ease: "outQuad" })
+    const onLeave = () => animate(el, { scale: 1, duration: 150, ease: "outQuad" })
+    el.addEventListener("mouseenter", onEnter)
+    el.addEventListener("mouseleave", onLeave)
+    return () => {
+      el.removeEventListener("mouseenter", onEnter)
+      el.removeEventListener("mouseleave", onLeave)
+    }
+  }, [])
+
+  React.useEffect(() => {
+    if (!ref.current || !modifiers.selected) return
+    animate(ref.current, {
+      scale: [0.85, 1],
+      duration: 250,
+      ease: "outBack",
+    })
+  }, [modifiers.selected])
 
   return (
     <Button

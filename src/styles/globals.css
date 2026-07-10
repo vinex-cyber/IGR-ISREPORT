@@ -52,6 +52,10 @@
   }
 }
 
+html {
+  font-size: clamp(16px, 0.5vw + 10px, 22px);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -107,6 +111,13 @@ body {
 .dark body {
   background: var(--background);
   color: var(--foreground);
+}
+
+@theme {
+  --text-xxs: 0.625rem;
+  --text-xxs--line-height: 0.875rem;
+  --text-md: 0.8125rem;
+  --text-md--line-height: 1rem;
 }
 
 @theme inline {
