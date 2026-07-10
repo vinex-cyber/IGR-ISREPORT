@@ -59,16 +59,16 @@ export default function InformasiPromosi({ defaultBranch }: Props) {
         </section>
 
         <section className="mt-5 space-y-5">
-          <Reveal direction="left">
+          <Reveal direction="left" duration={650} ease="outCubic">
             <TabelPromoCashback />
           </Reveal>
-          <Reveal direction="right">
+          <Reveal direction="right" duration={650} ease="outCubic">
             <TabelPromoGift />
           </Reveal>
-          <Reveal direction="left">
+          <Reveal direction="left" duration={650} ease="outCubic">
             <TabelPromoInstore />
           </Reveal>
-          <Reveal direction="right">
+          <Reveal direction="right" duration={650} ease="outCubic">
             <TabelPromoHJK />
           </Reveal>
         </section>

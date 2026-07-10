@@ -700,6 +700,8 @@ import Reveal from "@/components/animation/Reveal";
 | `children` | `ReactNode` | — | Konten yang dianimasi |
 | `className` | `string` | `""` | Class tambahan |
 | `direction` | `"up" \| "left" \| "right"` | `"up"` | Arah slide masuk |
+| `duration` | `number` (ms) | `500` | Durasi animasi (bisa diubah per blok) |
+| `ease` | `string` | `"outQuad"` | Easing anime.js (mis. `outCubic`) |
 
 ---
 

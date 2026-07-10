@@ -6,12 +6,16 @@ interface RevealProps {
   children: ReactNode;
   className?: string;
   direction?: "up" | "left" | "right";
+  duration?: number;
+  ease?: string;
 }
 
 export default function Reveal({
   children,
   className = "",
   direction = "up",
+  duration = 500,
+  ease = "outQuad",
 }: RevealProps) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -32,8 +36,8 @@ export default function Reveal({
             opacity: [0, 1],
             translateY,
             translateX,
-            duration: 500,
-            ease: "outQuad",
+            duration,
+            ease,
           });
         });
       },
@@ -44,7 +48,7 @@ export default function Reveal({
     return function disconnectReveal() {
       observer.disconnect();
     };
-  }, [direction]);
+  }, [direction, duration, ease]);
 
   return (
     <div ref={ref} className={`opacity-0 ${className}`}>
