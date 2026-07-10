@@ -1,28 +1,24 @@
-// src/pages/informasi-promosi/index.tsx
+// pages/informasi-promosi/[prdcd]/index.tsx
 import { useState } from "react";
 import type { InferGetServerSidePropsType } from "next";
+import { useRouter } from "next/router";
 
 import Layout from "@/components/Layout";
 import Reveal from "@/components/animation/Reveal";
 import FormInformasiPromosi from "@/components/form/informasi-promosi/FormInformasiPromosi";
+import KartuProduk from "@/pages/informasi-promosi/KartuProduk";
+import TabelTrendSales from "@/pages/informasi-promosi/TabelTrendSales";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
-
-import TabelSettingHarga from "./TabelSettingHarga";
-import TabelMemberPricing from "./TabelMemberPricing";
-import KartuProduk from "./KartuProduk";
-import TabelPromoCashback from "./TabelPromoCashback";
-import TabelPromoGift from "./TabelPromoGift";
-import TabelPromoInstore from "./TabelPromoInstore";
-import TabelPromoHJK from "./TabelPromoHJK";
-import TabelTrendSales from "./TabelTrendSales";
 
 export const getServerSideProps = getDefaultBranchServerSideProps;
 type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
-export default function InformasiPromosi({ defaultBranch }: Props) {
+export default function InformasiPromosiPrdcd({ defaultBranch }: Props) {
+  const router = useRouter();
   const [branch, setBranch] = useState(defaultBranch);
 
-  const durationAnimasi = 900;
+  const prdcd =
+    typeof router.query.prdcd === "string" ? router.query.prdcd : "";
 
   return (
     <Layout title="Informasi Promosi" branch={branch}>
@@ -33,6 +29,7 @@ export default function InformasiPromosi({ defaultBranch }: Props) {
               <div>
                 <h1 className="font-mono text-xl text-blue-500 font-bold">
                   Informasi Promosi - {branch}
+                  {prdcd ? ` - PLU ${prdcd}` : ""}
                 </h1>
               </div>
             </Reveal>
@@ -42,37 +39,16 @@ export default function InformasiPromosi({ defaultBranch }: Props) {
                 onBranchChange={setBranch}
               />
             </Reveal>
-            <Reveal>
-              <TabelSettingHarga />
-            </Reveal>
-            <Reveal>
-              <TabelMemberPricing />
-            </Reveal>
           </div>
 
           <div className="flex w-2/5 flex-col gap-5">
             <Reveal>
-              <KartuProduk />
+              <KartuProduk plu={prdcd} />
             </Reveal>
             <Reveal>
-              <TabelTrendSales />
+              <TabelTrendSales plu={prdcd} />
             </Reveal>
           </div>
-        </section>
-
-        <section className="mt-5 space-y-5">
-          <Reveal direction="left" duration={durationAnimasi} ease="outCubic">
-            <TabelPromoCashback />
-          </Reveal>
-          <Reveal direction="right" duration={durationAnimasi} ease="outCubic">
-            <TabelPromoGift />
-          </Reveal>
-          <Reveal direction="left" duration={durationAnimasi} ease="outCubic">
-            <TabelPromoInstore />
-          </Reveal>
-          <Reveal direction="right" duration={durationAnimasi} ease="outCubic">
-            <TabelPromoHJK />
-          </Reveal>
         </section>
       </div>
     </Layout>

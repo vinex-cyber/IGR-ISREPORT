@@ -49,13 +49,16 @@ export default function FormSoHarianDetail({
   const router = useRouter();
   const [branch, setBranch] = useState(defaultBranch);
 
-  useEffect(function syncBranchFromCookie() {
-    if (!router.isReady) return;
-    const cookieBranch = getBranchCookie();
-    if (cookieBranch && cookieBranch !== defaultBranch) {
-      setBranch(cookieBranch);
-    }
-  }, [router.isReady, defaultBranch]);
+  useEffect(
+    function syncBranchFromCookie() {
+      if (!router.isReady) return;
+      const cookieBranch = getBranchCookie();
+      if (cookieBranch && cookieBranch !== defaultBranch) {
+        setBranch(cookieBranch);
+      }
+    },
+    [router.isReady, defaultBranch],
+  );
 
   const config = buildReport<FormSoHarianRows>(formSoHarianColumns);
   const columns = formSoHarianColumns;
