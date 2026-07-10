@@ -18,6 +18,14 @@ export function useAnimeOnScroll(
 ) {
   const triggered = useRef(new Set<HTMLElement>());
 
+  const {
+    threshold = 0.2,
+    rootMargin = "0px",
+    triggerOnce = true,
+    staggerDelay,
+    childSelector = ".anim-item",
+  } = opts;
+
   useEffect(function observeViewport() {
     const els =
       typeof target === "string"
@@ -27,14 +35,6 @@ export function useAnimeOnScroll(
           : target;
 
     if (!els.length) return;
-
-    const {
-      threshold = 0.2,
-      rootMargin = "0px",
-      triggerOnce = true,
-      staggerDelay,
-      childSelector = ".anim-item",
-    } = opts;
 
     const animParams = staggerDelay
       ? { ...params, delay: stagger(staggerDelay) }
@@ -63,5 +63,13 @@ export function useAnimeOnScroll(
 
     els.forEach((el) => observer.observe(el));
     return function disconnectObserver() { observer.disconnect(); };
-  }, [target, params, opts.threshold, opts.rootMargin, opts.triggerOnce, opts.staggerDelay]);
+  }, [
+    target,
+    params,
+    threshold,
+    rootMargin,
+    triggerOnce,
+    staggerDelay,
+    childSelector,
+  ]);
 }
