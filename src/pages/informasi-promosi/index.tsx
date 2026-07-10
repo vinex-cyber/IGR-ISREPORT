@@ -1,7 +1,6 @@
 // src/pages/informasi-promosi/index.tsx
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import type { InferGetServerSidePropsType } from "next";
-import { animate } from "animejs";
 
 import Layout from "@/components/Layout";
 import FormInformasiPromosi from "@/components/form/informasi-promosi/FormInformasiPromosi";
@@ -19,56 +18,19 @@ import TabelTrendSales from "./TabelTrendSales";
 export const getServerSideProps = getDefaultBranchServerSideProps;
 type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
-function useScrollReveal<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
-
-  useEffect(function revealOnScroll() {
-    const el = ref.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-
-          animate(el, {
-            opacity: [0, 1],
-            translateY: [40, 0],
-            duration: 500,
-            ease: "outQuad",
-          });
-          observer.unobserve(el);
-        });
-      },
-      { threshold: 0.1 },
-    );
-
-    observer.observe(el);
-    return function disconnectReveal() {
-      observer.disconnect();
-    };
-  }, []);
-
-  return ref;
-}
-
 export default function InformasiPromosi({ defaultBranch }: Props) {
   const [branch, setBranch] = useState(defaultBranch);
-
-  const produkRef = useScrollReveal<HTMLElement>();
-  const promosiRef = useScrollReveal<HTMLElement>();
 
   return (
     <Layout title="Informasi Promosi" branch={branch}>
       <div className="px-4">
-        <h1 className="mb-4 font-mono text-xl text-blue-500 font-bold">
-          Informasi Promosi - {branch}
-        </h1>
-
-        <section
-          ref={produkRef}
-          className="flex w-full gap-5 items-stretch opacity-0">
+        <section className="flex w-full gap-5 items-stretch">
           <div className="flex w-3/5 flex-col gap-5">
+            <div>
+              <h1 className="font-mono text-xl text-blue-500 font-bold">
+                Informasi Promosi - {branch}
+              </h1>
+            </div>
             <FormInformasiPromosi
               branch={branch}
               onBranchChange={setBranch}
@@ -83,9 +45,7 @@ export default function InformasiPromosi({ defaultBranch }: Props) {
           </div>
         </section>
 
-        <section
-          ref={promosiRef}
-          className="mt-5 space-y-5 opacity-0">
+        <section className="mt-5 space-y-5">
           <TabelPromoCashback />
           <TabelPromoGift />
           <TabelPromoInstore />
