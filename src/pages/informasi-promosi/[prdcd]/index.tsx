@@ -4,12 +4,10 @@ import type { InferGetServerSidePropsType } from "next";
 import { useRouter } from "next/router";
 
 import Layout from "@/components/Layout";
+import Reveal from "@/components/animation/Reveal";
 import FormInformasiPromosi from "@/components/form/informasi-promosi/FormInformasiPromosi";
 import KartuProduk from "@/pages/informasi-promosi/KartuProduk";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
-import TabelSettingHarga from "../TabelSettingHarga";
-import TabelMemberPricing from "../TabelMemberPricing";
-import TabelTrendSales from "../TabelTrendSales";
 
 export const getServerSideProps = getDefaultBranchServerSideProps;
 type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
@@ -26,19 +24,26 @@ export default function InformasiPromosiPrdcd({ defaultBranch }: Props) {
       <div className="px-4">
         <section className="flex w-full gap-5 items-stretch">
           <div className="flex w-3/5 flex-col gap-5">
-            <div>
-              <h1 className="font-mono text-xl text-blue-500 font-bold">
-                Informasi Promosi - {branch}
-              </h1>
-            </div>
-            <FormInformasiPromosi branch={branch} onBranchChange={setBranch} />
-            <TabelSettingHarga />
-            <TabelMemberPricing />
+            <Reveal>
+              <div>
+                <h1 className="font-mono text-xl text-blue-500 font-bold">
+                  Informasi Promosi - {branch}
+                  {prdcd ? ` - PLU ${prdcd}` : ""}
+                </h1>
+              </div>
+            </Reveal>
+            <Reveal>
+              <FormInformasiPromosi
+                branch={branch}
+                onBranchChange={setBranch}
+              />
+            </Reveal>
           </div>
 
           <div className="flex w-2/5 flex-col gap-5">
-            <KartuProduk plu={prdcd} />
-            <TabelTrendSales />
+            <Reveal>
+              <KartuProduk plu={prdcd} />
+            </Reveal>
           </div>
         </section>
       </div>
