@@ -33,6 +33,8 @@ const FormInformasiPromosi = ({
         alert(err.message);
       }
     }
+
+    methods.reset({ prdcd: "" });
   };
 
   const onReset = () => {

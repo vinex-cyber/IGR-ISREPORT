@@ -152,17 +152,18 @@ src/
 │   │   ├── select-divisi.ts
 │   │   ├── evaluasi-sales/     # 12 endpoint
 │   │   ├── form-so-harian/
-│   │   ├── informasi-promosi/  # data-produk endpoint
+│       │   ├── informasi-promosi/  # data-produk, data-trend-sales
 │   │   └── inventory/
 │   ├── evaluasi-sales/
 │   ├── form-so-harian/
 │   │   └── [prdcd]/
 │   ├── informasi-promosi/
 │   │   ├── index.tsx          # Landing: form + kartu + tabel promo (scroll-reveal)
-│   │   ├── KartuProduk.tsx    # Kartu produk (fetch API)
+│   │   ├── KartuProduk.tsx    # Kartu produk (fetch API, shadcn Button)
+│   │   ├── TabelTrendSales.tsx # Trend sales 12 bulan (fetch API, unpivot)
 │   │   ├── TabelSettingHarga.tsx, TabelMemberPricing.tsx, TabelPromo*.tsx
 │   │   └── [prdcd]/
-│   │       └── index.tsx      # Detail produk by PLU (tangkap router.query.prdcd)
+│   │       └── index.tsx      # Detail produk by PLU (KartuProduk + TabelTrendSales)
 │   └── inventory/
 │       ├── produk-baru/
 │       │   └── table-produk-baru/
@@ -184,7 +185,8 @@ src/
     ├── query/                 # SQL query builders
     │   ├── queryGroupFlag.ts  # Flag produk (NAS/IGR/OMI/IDM/BRD/DEPO)
     │   ├── queryAvgSalesBulanan.ts # Rata-rata sales bulanan
-    │   └── queryPbOut.ts      # PB Outstanding (14 hari terakhir)
+    │   ├── queryPbOut.ts      # PB Outstanding (14 hari terakhir)
+    │   └── queryTrendSales.ts # Trend sales bulanan (sls_qty_01..12, st_sales/hpp untuk bulan berjalan)
     ├── formatPlu.ts           # Format & validasi PLU/prdcd (pad 7 digit, digit akhir 0)
     ├── pagination/            # Pagination helpers
     ├── server/                # Server helpers
@@ -552,19 +554,43 @@ Halaman produk & promosi berbasis PLU. Dua route:
 | Route | Fungsi |
 |-------|--------|
 | `/informasi-promosi` | Landing: form input PLU, kartu produk, tabel promo (scroll-reveal per blok) |
-| `/informasi-promosi/[prdcd]` | Detail produk berdasarkan PLU (menangkap `router.query.prdcd`) |
+| `/informasi-promosi/[prdcd]` | Detail produk berdasarkan PLU — kartu produk + trend sales bulanan |
 
 ### Alur Form → Detail
 
-`FormInformasiPromosi` (`components/form/informasi-promosi/`) memformat PLU lalu `router.push('/informasi-promosi/[formattedPlu]')`. Halaman `[prdcd]` membaca `prdcd` dari URL dan meneruskannya ke `KartuProduk`.
+`FormInformasiPromosi` (`components/form/informasi-promosi/`) memformat PLU lalu `router.push('/informasi-promosi/[formattedPlu]')`. Halaman `[prdcd]` membaca `prdcd` dari URL dan meneruskannya ke `KartuProduk` + `TabelTrendSales`.
 
 ### API
 
-`GET /informasi-promosi/data-produk?prdcd=<plu>` → `{ total, data }`.
+**1. `GET /informasi-promosi/data-produk?prdcd=<plu>`** → `{ total, data }`
 
 - Handler: `createGetHandler` dengan `buildFilters` (filter `prd_prdcd` opsional) + `buildQuery`.
 - Query builder: `queryGroupFlag` (flag NAS/IGR/OMI/IDM/BRD/DEPO), `queryAvgSalesBulanan`, `queryPbOut` (PB outstanding 14 hari). Semua menerima `plu?` dan menaruh filter `AND prd_prdcd = $1` bila ada.
 - `KartuProduk` mengambil data via `useQueryData` (endpoint `__/informasi-promosi/data-produk`, tanpa prefix `/api` karena `axiosClient` sudah `baseURL: "/api"`).
+
+**2. `GET /informasi-promosi/data-trend-sales?prdcd=<plu>`** → `{ total, data }`
+
+- Handler: `createGetHandler` dengan `buildFilters` (filter `sls_prdcd` opsional) + `buildQuery`.
+- Query builder: `queryTrendSales` — query `TBTR_SALESBULANAN` dengan JOIN ke `TBMASTER_STOCK` (st_sales, hpp).
+- Response: single row per PLU dengan kolom pivoted `sls_qty_01..12`, `sls_rph_01..12`, `st_sales`, `hpp`.
+
+### TabelTrendSales
+
+Komponen tabel 12 baris (JAN–DES). Fetch dari API `/informasi-promosi/data-trend-sales`, lalu unpivot kolom:
+
+| Bulan | QTY | Rupiah |
+|-------|-----|--------|
+| JAN | `sls_qty_01` | `sls_rph_01` |
+| ... | ... | ... |
+| Bulan berjalan | `st_sales` | `hpp` |
+| ... | ... | ... |
+| DES | `sls_qty_12` | `sls_rph_12` |
+
+- **Bulan berjalan** menggunakan `st_sales` (QTY) dan `hpp` (rupiah) dari `TBMASTER_STOCK`, bukan dari kolom `sls_qty_XX`/`sls_rph_XX`.
+- Highlight `bg-amber-200` pada baris bulan berjalan.
+- Progress animation 0→1 saat masuk viewport (anime.js `outExpo`).
+- `useAnimeOnScroll` dengan stagger per baris.
+- Tanpa `plu` prop → tampilkan placeholder "Pilih PLU".
 
 ### formatPlu
 

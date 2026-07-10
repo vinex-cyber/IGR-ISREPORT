@@ -1,6 +1,7 @@
 // src/pages/informasi-promosi/KartuProduk.tsx
 import { useQueryData } from "@/hooks/data/useQueryData";
 import { useAnimeCounter } from "@/hooks/animation/useAnimeCounter";
+import { Button } from "@/components/ui/button";
 
 interface KartuProdukRow {
   prd_prdcd: string;
@@ -112,12 +113,14 @@ export default function KartuProduk({ plu }: KartuProdukProps) {
 
         <div className="flex justify-center gap-1 border-b p-1">
           {["Sales", "Lokasi", "So Ic", "Pb", "BTB"].map((btn) => (
-            <button
+            <Button
               key={btn}
+              variant="default"
+              size="sm"
               onClick={() => onClick(btn)}
-              className="btn-hover hover:cursor-pointer rounded bg-blue-500 px-2 py-0.5 text-xxs text-white">
+              className="h-4 btn-hover !text-xxs bg-blue-400 text-white hover:cursor-pointer dark:bg-accent dark:text-accent-foreground">
               {btn}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
