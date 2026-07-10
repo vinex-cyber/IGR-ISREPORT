@@ -1,6 +1,7 @@
 // src/pages/informasi-promosi/index.tsx
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { InferGetServerSidePropsType } from "next";
+import { animate } from "animejs";
 
 import Layout from "@/components/Layout";
 import FormInformasiPromosi from "@/components/form/informasi-promosi/FormInformasiPromosi";
@@ -18,8 +19,43 @@ import TabelTrendSales from "./TabelTrendSales";
 export const getServerSideProps = getDefaultBranchServerSideProps;
 type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
+function useScrollReveal<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+
+  useEffect(function revealOnScroll() {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          animate(el, {
+            opacity: [0, 1],
+            translateY: [40, 0],
+            duration: 500,
+            ease: "outQuad",
+          });
+          observer.unobserve(el);
+        });
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(el);
+    return function disconnectReveal() {
+      observer.disconnect();
+    };
+  }, []);
+
+  return ref;
+}
+
 export default function InformasiPromosi({ defaultBranch }: Props) {
   const [branch, setBranch] = useState(defaultBranch);
+
+  const promosiRef = useScrollReveal<HTMLElement>();
 
   return (
     <Layout title="Informasi Promosi" branch={branch}>
@@ -45,7 +81,9 @@ export default function InformasiPromosi({ defaultBranch }: Props) {
           </div>
         </section>
 
-        <section className="mt-5 space-y-5">
+        <section
+          ref={promosiRef}
+          className="mt-5 space-y-5 opacity-0">
           <TabelPromoCashback />
           <TabelPromoGift />
           <TabelPromoInstore />
