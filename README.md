@@ -87,6 +87,8 @@ NEXT_PUBLIC_APP_NAME=IGRCPG
 src/
 ├── components/
 │   ├── ui/                    # shadcn/ui primitives (46 komponen)
+│   ├── animation/             # Wrapper animasi
+│   │   └── Reveal.tsx          # Scroll-reveal (fade + slide, arah configurable)
 │   ├── form/shared/           # Field form reusable
 │   │   ├── PeriodeRange.tsx    # Range date picker
 │   │   ├── SelectDivisi.tsx    # Select dengan dependensi
@@ -96,6 +98,8 @@ src/
 │   │   ├── CardProduk.tsx      # Field produk lengkap
 │   │   ├── CardKasir.tsx       # Field kasir lengkap
 │   │   └── ...                 # 25 total shared components
+│   ├── form/informasi-promosi/
+│   │   └── FormInformasiPromosi.tsx # Form input PLU → navigasi ke [prdcd]
 │   ├── input/                  # Input dengan modal pencarian
 │   │   ├── InputProdukPlu.tsx
 │   │   ├── InputKodeGift.tsx
@@ -148,11 +152,17 @@ src/
 │   │   ├── select-divisi.ts
 │   │   ├── evaluasi-sales/     # 12 endpoint
 │   │   ├── form-so-harian/
+│   │   ├── informasi-promosi/  # data-produk endpoint
 │   │   └── inventory/
 │   ├── evaluasi-sales/
 │   ├── form-so-harian/
 │   │   └── [prdcd]/
 │   ├── informasi-promosi/
+│   │   ├── index.tsx          # Landing: form + kartu + tabel promo (scroll-reveal)
+│   │   ├── KartuProduk.tsx    # Kartu produk (fetch API)
+│   │   ├── TabelSettingHarga.tsx, TabelMemberPricing.tsx, TabelPromo*.tsx
+│   │   └── [prdcd]/
+│   │       └── index.tsx      # Detail produk by PLU (tangkap router.query.prdcd)
 │   └── inventory/
 │       ├── produk-baru/
 │       │   └── table-produk-baru/
@@ -172,6 +182,10 @@ src/
 └── utils/
     ├── filters/               # SQL filter builders
     ├── query/                 # SQL query builders
+    │   ├── queryGroupFlag.ts  # Flag produk (NAS/IGR/OMI/IDM/BRD/DEPO)
+    │   ├── queryAvgSalesBulanan.ts # Rata-rata sales bulanan
+    │   └── queryPbOut.ts      # PB Outstanding (14 hari terakhir)
+    ├── formatPlu.ts           # Format & validasi PLU/prdcd (pad 7 digit, digit akhir 0)
     ├── pagination/            # Pagination helpers
     ├── server/                # Server helpers
     ├── exportToPdf/
@@ -531,6 +545,45 @@ Simpan branch di cookie via `setBranchCookie`, baca di server via `getRequestBra
 
 ---
 
+## Fitur: Informasi Promosi
+
+Halaman produk & promosi berbasis PLU. Dua route:
+
+| Route | Fungsi |
+|-------|--------|
+| `/informasi-promosi` | Landing: form input PLU, kartu produk, tabel promo (scroll-reveal per blok) |
+| `/informasi-promosi/[prdcd]` | Detail produk berdasarkan PLU (menangkap `router.query.prdcd`) |
+
+### Alur Form → Detail
+
+`FormInformasiPromosi` (`components/form/informasi-promosi/`) memformat PLU lalu `router.push('/informasi-promosi/[formattedPlu]')`. Halaman `[prdcd]` membaca `prdcd` dari URL dan meneruskannya ke `KartuProduk`.
+
+### API
+
+`GET /informasi-promosi/data-produk?prdcd=<plu>` → `{ total, data }`.
+
+- Handler: `createGetHandler` dengan `buildFilters` (filter `prd_prdcd` opsional) + `buildQuery`.
+- Query builder: `queryGroupFlag` (flag NAS/IGR/OMI/IDM/BRD/DEPO), `queryAvgSalesBulanan`, `queryPbOut` (PB outstanding 14 hari). Semua menerima `plu?` dan menaruh filter `AND prd_prdcd = $1` bila ada.
+- `KartuProduk` mengambil data via `useQueryData` (endpoint `__/informasi-promosi/data-produk`, tanpa prefix `/api` karena `axiosClient` sudah `baseURL: "/api"`).
+
+### formatPlu
+
+Util wajib untuk semua input PLU/prdcd — pad ke 7 digit, paksa digit terakhir `0`, dan bisa validasi angka saja:
+
+```ts
+import { formatPlu } from "@/utils/formatPlu";
+
+formatPlu("123");            // "0000120"
+formatPlu("123,456");       // "0000120,0000450"
+formatPlu("123", { validate: true }); // throw kalau ada non-angka
+```
+
+### Animasi
+
+Seluruh blok di-wrap `<Reveal>` (lihat [Reveal](#reveal-scroll-reveal-wrapper)) → efek "pindah halaman" saat scroll. Tabel promo selang-seling `direction="left"` / `"right"`.
+
+---
+
 ## Komponen
 
 ### ReportTable
@@ -622,6 +675,31 @@ type ColumnConfig<T> = {
 | `InputMonitoringPlu` | `InputMonitoringPluModal` | PLU |
 
 Semua mendukung mode `multiple`, `append`, `separator`, `allowManualInput`.
+
+---
+
+### Reveal (Scroll-Reveal Wrapper)
+
+Wrapper animasi berbasis `IntersectionObserver` + anime.js. Setiap elemen dibungkus `<Reveal>` akan memutar animasi **fade + slide** saat masuk viewport (replay setiap kali masuk).
+
+```tsx
+import Reveal from "@/components/animation/Reveal";
+
+<Reveal>
+  <TabelPromoCashback />
+</Reveal>
+
+{/* arah slide bisa diatur */}
+<Reveal direction="left">  <TabelPromoCashback /></Reveal>  {/* masuk dari kiri  */}
+<Reveal direction="right"> <TabelPromoGift /></Reveal>     {/* masuk dari kanan */}
+<Reveal direction="up">    <KartuProduk /></Reveal>        {/* default: dari atas */}
+```
+
+| Prop | Type | Default | Keterangan |
+|------|------|---------|-----------|
+| `children` | `ReactNode` | — | Konten yang dianimasi |
+| `className` | `string` | `""` | Class tambahan |
+| `direction` | `"up" \| "left" \| "right"` | `"up"` | Arah slide masuk |
 
 ---
 
