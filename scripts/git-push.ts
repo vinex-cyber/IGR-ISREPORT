@@ -1,6 +1,6 @@
 // scripts/git-push.ts
 import { execSync } from "child_process";
-import readline from "readline";
+import * as readline from "readline";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -11,8 +11,9 @@ function run(cmd: string): { ok: boolean; output: string } {
   try {
     const output = execSync(cmd, { encoding: "utf-8", stdio: "pipe" });
     return { ok: true, output: output.trim() };
-  } catch (e: any) {
-    return { ok: false, output: e.stderr?.trim() || e.message };
+  } catch (e: unknown) {
+    const err = e as { stderr?: string; message?: string };
+    return { ok: false, output: err.stderr?.trim() || err.message || "Unknown error" };
   }
 }
 
@@ -22,6 +23,14 @@ async function ask(question: string, defaultValue = ""): Promise<string> {
       resolve(answer.trim() || defaultValue);
     });
   });
+}
+
+function isValidBranchName(name: string): boolean {
+  return /^[a-zA-Z0-9._\-\/]+$/.test(name);
+}
+
+function escapeShell(str: string): string {
+  return str.replace(/"/g, '\\"').replace(/`/g, "\\`").replace(/\$/g, "\\$");
 }
 
 async function main() {
@@ -57,7 +66,7 @@ async function main() {
   const currentBranch = run("git rev-parse --abbrev-ref HEAD").output;
   const allBranches = run(
     "git branch --format='%(refname:short)'"
-  ).output.split("\n");
+  ).output.split("\n").filter(Boolean);
 
   console.log(`\n📌 Current branch: ${currentBranch}`);
   console.log("\n📋 Available branches:");
@@ -82,6 +91,11 @@ async function main() {
       rl.close();
       process.exit(1);
     }
+    if (!isValidBranchName(targetBranch)) {
+      console.error("❌ Nama branch hanya boleh huruf, angka, strip, underscore, slash");
+      rl.close();
+      process.exit(1);
+    }
     const create = run(`git checkout -b ${targetBranch}`);
     if (!create.ok) {
       console.error("❌ Gagal membuat branch:\n" + create.output);
@@ -101,7 +115,26 @@ async function main() {
     }
   }
 
-  // 6. Add + commit + push
+  // 6. Preview changes
+  const status = run("git status --short");
+  if (status.ok && status.output) {
+    console.log("\n📄 Files yang akan di-commit:");
+    console.log(status.output);
+  } else {
+    console.log("\n⚠️  Tidak ada perubahan untuk di-commit");
+    rl.close();
+    process.exit(0);
+  }
+
+  // 7. Confirm
+  const confirm = await ask("\nLanjut commit & push? (y/n) [default: y]: ", "y");
+  if (confirm.toLowerCase() !== "y") {
+    console.log("❌ Dibatalkan");
+    rl.close();
+    process.exit(0);
+  }
+
+  // 8. Add + commit + push
   console.log("\n📦 Staging files...");
   const add = run("git add -A");
   if (!add.ok) {
@@ -111,7 +144,7 @@ async function main() {
   }
 
   console.log("📝 Commit...");
-  const commit = run(`git commit -m "${message}"`);
+  const commit = run(`git commit -m "${escapeShell(message)}"`);
   if (!commit.ok) {
     console.error("❌ Gagal commit:\n" + commit.output);
     rl.close();
@@ -120,9 +153,7 @@ async function main() {
   console.log(`✅ Commit: ${commit.output}`);
 
   console.log(`🚀 Push ke origin/${targetBranch}...`);
-  const push = run(
-    `git push -u origin ${targetBranch}`
-  );
+  const push = run(`git push -u origin ${targetBranch}`);
   if (!push.ok) {
     console.error("❌ Gagal push:\n" + push.output);
     rl.close();
