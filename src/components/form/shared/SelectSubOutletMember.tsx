@@ -10,7 +10,7 @@ import {
 } from "react-hook-form";
 
 import SelectTypeWrapper from "@/components/SelectTypeWrapper";
-import { useFetchData } from "@/hooks/useFetchData";
+import { useFetchData } from "@/hooks/data/useFetchData";
 
 interface SubOutletMember {
   sub_kodeoutlet: string;

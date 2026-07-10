@@ -33,7 +33,7 @@ export default function InformasiPromosi({ defaultBranch }: Props) {
             <FormProvider {...pluForm}>
               <div>
                 <h1 className="font-mono text-xl text-blue-500 font-bold">
-                  Informasi Produk - {branch}
+                  Informasi Promosi - {branch}
                 </h1>
               </div>
               <div className="flex items-center justify-between gap-4">

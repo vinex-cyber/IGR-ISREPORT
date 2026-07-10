@@ -8,7 +8,7 @@ import ReportHeader from "@/components/ReportHeader";
 import { ReportTable } from "@/components/table/ReportTable";
 import RowDropdownMenu from "@/components/RowDropdownMenu";
 import LaporanModals from "@/components/evaluasi-sales/LaporanModals";
-import { useReportPage } from "@/hooks/useReportPage";
+import { useReportPage } from "@/hooks/report/useReportPage";
 import { buildReport } from "@/utils/reportBuilder";
 
 import {

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/router";
 
-import { useFilteredData } from "./useFilteredData";
+import { useFilteredData } from "@/hooks/useFilteredData";
 import { useTitleFromQuery } from "./useTitleFromQuery";
 import { useTotalRow } from "./useTotalRow";
 

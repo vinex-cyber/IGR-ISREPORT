@@ -2,7 +2,7 @@ import Layout from "@/components/Layout";
 import LoadingIgr from "@/components/LoadingIgr";
 import ReportHeader from "@/components/ReportHeader";
 import { ReportTable } from "@/components/table/ReportTable";
-import { useReportPage } from "@/hooks/useReportPage";
+import { useReportPage } from "@/hooks/report/useReportPage";
 import { buildReport } from "@/utils/reportBuilder";
 import {
   masterLokasiColumns,

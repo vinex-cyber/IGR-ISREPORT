@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import type { Control, FieldPathByValue, FieldValues } from "react-hook-form";
 
 import SelectTypeWrapper from "@/components/SelectTypeWrapper";
-import { useFetchData } from "@/hooks/useFetchData";
+import { useFetchData } from "@/hooks/data/useFetchData";
 
 interface OutletMember {
   out_kodeoutlet: string;

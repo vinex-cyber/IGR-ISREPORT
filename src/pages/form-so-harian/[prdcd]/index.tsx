@@ -14,7 +14,7 @@ import {
   FilterFormSoHarianSchema,
 } from "@/schema/filterFormSoHarian";
 
-import { useReportPage } from "@/hooks/useReportPage";
+import { useReportPage } from "@/hooks/report/useReportPage";
 import {
   formSoHarianColumns,
   FormSoHarianRows,

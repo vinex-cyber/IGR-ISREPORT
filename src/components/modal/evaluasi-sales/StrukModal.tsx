@@ -9,7 +9,7 @@ import {
   perStrukColumns,
   PerStrukRows,
 } from "@/configs/evaluasi-sales/per-struk-config";
-import { useReportPage } from "@/hooks/useReportPage";
+import { useReportPage } from "@/hooks/report/useReportPage";
 import { ReceiptText } from "lucide-react";
 import StrukViewModal from "../ViewStrukModal";
 import RowDropdownMenu from "@/components/RowDropdownMenu";

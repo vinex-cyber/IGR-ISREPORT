@@ -7,7 +7,7 @@ import {
   ProdukBaruRows,
   produkBaruColumns,
 } from "@/configs/produk-baru/produk-baru-config";
-import { useReportPage } from "@/hooks/useReportPage";
+import { useReportPage } from "@/hooks/report/useReportPage";
 import { buildReport } from "@/utils/reportBuilder";
 import { getBranchCookie } from "@/utils/branchCookie";
 

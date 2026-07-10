@@ -2,7 +2,7 @@ import Modal from "@/components/modal";
 import SearchInput from "@/components/SearchInput";
 import { useEffect, useMemo } from "react";
 import { ReportTable } from "@/components/table/ReportTable";
-import { useReportPage } from "@/hooks/useReportPage";
+import { useReportPage } from "@/hooks/report/useReportPage";
 import { FormatTanggal } from "@/utils/formatTanggal";
 import SkeletonTable from "@/components/SkletonTable";
 import { buildReport } from "@/utils/reportBuilder";

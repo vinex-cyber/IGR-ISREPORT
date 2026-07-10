@@ -1,10 +1,10 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 
-import { useFetchData } from "@/hooks/useFetchData";
+import { useFetchData } from "@/hooks/data/useFetchData";
 import { useRefreshRouter } from "@/hooks/useRefreshRouter";
-import { useReportQueryEndpoint } from "@/hooks/useReportQueryEndpoint";
-import { useReportTableLogic } from "@/hooks/useReportTableLogic";
-import { useTotalRow } from "@/hooks/useTotalRow";
+import { useReportQueryEndpoint } from "@/hooks/report/useReportQueryEndpoint";
+import { useReportTableLogic } from "@/hooks/report/useReportTableLogic";
+import { useTotalRow } from "@/hooks/report/useTotalRow";
 import { useExportToExcel } from "@/hooks/useExportToExcel";
 
 interface CustomFetchOptions {

@@ -7,7 +7,7 @@ import {
   perProdukTanggalColumns,
   PerProdukTanggalRows,
 } from "@/configs/evaluasi-sales/per-produk-tanggal-config";
-import { useReportPage } from "@/hooks/useReportPage";
+import { useReportPage } from "@/hooks/report/useReportPage";
 import { ReportTable } from "@/components/table/ReportTable";
 import SkeletonTable from "@/components/SkletonTable";
 

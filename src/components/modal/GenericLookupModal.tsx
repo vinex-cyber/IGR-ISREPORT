@@ -1,7 +1,7 @@
 // component/modal/GenericLookupModal.tsx
 import Modal from "@/components/modal";
 import SkeletonTable from "@/components/SkletonTable";
-import { useLookupData } from "@/hooks/useLookupData";
+import { useLookupData } from "@/hooks/data/useLookupData";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/utils/formatNumber";

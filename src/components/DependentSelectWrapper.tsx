@@ -2,7 +2,7 @@
 
 import type { Control, FieldPathByValue, FieldValues } from "react-hook-form";
 
-import { useQueryData } from "@/hooks/useQueryData";
+import { useQueryData } from "@/hooks/data/useQueryData";
 import { useDependentSelect } from "@/hooks/useDependentSelect";
 import SelectTypeWrapper from "@/components/SelectTypeWrapper";
 
