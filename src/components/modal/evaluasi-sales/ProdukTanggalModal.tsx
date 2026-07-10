@@ -69,7 +69,7 @@ export default function ProdukTanggalModal({
     },
   });
 
-  useEffect(() => {
+  useEffect(function resetSearchOnClose() {
     if (!show) {
       setSearchTerm("");
     }

@@ -13,7 +13,7 @@ export function useAnimeHover(
 ) {
   const { scale = 1.06, duration = 200, ease = "outQuad" } = opts;
 
-  useEffect(() => {
+  useEffect(function attachHoverListeners() {
     const els = document.querySelectorAll<HTMLElement>(selector);
     if (!els.length) return;
 
@@ -29,7 +29,7 @@ export function useAnimeHover(
       el.addEventListener("mouseleave", onLeave);
     });
 
-    return () => {
+    return function removeHoverListeners() {
       els.forEach((el) => {
         el.removeEventListener("mouseenter", onEnter);
         el.removeEventListener("mouseleave", onLeave);

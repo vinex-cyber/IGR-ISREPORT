@@ -82,7 +82,7 @@ export default function StrukModal({
   const [showViewStrukModal, setShowViewStrukModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState<PerStrukRows | null>(null);
 
-  useEffect(() => {
+  useEffect(function resetSearchOnClose() {
     if (!show) {
       setSearchTerm("");
     }

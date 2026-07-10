@@ -44,9 +44,11 @@ export function GenericLookupModal<T extends Record<string, unknown>>({
   // 🔥 debounce search
   const [debouncedSearch, setDebouncedSearch] = useState(search);
 
-  useEffect(() => {
+  useEffect(function debounceSearch() {
     const t = setTimeout(() => setDebouncedSearch(search), 300);
-    return () => clearTimeout(t);
+    return function cancelDebounce() {
+      clearTimeout(t);
+    };
   }, [search]);
 
   // 🔥 fetch (server / client sama-sama lewat sini)
@@ -81,7 +83,7 @@ export function GenericLookupModal<T extends Record<string, unknown>>({
 
   const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
 
-  useEffect(() => {
+  useEffect(function resetOnShow() {
     if (show) {
       setSearch("");
       setPage(1);

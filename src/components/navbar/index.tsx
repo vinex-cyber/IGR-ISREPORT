@@ -41,7 +41,7 @@ export default function Navbar({ branch, logoSrc }: NavbarProps) {
 
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
+  useEffect(function markMounted() {
     setMounted(true);
   }, []);
 

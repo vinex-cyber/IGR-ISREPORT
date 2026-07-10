@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { animate } from "animejs";
 
 interface CounterOptions {
@@ -23,7 +23,7 @@ export function useAnimeCounter(opts: CounterOptions) {
   const [value, setValue] = useState(from);
   const animRef = useRef<ReturnType<typeof animate> | null>(null);
 
-  const start = () => {
+  const start = useCallback(() => {
     if (animRef.current) animRef.current.cancel();
     const obj = { v: from };
     animRef.current = animate(obj, {
@@ -33,12 +33,17 @@ export function useAnimeCounter(opts: CounterOptions) {
       delay,
       onUpdate: () => setValue(Math.round(obj.v)),
     });
-  };
+  }, [from, to, duration, ease, delay]);
 
-  useEffect(() => {
-    if (autoplay) start();
-    return () => { animRef.current?.cancel(); };
-  }, [to, duration, ease, autoplay]);
+  useEffect(
+    function autoStartAnimation() {
+      if (autoplay) start();
+      return function cancelAnimation() {
+        animRef.current?.cancel();
+      };
+    },
+    [to, duration, ease, autoplay, start],
+  );
 
   return { value, start };
 }

@@ -1,3 +1,4 @@
+// src/pages/informasi-promosi/KartuProduk.tsx
 import { useAnimeCounter } from "@/hooks/useAnimeCounter";
 
 export default function KartuProduk() {
@@ -43,15 +44,11 @@ export default function KartuProduk() {
         </div>
 
         <div className="flex border-b text-center text-xxs">
-          <div className="flex-1 border-r p-1 font-medium">
-            Avg Sales
-          </div>
+          <div className="flex-1 border-r p-1 font-medium">Avg Sales</div>
           <div className="flex flex-1 items-center justify-center border-r p-1">
             {sales.value.toLocaleString()}
           </div>
-          <div className="flex-1 border-r p-1 font-medium">
-            Pb Out
-          </div>
+          <div className="flex-1 border-r p-1 font-medium">Pb Out</div>
           <div className="flex flex-1 items-center justify-center p-1 text-red-500">
             0
           </div>
@@ -71,9 +68,7 @@ export default function KartuProduk() {
           ))}
         </div>
       </div>
-      <div className="bg-gray-200 p-0.5 text-center text-xxs">
-        IGR+K.IGR
-      </div>
+      <div className="bg-gray-200 p-0.5 text-center text-xxs">IGR+K.IGR</div>
     </div>
   );
 }

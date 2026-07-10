@@ -25,7 +25,7 @@ export function Calendar22({ label = "Pilih Tanggal", value, onChange }: Calenda
     const parsedDate = React.useMemo(() => (value ? new Date(value) : undefined), [value]);
     const [date, setDate] = React.useState<Date | undefined>(parsedDate);
 
-    React.useEffect(() => {
+    React.useEffect(function syncDateFromValue() {
         setDate(parsedDate);
     }, [value, parsedDate]);
 

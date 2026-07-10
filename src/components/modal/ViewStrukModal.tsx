@@ -55,7 +55,7 @@ const StrukViewModal = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  useEffect(function fetchStrukData() {
     if (!show || !tanggal || !station || !kasir || !struk || !branch) {
       return;
     }
@@ -116,7 +116,7 @@ const StrukViewModal = ({
 
     void fetchStrukFile();
 
-    return () => {
+    return function abortFetch() {
       controller.abort();
     };
   }, [show, tanggal, station, kasir, struk, branch]);

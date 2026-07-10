@@ -33,7 +33,7 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
     new Date(0, i).toLocaleString("default", { month: "long" }),
   );
 
-  React.useEffect(() => {
+  React.useEffect(function syncDateFromProps() {
     setDate(value);
   }, [value]);
 

@@ -26,7 +26,7 @@ function Calendar({
   const defaultClassNames = getDefaultClassNames()
   const [monthKey, setMonthKey] = React.useState(0)
 
-  React.useEffect(() => {
+  React.useEffect(function animateCalendar() {
     const el = document.querySelector<HTMLElement>('[data-slot="calendar"]')
     if (!el) return
     animate(el, {
@@ -37,7 +37,7 @@ function Calendar({
     })
   }, [])
 
-  React.useEffect(() => {
+  React.useEffect(function animateMonthChange() {
     const monthsEl = document.querySelector<HTMLElement>(".rdp-months")
     if (!monthsEl) return
     animate(monthsEl, {
@@ -207,24 +207,24 @@ function CalendarDayButton({
   const defaultClassNames = getDefaultClassNames()
 
   const ref = React.useRef<HTMLButtonElement>(null)
-  React.useEffect(() => {
+  React.useEffect(function focusOnSelected() {
     if (modifiers.focused) ref.current?.focus()
   }, [modifiers.focused])
 
-  React.useEffect(() => {
+  React.useEffect(function animateDayHover() {
     if (!ref.current) return
     const el = ref.current
     const onEnter = () => animate(el, { scale: 1.12, duration: 150, ease: "outQuad" })
     const onLeave = () => animate(el, { scale: 1, duration: 150, ease: "outQuad" })
     el.addEventListener("mouseenter", onEnter)
     el.addEventListener("mouseleave", onLeave)
-    return () => {
+    return function removeDayHoverListeners() {
       el.removeEventListener("mouseenter", onEnter)
       el.removeEventListener("mouseleave", onLeave)
     }
   }, [])
 
-  React.useEffect(() => {
+  React.useEffect(function animateSelectedDay() {
     if (!ref.current || !modifiers.selected) return
     animate(ref.current, {
       scale: [0.85, 1],

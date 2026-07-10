@@ -1,3 +1,7 @@
+import { stagger } from "animejs";
+import { useAnimeCounter } from "@/hooks/useAnimeCounter";
+import { useAnimeOnScroll } from "@/hooks/useAnimeOnScroll";
+
 interface RowMemberPricing {
   merah: [number, number, number];
   biru: [number, number, number];
@@ -22,9 +26,39 @@ const memberData: RowMemberPricing[] = [
   },
 ];
 
-export default function TabelMemberPricing() {
+function Cell({ to }: { to: number }) {
+  const { value } = useAnimeCounter({ to, duration: 1200 });
+  return <>{value.toLocaleString()}</>;
+}
+
+function Row({ m, i }: { m: RowMemberPricing; i: number }) {
   return (
-    <div className="rounded-lg bg-white p-2 shadow-xl">
+    <tr className="row-member-pricing text-center">
+      <td className="border p-0.5">{i}</td>
+      {([m.merah, m.biru, m.platinum] as const).flat().map((v, j) => (
+        <td key={j} className="border p-0.5 text-right whitespace-nowrap">
+          <Cell to={v} />
+        </td>
+      ))}
+    </tr>
+  );
+}
+
+export default function TabelMemberPricing() {
+  useAnimeOnScroll(".table-member-pricing", {
+    opacity: [0, 1],
+    y: [12, 0],
+    duration: 600,
+    ease: "outQuad",
+    delay: stagger(60),
+  }, {
+    threshold: 0.3,
+    triggerOnce: true,
+    childSelector: ".row-member-pricing",
+  });
+
+  return (
+    <div className="table-member-pricing rounded-lg bg-white p-2 shadow-xl">
       <table className="w-full text-xxs">
         <thead>
           <tr>
@@ -81,14 +115,7 @@ export default function TabelMemberPricing() {
         </thead>
         <tbody>
           {memberData.map((m, i) => (
-            <tr key={i} className="text-center">
-              <td className="border p-0.5">{i}</td>
-              {([m.merah, m.biru, m.platinum] as const).flat().map((v, j) => (
-                <td key={j} className="border p-0.5 text-right whitespace-nowrap">
-                  {v.toLocaleString()}
-                </td>
-              ))}
-            </tr>
+            <Row key={i} m={m} i={i} />
           ))}
         </tbody>
       </table>

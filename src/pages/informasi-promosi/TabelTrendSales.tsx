@@ -33,7 +33,7 @@ export default function TabelTrendSales() {
   const [progress, setProgress] = useState(0);
   const [started, setStarted] = useState(false);
 
-  useEffect(() => {
+  useEffect(function observeViewport() {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
@@ -46,10 +46,10 @@ export default function TabelTrendSales() {
       { threshold: 0.3 },
     );
     obs.observe(el);
-    return () => obs.disconnect();
+    return function disconnectObserver() { obs.disconnect(); };
   }, [started]);
 
-  useEffect(() => {
+  useEffect(function animateProgress() {
     if (!started) return;
     const obj = { v: 0 };
     const anim = animate(obj, {
@@ -58,7 +58,7 @@ export default function TabelTrendSales() {
       ease: "outExpo",
       onUpdate: () => setProgress(obj.v),
     });
-    return () => { anim.cancel(); };
+    return function cancelAnimation() { anim.cancel(); };
   }, [started]);
 
   useAnimeOnScroll(".table-trend-sales", {
@@ -87,7 +87,7 @@ export default function TabelTrendSales() {
           </tr>
         </thead>
         <tbody>
-          {months.map((m, i) => (
+          {months.map((m) => (
             <tr key={m.bulan} className={`row-trend border text-center ${m.isCurrent ? "bg-amber-200" : ""}`}>
               <td className="border p-0">{m.bulan}</td>
               <td className="border p-0">

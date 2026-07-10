@@ -137,15 +137,15 @@ export function ReportTable<T extends Record<string, unknown>>({
 
   const [localSearch, setLocalSearch] = useState(searchTerm ?? "");
 
-  useEffect(() => {
+  useEffect(function syncSearchFromProps() {
     setLocalSearch(searchTerm ?? "");
   }, [searchTerm]);
 
-  useEffect(() => {
+  useEffect(function debouncedSearch() {
     const t = setTimeout(() => {
       onSearchChange?.(localSearch);
     }, 300);
-    return () => clearTimeout(t);
+    return function cancelDebouncedSearch() { clearTimeout(t); };
   }, [localSearch, onSearchChange]);
 
   return (

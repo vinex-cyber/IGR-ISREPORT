@@ -11,7 +11,7 @@ export const useRefreshRouter = (
         await refetch(); // ✅ langsung fetch ulang
     };
 
-    useEffect(() => {
+    useEffect(function syncRefreshingState() {
         if (!loading) {
             setIsRefreshing(false);
         }

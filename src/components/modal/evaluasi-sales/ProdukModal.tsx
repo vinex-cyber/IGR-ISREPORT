@@ -93,7 +93,7 @@ export default function ProdukModal({
     },
   });
 
-  useEffect(() => {
+  useEffect(function resetSearchOnClose() {
     if (!show) {
       setSearchTerm("");
     }

@@ -44,14 +44,16 @@ export default function InputGiftModal({
 }: InputGiftModalProps) {
   const [branch, setBranch] = useState("");
 
-  useEffect(() => {
+  useEffect(function syncBranchCookie() {
     setBranch(getBranchCookie());
 
     const timer = window.setInterval(() => {
       setBranch(getBranchCookie());
     }, 300);
 
-    return () => clearInterval(timer);
+    return function clearBranchPolling() {
+      clearInterval(timer);
+    };
   }, []);
 
   const modalTitle = title ?? `Pilih Kode Gift${branch ? ` - ${branch}` : ""}`;

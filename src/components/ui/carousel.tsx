@@ -88,18 +88,18 @@ function Carousel({
     [scrollPrev, scrollNext]
   )
 
-  React.useEffect(() => {
+  React.useEffect(function forwardCarouselApi() {
     if (!api || !setApi) return
     setApi(api)
   }, [api, setApi])
 
-  React.useEffect(() => {
+  React.useEffect(function subscribeCarouselEvents() {
     if (!api) return
     onSelect(api)
     api.on("reInit", onSelect)
     api.on("select", onSelect)
 
-    return () => {
+    return function unsubscribeCarouselEvents() {
       api?.off("select", onSelect)
     }
   }, [api, onSelect])

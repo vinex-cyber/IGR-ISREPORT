@@ -77,7 +77,7 @@ export function useFetchData<T>({
     }
   }, [endpoint, stableParams]);
 
-  useEffect(() => {
+  useEffect(function triggerDataFetch() {
     if (!enabled) return;
     fetchData();
   }, [endpoint, stableParams, enabled, fetchData]);

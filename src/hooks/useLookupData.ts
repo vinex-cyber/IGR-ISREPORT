@@ -52,7 +52,7 @@ export function useLookupData<T>({
   // ==========================================
   // Deteksi perubahan branch
   // ==========================================
-  useEffect(() => {
+  useEffect(function detectBranchChange() {
     if (typeof window === "undefined") return;
 
     setBranch(getBranchFromCookie());
@@ -69,7 +69,7 @@ export function useLookupData<T>({
       });
     }, 300);
 
-    return () => clearInterval(timer);
+    return function cleanupBranchPolling() { clearInterval(timer); };
   }, []);
 
   const extraParamsKey = useMemo(
@@ -152,7 +152,7 @@ export function useLookupData<T>({
     [],
   );
 
-  useEffect(() => {
+  useEffect(function fetchLookupData() {
     if (!endpoint) {
       setData([]);
       setTotal(0);
@@ -192,7 +192,7 @@ export function useLookupData<T>({
 
     void fetchData(requestUrl, cacheKey, controller);
 
-    return () => controller.abort();
+    return function abortLookupRequest() { controller.abort(); };
   }, [
     endpoint,
     mode,

@@ -139,14 +139,14 @@ export function useReportPage<T extends object>(
   // ── Reset page ketika filter/query berubah ───────────────────
   const prevQueryRef = useRef(baseQueryString);
 
-  useEffect(() => {
+  useEffect(function resetPageOnFilterChange() {
     if (prevQueryRef.current !== baseQueryString) {
       prevQueryRef.current = baseQueryString;
       setPage(1);
     }
   }, [baseQueryString]);
 
-  useEffect(() => {
+  useEffect(function resetPageOnSearch() {
     if (paginated) {
       setPage(1);
     }

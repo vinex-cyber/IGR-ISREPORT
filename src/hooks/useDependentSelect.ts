@@ -67,7 +67,7 @@ export function useDependentSelect<
     });
 
     // 🔥 reset child saat parent berubah
-    useEffect(() => {
+    useEffect(function resetChildOnParentChange() {
         if (parentName) {
             setValue(
                 name,

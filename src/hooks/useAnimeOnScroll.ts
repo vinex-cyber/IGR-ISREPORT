@@ -18,7 +18,7 @@ export function useAnimeOnScroll(
 ) {
   const triggered = useRef(new Set<HTMLElement>());
 
-  useEffect(() => {
+  useEffect(function observeViewport() {
     const els =
       typeof target === "string"
         ? document.querySelectorAll<HTMLElement>(target)
@@ -62,6 +62,6 @@ export function useAnimeOnScroll(
     );
 
     els.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+    return function disconnectObserver() { observer.disconnect(); };
   }, [target, params, opts.threshold, opts.rootMargin, opts.triggerOnce, opts.staggerDelay]);
 }

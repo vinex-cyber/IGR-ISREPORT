@@ -152,12 +152,12 @@ export default function SelectType({
    */
   const isPlaceholderValue = placeholderValues.includes(value);
 
-  useEffect(() => {
+  useEffect(function debounceSearchInput() {
     const timer = window.setTimeout(() => {
       setDebouncedSearch(search.trim().toLowerCase());
     }, 300);
 
-    return () => {
+    return function cancelDebounce() {
       window.clearTimeout(timer);
     };
   }, [search]);

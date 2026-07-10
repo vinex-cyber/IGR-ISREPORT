@@ -48,7 +48,7 @@ export default function FormSoHarianDetail({
   const router = useRouter();
   const [branch, setBranch] = useState(defaultBranch);
 
-  useEffect(() => {
+  useEffect(function syncBranchFromCookie() {
     if (!router.isReady) return;
     const cookieBranch = getBranchCookie();
     if (cookieBranch && cookieBranch !== defaultBranch) {

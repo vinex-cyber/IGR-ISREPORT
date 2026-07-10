@@ -64,12 +64,12 @@ export default function Modal({
 
   const modalIdRef = useRef(Symbol("modal"));
 
-  useEffect(() => {
+  useEffect(function setMountedState() {
     setMounted(true);
   }, []);
 
   // Lock body scroll dan mencatat urutan modal.
-  useEffect(() => {
+  useEffect(function lockBodyScroll() {
     if (!show) {
       return;
     }
@@ -86,7 +86,7 @@ export default function Modal({
 
     openedModalCount += 1;
 
-    return () => {
+    return function unlockBodyScroll() {
       const modalIndex = modalStack.lastIndexOf(modalId);
 
       if (modalIndex !== -1) {
@@ -102,7 +102,7 @@ export default function Modal({
   }, [show]);
 
   // Escape hanya menutup modal paling atas.
-  useEffect(() => {
+  useEffect(function closeOnEscape() {
     if (!show || !closeOnEscape) {
       return;
     }
@@ -122,7 +122,7 @@ export default function Modal({
 
     window.addEventListener("keydown", handleKeyDown);
 
-    return () => {
+    return function removeEscapeListener() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [show, closeOnEscape, onClose]);
