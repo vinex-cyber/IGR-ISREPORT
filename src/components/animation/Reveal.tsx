@@ -5,14 +5,23 @@ import { animate } from "animejs";
 interface RevealProps {
   children: ReactNode;
   className?: string;
+  direction?: "up" | "left" | "right";
 }
 
-export default function Reveal({ children, className = "" }: RevealProps) {
+export default function Reveal({
+  children,
+  className = "",
+  direction = "up",
+}: RevealProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(function revealOnScroll() {
     const el = ref.current;
     if (!el) return;
+
+    const translateY = direction === "up" ? [40, 0] : [0, 0];
+    const translateX =
+      direction === "left" ? [-60, 0] : direction === "right" ? [60, 0] : [0, 0];
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -21,7 +30,8 @@ export default function Reveal({ children, className = "" }: RevealProps) {
 
           animate(el, {
             opacity: [0, 1],
-            translateY: [40, 0],
+            translateY,
+            translateX,
             duration: 500,
             ease: "outQuad",
           });
@@ -34,7 +44,7 @@ export default function Reveal({ children, className = "" }: RevealProps) {
     return function disconnectReveal() {
       observer.disconnect();
     };
-  }, []);
+  }, [direction]);
 
   return (
     <div ref={ref} className={`opacity-0 ${className}`}>
