@@ -1,6 +1,6 @@
 import { stagger } from "animejs";
-import { useAnimeCounter } from "@/hooks/useAnimeCounter";
-import { useAnimeOnScroll } from "@/hooks/useAnimeOnScroll";
+import { useAnimeCounter } from "@/hooks/animation/useAnimeCounter";
+import { useAnimeOnScroll } from "@/hooks/animation/useAnimeOnScroll";
 
 interface RowSettingHarga {
   satuan: string;

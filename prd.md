@@ -52,8 +52,9 @@ return <button onClick={() => setOpen(false)}>Tutup</button>;
 ```
 
 ## Animation Convention
-- Gunakan `useAnimeCounter` dari `@/hooks/useAnimeCounter` untuk animasi angka
-- Gunakan `useAnimeOnScroll` dari `@/hooks/useAnimeOnScroll` untuk animasi scroll-triggered
+- Gunakan `useAnimeCounter` dari `@/hooks/animation/useAnimeCounter` untuk animasi angka
+- Gunakan `useAnimeOnScroll` dari `@/hooks/animation/useAnimeOnScroll` untuk animasi scroll-triggered
+- Gunakan `animePresets` dari `@/hooks/animation/animePresets` untuk preset animasi (fadeUp, scaleIn, dll)
 - `autoplay: true` (default) untuk animasi yang langsung jalan saat mount
 - `autoplay: false` + manual trigger untuk animasi yang menunggu event tertentu
 

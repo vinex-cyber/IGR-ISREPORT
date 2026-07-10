@@ -1,6 +1,6 @@
 import { animate, stagger } from "animejs";
 import { useEffect, useRef, useState } from "react";
-import { useAnimeOnScroll } from "@/hooks/useAnimeOnScroll";
+import { useAnimeOnScroll } from "@/hooks/animation/useAnimeOnScroll";
 
 interface RowSales {
   bulan: string;

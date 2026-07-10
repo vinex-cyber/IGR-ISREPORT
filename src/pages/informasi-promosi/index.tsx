@@ -28,7 +28,7 @@ export default function InformasiPromosi({ defaultBranch }: Props) {
   return (
     <Layout title="Informasi Promosi" branch={branch}>
       <div className="px-4">
-        <div className="flex w-full gap-5 items-stretch">
+        <section className="flex w-full gap-5 items-stretch">
           <div className="flex w-3/5 flex-col gap-5">
             <FormProvider {...pluForm}>
               <div>
@@ -53,14 +53,14 @@ export default function InformasiPromosi({ defaultBranch }: Props) {
             <KartuProduk />
             <TabelTrendSales />
           </div>
-        </div>
+        </section>
 
-        <div className="mt-5 space-y-5">
+        <section className="mt-5 space-y-5">
           <TabelPromoCashback />
           <TabelPromoGift />
           <TabelPromoInstore />
           <TabelPromoHJK />
-        </div>
+        </section>
       </div>
     </Layout>
   );

@@ -1,5 +1,5 @@
 // src/pages/informasi-promosi/KartuProduk.tsx
-import { useAnimeCounter } from "@/hooks/useAnimeCounter";
+import { useAnimeCounter } from "@/hooks/animation/useAnimeCounter";
 
 export default function KartuProduk() {
   const ctn = useAnimeCounter({ to: 2067, duration: 1200 });
