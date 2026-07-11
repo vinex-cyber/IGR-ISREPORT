@@ -1,5 +1,5 @@
 // src/pages/informasi-promosi/KartuProduk.tsx
-import { useQueryData } from "@/hooks/data/useQueryData";
+import { useFetchData } from "@/hooks/data/useFetchData";
 import { useAnimeCounter } from "@/hooks/animation/useAnimeCounter";
 import { Button } from "@/components/ui/button";
 
@@ -25,7 +25,7 @@ interface KartuProdukProps {
 }
 
 export default function KartuProduk({ plu }: KartuProdukProps) {
-  const { data, isLoading, error } = useQueryData<KartuProdukRow[]>({
+  const { data, loading, error } = useFetchData<KartuProdukRow[]>({
     endpoint: "/informasi-promosi/data-produk",
     queryParams: plu ? { prdcd: plu } : undefined,
     enabled: Boolean(plu),
@@ -47,7 +47,7 @@ export default function KartuProduk({ plu }: KartuProdukProps) {
     ? "Pilih PLU untuk melihat detail"
     : row?.prd_deskripsipanjang
       ? row.prd_deskripsipanjang
-      : isLoading
+      : loading
         ? "Memuat..."
         : error
           ? "Gagal memuat"

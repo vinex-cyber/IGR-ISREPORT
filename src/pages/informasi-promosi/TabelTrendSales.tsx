@@ -2,7 +2,7 @@
 import { animate, stagger } from "animejs";
 import { useEffect, useRef, useState } from "react";
 import { useAnimeOnScroll } from "@/hooks/animation/useAnimeOnScroll";
-import { useQueryData } from "@/hooks/data/useQueryData";
+import { useFetchData } from "@/hooks/data/useFetchData";
 
 interface TrendSalesRow {
   sls_prdcd: string;
@@ -86,7 +86,7 @@ export default function TabelTrendSales({ plu }: TabelTrendSalesProps) {
   const [progress, setProgress] = useState(0);
   const [started, setStarted] = useState(false);
 
-  const { data, isLoading } = useQueryData<TrendSalesRow[]>({
+  const { data, loading } = useFetchData<TrendSalesRow[]>({
     endpoint: "/informasi-promosi/data-trend-sales",
     queryParams: plu ? { prdcd: plu } : undefined,
     enabled: Boolean(plu),
@@ -204,7 +204,7 @@ export default function TabelTrendSales({ plu }: TabelTrendSalesProps) {
                 <input
                   type="text"
                   readOnly
-                  value={isLoading ? "..." : fmt(m.qty * progress)}
+                  value={loading ? "..." : fmt(m.qty * progress)}
                   className={`w-full bg-transparent px-1 py-0.5 text-right text-xxs outline-none ${m.isCurrent ? "bg-amber-200" : ""}`}
                 />
               </td>
@@ -212,7 +212,7 @@ export default function TabelTrendSales({ plu }: TabelTrendSalesProps) {
                 <input
                   type="text"
                   readOnly
-                  value={isLoading ? "..." : fmt(m.rupiah * progress)}
+                  value={loading ? "..." : fmt(m.rupiah * progress)}
                   className={`w-full bg-transparent px-1 py-0.5 text-right text-xxs outline-none ${m.isCurrent ? "bg-amber-200" : ""}`}
                 />
               </td>
