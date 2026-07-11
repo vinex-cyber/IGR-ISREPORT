@@ -10,6 +10,10 @@ import KartuProduk from "@/pages/informasi-promosi/KartuProduk";
 import TabelTrendSales from "@/pages/informasi-promosi/TabelTrendSales";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
 import TabelMemberPricing from "../TabelMemberPricing";
+import TabelPromoCashback from "../TabelPromoCashback";
+import TabelPromoGift from "../TabelPromoGift";
+import TabelPromoInstore from "../TabelPromoInstore";
+import TabelPromoHJK from "../TabelPromoHJK";
 
 export const getServerSideProps = getDefaultBranchServerSideProps;
 type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
@@ -20,6 +24,8 @@ export default function InformasiPromosiPrdcd({ defaultBranch }: Props) {
 
   const prdcd =
     typeof router.query.prdcd === "string" ? router.query.prdcd : "";
+
+  const durationAnimasi = 2000;
 
   return (
     <Layout title="Informasi Promosi" branch={branch}>
@@ -41,18 +47,33 @@ export default function InformasiPromosiPrdcd({ defaultBranch }: Props) {
               />
             </Reveal>
             <Reveal>
-              <TabelMemberPricing plu={prdcd} />
+              <TabelMemberPricing key={`mp-${branch}-${prdcd}`} plu={prdcd} />
             </Reveal>
           </div>
 
           <div className="flex w-2/5 flex-col gap-5">
             <Reveal>
-              <KartuProduk plu={prdcd} />
+              <KartuProduk key={`kp-${branch}-${prdcd}`} plu={prdcd} />
             </Reveal>
             <Reveal>
-              <TabelTrendSales plu={prdcd} />
+              <TabelTrendSales key={`ts-${branch}-${prdcd}`} plu={prdcd} />
             </Reveal>
           </div>
+        </section>
+
+        <section className="mt-5 space-y-5">
+          <Reveal direction="left" duration={durationAnimasi} ease="outCubic">
+            <TabelPromoCashback key={`cb-${branch}-${prdcd}`} plu={prdcd} />
+          </Reveal>
+          <Reveal direction="right" duration={durationAnimasi} ease="outCubic">
+            <TabelPromoGift />
+          </Reveal>
+          <Reveal direction="left" duration={durationAnimasi} ease="outCubic">
+            <TabelPromoInstore />
+          </Reveal>
+          <Reveal direction="right" duration={durationAnimasi} ease="outCubic">
+            <TabelPromoHJK />
+          </Reveal>
         </section>
       </div>
     </Layout>

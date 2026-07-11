@@ -25,9 +25,7 @@ const buildFilters = (filters: InformasiPromosiFilters) => {
   };
 };
 
-const buildQuery = (conditions: string, params: QueryParam[]) => {
-  const plu = params.length > 0 ? String(params[0]) : undefined;
-
+const buildQuery = (conditions: string) => {
   return `
         SELECT
             plu,
