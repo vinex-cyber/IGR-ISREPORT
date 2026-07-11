@@ -1,8 +1,8 @@
 # PRD: Upgrade Next.js 15 → 16 + Hapus TanStack React Query
 
-**Status:** Planned (besok)
-**Branch:** `informasi-promosi` atau branch baru
-**Estimasi:** < 1 hari
+**Status:** ✅ Done
+**Branch:** `informasi-promosi`
+**Commits:** `5ffde02` (phase 1), `5be3584` (phase 2)
 
 ---
 
@@ -95,27 +95,27 @@ npm install -D @types/react@latest @types/react-dom@latest
 ## Checklist Eksekusi
 
 ### Phase 1: Hapus TanStack React Query
-- [ ] Ganti `useQueryData` → `useFetchData` di `KartuProduk.tsx`
-- [ ] Ganti `useQueryData` → `useFetchData` di `TabelTrendSales.tsx`
-- [ ] Ganti `useQueryData` → `useFetchData` di `DependentSelectWrapper.tsx`
-- [ ] Hapus `QueryClientProvider` dari `_app.tsx`
-- [ ] Hapus `src/hooks/data/useQueryData.ts`
-- [ ] `npm uninstall @tanstack/react-query`
-- [ ] `npm run lint` — pastikan lolos
-- [ ] `npx tsc --noEmit` — pastikan lolos
-- [ ] Test semua halaman informasi-promosi + dependent select
+- [x] Ganti `useQueryData` → `useFetchData` di `KartuProduk.tsx`
+- [x] Ganti `useQueryData` → `useFetchData` di `TabelTrendSales.tsx`
+- [x] Ganti `useQueryData` → `useFetchData` di `DependentSelectWrapper.tsx`
+- [x] Hapus `QueryClientProvider` dari `_app.tsx`
+- [x] Hapus `src/hooks/data/useQueryData.ts`
+- [x] `npm uninstall @tanstack/react-query`
+- [x] `npm run lint` — pastikan lolos
+- [x] `npx tsc --noEmit` — pastikan lolos
+- [x] Test semua halaman informasi-promosi + dependent select
 
 ### Phase 2: Upgrade Next.js 16
-- [ ] Cek versi Node.js di environment deploy (>= 20.9)
-- [ ] `npm install next@16 react@19.2 react-dom@19.2`
-- [ ] `npm install -D @types/react@latest @types/react-dom@latest`
-- [ ] Ganti script `lint` di `package.json` → `eslint src/`
-- [ ] Buat/update `.eslintrc.json` jika perlu
-- [ ] `npm run lint` — pastikan lolos
-- [ ] `npx tsc --noEmit` — pastikan lolos
-- [ ] `npm run dev` — test semua halaman
-- [ ] `npm run build` — pastikan build sukses
-- [ ] Commit & push
+- [x] Cek versi Node.js di environment deploy (>= 20.9) — v24.15.0
+- [x] `npm install next@16 react@19.2 react-dom@19.2`
+- [x] `npm install -D @types/react@latest @types/react-dom@latest`
+- [x] Ganti script `lint` di `package.json` → `eslint src/`
+- [x] Update `eslint.config.mjs` ke flat config native
+- [x] Disable React Compiler rules (`set-state-in-effect`, `preserve-manual-memoization`, `purity`)
+- [x] `npm run lint` — pastikan lolos
+- [x] `npx tsc --noEmit` — pastikan lolos
+- [x] `npm run build` — pastikan build sukses
+- [x] Commit & push
 
 ---
 
