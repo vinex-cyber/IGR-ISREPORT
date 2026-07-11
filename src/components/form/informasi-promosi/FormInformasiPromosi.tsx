@@ -50,17 +50,17 @@ const FormInformasiPromosi = ({
         onSubmit={methods.handleSubmit(onSubmit)}
         className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <InputProdukPlu name="prdcd" className="bg-white" />
+          <InputProdukPlu name="prdcd" className="bg-white dark:bg-gray-800 dark:text-gray-200" />
           <div>
             <Button
               type="submit"
-              disabled={isDisabled}
+              hidden={isDisabled}
               className="ml-2 hover:cursor-pointer bg-blue-500 text-white hover:bg-blue-600 dark:bg-accent dark:text-accent-foreground dark:hover:bg-accent/80">
               Submit
             </Button>
             <Button
               type="button"
-              disabled={isDisabled}
+              hidden={isDisabled}
               onClick={onReset}
               className="ml-2 hover:cursor-pointer bg-red-500 text-white hover:bg-red-600 dark:bg-accent dark:text-accent-foreground dark:hover:bg-accent/80">
               Reset

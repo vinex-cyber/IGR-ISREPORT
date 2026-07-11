@@ -57,18 +57,18 @@ export default function KartuProduk({ plu }: KartuProdukProps) {
   };
 
   return (
-    <div className="flex flex-col rounded-lg border bg-gray-50 shadow-xl h-full">
+    <div className="flex flex-col rounded-lg border bg-gray-50 shadow-xl h-full dark:bg-gray-800 dark:text-gray-200">
       <div className="flex flex-1 flex-col">
         <div className="grid grid-cols-3 border-b">
           <div className="border-r">
             <div className="grid grid-cols-2 border-b">
-              <div className="border-r bg-gray-200 p-1 text-xxs font-medium">
+              <div className="border-r bg-gray-200 p-1 text-xxs font-medium dark:bg-gray-700 dark:text-gray-200">
                 PLU IGR
               </div>
               <div className="p-1 text-xxs">{row?.prd_prdcd ?? "-"}</div>
             </div>
             <div className="grid grid-cols-2">
-              <div className="border-r bg-gray-200 p-1 text-xxs font-medium">
+              <div className="border-r bg-gray-200 p-1 text-xxs font-medium dark:bg-gray-700 dark:text-gray-200">
                 PLU OMI
               </div>
               <div className="p-1 text-xxs">{row?.prc_pluomi ?? "-"}</div>
@@ -124,7 +124,7 @@ export default function KartuProduk({ plu }: KartuProdukProps) {
           ))}
         </div>
       </div>
-      <div className="bg-gray-200 p-0.5 text-center text-xxs">
+      <div className="bg-gray-200 p-0.5 text-center text-xxs dark:bg-gray-700 dark:text-gray-200">
         {row?.flag ?? "IGR+K.IGR"}
       </div>
     </div>

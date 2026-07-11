@@ -31,7 +31,7 @@ export default function InformasiPromosi({ defaultBranch }: Props) {
           <div className="flex w-3/5 flex-col gap-5">
             <Reveal>
               <div>
-                <h1 className="font-mono text-xl text-blue-500 font-bold">
+                <h1 className="font-mono text-xl font-bold text-blue-500 dark:text-blue-400">
                   Informasi Promosi - {branch}
                 </h1>
               </div>
@@ -44,18 +44,6 @@ export default function InformasiPromosi({ defaultBranch }: Props) {
             </Reveal>
             <Reveal>
               <TabelSettingHarga />
-            </Reveal>
-            <Reveal>
-              <TabelMemberPricing />
-            </Reveal>
-          </div>
-
-          <div className="flex w-2/5 flex-col gap-5">
-            <Reveal>
-              <KartuProduk />
-            </Reveal>
-            <Reveal>
-              <TabelTrendSales />
             </Reveal>
           </div>
         </section>

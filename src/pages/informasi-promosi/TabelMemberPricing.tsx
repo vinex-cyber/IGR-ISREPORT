@@ -25,9 +25,21 @@ interface RowMemberPricing {
 
 function mapRow(row: CashbackRow): RowMemberPricing {
   return {
-    merah: [Number(row.hrgmm ?? 0), Number(row.cbmm ?? 0), Number(row.hrg_netmm ?? 0)],
-    biru: [Number(row.hrgbiru ?? 0), Number(row.cbbiru ?? 0), Number(row.hrg_netbiru ?? 0)],
-    platinum: [Number(row.hrgpla ?? 0), Number(row.cbpla ?? 0), Number(row.hrg_netpla ?? 0)],
+    merah: [
+      Number(row.hrgmm ?? 0),
+      Number(row.cbmm ?? 0),
+      Number(row.hrg_netmm ?? 0),
+    ],
+    biru: [
+      Number(row.hrgbiru ?? 0),
+      Number(row.cbbiru ?? 0),
+      Number(row.hrg_netbiru ?? 0),
+    ],
+    platinum: [
+      Number(row.hrgpla ?? 0),
+      Number(row.cbpla ?? 0),
+      Number(row.hrg_netpla ?? 0),
+    ],
   };
 }
 
@@ -81,30 +93,66 @@ export default function TabelMemberPricing({ plu }: TabelMemberPricingProps) {
 
   if (!plu) {
     return (
-      <div className="table-member-pricing rounded-lg bg-white p-2 shadow-xl">
+      <div className="table-member-pricing rounded-lg bg-white p-2 shadow-xl dark:bg-gray-800 dark:text-gray-200">
         <table className="w-full text-xxs">
           <thead>
             <tr>
-              <th className="border bg-gray-400 p-0.5 text-center text-white" rowSpan={2}>#</th>
-              <th className="border bg-red-500 p-0.5 text-center text-white" colSpan={3}>Member Merah</th>
-              <th className="border bg-blue-500 p-0.5 text-center text-white" colSpan={3}>Member Biru</th>
-              <th className="border bg-zinc-600 p-0.5 text-center text-white" colSpan={3}>Member Platinum</th>
+              <th
+                className="border bg-gray-400 p-0.5 text-center text-white dark:bg-gray-600"
+                rowSpan={2}>
+                #
+              </th>
+              <th
+                className="border bg-red-500 p-0.5 text-center text-white"
+                colSpan={3}>
+                Member Merah
+              </th>
+              <th
+                className="border bg-blue-500 p-0.5 text-center text-white"
+                colSpan={3}>
+                Member Biru
+              </th>
+              <th
+                className="border bg-zinc-600 p-0.5 text-center text-white"
+                colSpan={3}>
+                Member Platinum
+              </th>
             </tr>
             <tr>
-              <th className="border bg-red-500 p-0.5 text-center text-white">Harga</th>
-              <th className="border bg-red-500 p-0.5 text-center text-white">Cb</th>
-              <th className="border bg-red-500 p-0.5 text-center text-white">Net</th>
-              <th className="border bg-blue-500 p-0.5 text-center text-white">Harga</th>
-              <th className="border bg-blue-500 p-0.5 text-center text-white">Cb</th>
-              <th className="border bg-blue-500 p-0.5 text-center text-white">Net</th>
-              <th className="border bg-zinc-600 p-0.5 text-center text-white">Harga</th>
-              <th className="border bg-zinc-600 p-0.5 text-center text-white">Cb</th>
-              <th className="border bg-zinc-600 p-0.5 text-center text-white">Net</th>
+              <th className="border bg-red-500 p-0.5 text-center text-white">
+                Harga
+              </th>
+              <th className="border bg-red-500 p-0.5 text-center text-white">
+                Cb
+              </th>
+              <th className="border bg-red-500 p-0.5 text-center text-white">
+                Net
+              </th>
+              <th className="border bg-blue-500 p-0.5 text-center text-white">
+                Harga
+              </th>
+              <th className="border bg-blue-500 p-0.5 text-center text-white">
+                Cb
+              </th>
+              <th className="border bg-blue-500 p-0.5 text-center text-white">
+                Net
+              </th>
+              <th className="border bg-zinc-600 p-0.5 text-center text-white">
+                Harga
+              </th>
+              <th className="border bg-zinc-600 p-0.5 text-center text-white">
+                Cb
+              </th>
+              <th className="border bg-zinc-600 p-0.5 text-center text-white">
+                Net
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td colSpan={10} className="border p-2 text-center text-xxs text-gray-400">
+              <td
+                colSpan={10}
+                className="border p-2 text-center text-xxs text-gray-400 dark:text-gray-300">
                 Pilih PLU untuk melihat member pricing
               </td>
             </tr>
@@ -115,12 +163,12 @@ export default function TabelMemberPricing({ plu }: TabelMemberPricingProps) {
   }
 
   return (
-    <div className="table-member-pricing rounded-lg bg-white p-2 shadow-xl">
+    <div className="table-member-pricing rounded-lg bg-white p-2 shadow-xl dark:bg-gray-800 dark:text-gray-200">
       <table className="w-full text-xxs">
         <thead>
           <tr>
             <th
-              className="border bg-gray-400 p-0.5 text-center text-white"
+              className="border bg-gray-400 p-0.5 text-center text-white dark:bg-gray-600"
               rowSpan={2}>
               #
             </th>
@@ -173,20 +221,22 @@ export default function TabelMemberPricing({ plu }: TabelMemberPricingProps) {
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={10} className="border p-2 text-center text-xxs text-gray-400">
+              <td
+                colSpan={10}
+                className="border p-2 text-center text-xxs text-gray-400 dark:text-gray-300">
                 Memuat...
               </td>
             </tr>
           ) : memberData.length === 0 ? (
             <tr>
-              <td colSpan={10} className="border p-2 text-center text-xxs text-gray-400">
+              <td
+                colSpan={10}
+                className="border p-2 text-center text-xxs text-gray-400 dark:text-gray-300">
                 Tidak ada data
               </td>
             </tr>
           ) : (
-            memberData.map((m, i) => (
-              <Row key={i} m={m} plu={data![i].plu} />
-            ))
+            memberData.map((m, i) => <Row key={i} m={m} plu={data![i].plu} />)
           )}
         </tbody>
       </table>

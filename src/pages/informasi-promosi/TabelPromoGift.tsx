@@ -93,8 +93,8 @@ const rows: RowGift[] = [
 
 export default function TabelPromoGift() {
   return (
-    <div className="overflow-x-auto rounded-lg bg-white p-2 shadow-xl">
-      <h1 className="bg-slate-300 p-1 text-center font-mono text-xl font-bold">
+    <div className="overflow-x-auto rounded-lg bg-white p-2 shadow-xl dark:bg-gray-800 dark:text-gray-200">
+      <h1 className="bg-slate-300 p-1 text-center font-mono text-xl font-bold dark:bg-slate-700 dark:text-gray-200">
         Table Promo Gift
       </h1>
       <table className="w-full text-xxs">

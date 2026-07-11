@@ -31,9 +31,10 @@ interface ReportTableProps<T> {
   renderActions?: (row: T) => React.ReactNode;
   actionHeaderLabel?: string;
   showRowNumber?: boolean;
-  textHeader?: "xs" | "sm" | "md" | "lg" | "xl";
-  textBody?: "xs" | "sm" | "md" | "lg" | "xl";
-  textFooter?: "xs" | "sm" | "md" | "lg" | "xl";
+  textHeaderGroup?: "xxs" | "xs" | "sm" | "md" | "lg" | "xl";
+  textHeader?: "xxs" | "xs" | "sm" | "md" | "lg" | "xl";
+  textBody?: "xxs" | "xs" | "sm" | "md" | "lg" | "xl";
+  textFooter?: "xxs" | "xs" | "sm" | "md" | "lg" | "xl";
   isRefreshing?: boolean;
 
   // ── Search & Reset (opsional) ────────────────────────────
@@ -107,6 +108,7 @@ export function ReportTable<T extends Record<string, unknown>>({
   renderActions,
   actionHeaderLabel = "Actions",
   showRowNumber = false,
+  textHeaderGroup = "md",
   textHeader = "md",
   textBody = "sm",
   textFooter = "md",
@@ -137,16 +139,24 @@ export function ReportTable<T extends Record<string, unknown>>({
 
   const [localSearch, setLocalSearch] = useState(searchTerm ?? "");
 
-  useEffect(function syncSearchFromProps() {
-    setLocalSearch(searchTerm ?? "");
-  }, [searchTerm]);
+  useEffect(
+    function syncSearchFromProps() {
+      setLocalSearch(searchTerm ?? "");
+    },
+    [searchTerm],
+  );
 
-  useEffect(function debouncedSearch() {
-    const t = setTimeout(() => {
-      onSearchChange?.(localSearch);
-    }, 300);
-    return function cancelDebouncedSearch() { clearTimeout(t); };
-  }, [localSearch, onSearchChange]);
+  useEffect(
+    function debouncedSearch() {
+      const t = setTimeout(() => {
+        onSearchChange?.(localSearch);
+      }, 300);
+      return function cancelDebouncedSearch() {
+        clearTimeout(t);
+      };
+    },
+    [localSearch, onSearchChange],
+  );
 
   return (
     <div className="space-y-2">
@@ -181,7 +191,7 @@ export function ReportTable<T extends Record<string, unknown>>({
           <thead className="sticky top-0 z-10 bg-blue-400 border border-gray-400 dark:bg-gray-400">
             {/* GROUP HEADER */}
             {headerGroups && (
-              <tr>
+              <tr className={`text-${textHeaderGroup}`}>
                 {headerGroups.map((group, idx) => (
                   <th
                     key={idx}

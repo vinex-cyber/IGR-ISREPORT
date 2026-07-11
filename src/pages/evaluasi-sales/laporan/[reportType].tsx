@@ -92,9 +92,10 @@ const LaporanPage = () => {
                 showRowNumber
                 isRefreshing={isRefreshing}
                 headerGroups={config.headerGroups}
-                textHeader={reportDef.textHeader}
-                textBody={reportDef.textBody}
-                textFooter={reportDef.textFooter}
+                textHeaderGroup="xs"
+                textHeader="xs"
+                textBody="xxs"
+                textFooter="xs"
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
                 onSearchReset={() => setSearchTerm("")}

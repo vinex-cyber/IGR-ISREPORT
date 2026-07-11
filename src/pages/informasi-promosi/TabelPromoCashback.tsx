@@ -60,8 +60,16 @@ interface RowCashback {
 
 function mapRow(row: CashbackApiRow): RowCashback {
   const jenisMem: string[] = [];
-  if (row.cba_reguler === "1" || row.cba_reguler_biruplus === "1") jenisMem.push("Mb");
-  if (row.cba_retailer === "1" || row.cba_silver === "1" || row.cba_gold1 === "1" || row.cba_gold2 === "1" || row.cba_gold3 === "1") jenisMem.push("Mm");
+  if (row.cba_reguler === "1" || row.cba_reguler_biruplus === "1")
+    jenisMem.push("Mb");
+  if (
+    row.cba_retailer === "1" ||
+    row.cba_silver === "1" ||
+    row.cba_gold1 === "1" ||
+    row.cba_gold2 === "1" ||
+    row.cba_gold3 === "1"
+  )
+    jenisMem.push("Mm");
   if (row.cba_platinum === "1") jenisMem.push("Pla");
 
   const flagPromo: string[] = [];
@@ -141,24 +149,46 @@ export default function TabelPromoCashback({ plu }: TabelPromoCashbackProps) {
 
   if (!plu) {
     return (
-      <div className="table-promo-cashback overflow-x-auto rounded-lg bg-white p-2 shadow-xl">
-        <h1 className="bg-slate-300 p-1 text-center font-mono text-xl font-bold">
+      <div className="table-promo-cashback overflow-x-auto rounded-lg bg-white p-2 shadow-xl dark:bg-gray-800 dark:text-gray-200">
+        <h1 className="bg-slate-300 p-1 text-center font-mono text-xl font-bold dark:bg-slate-700 dark:text-gray-200">
           Table Promo Cashback
         </h1>
         <table className="w-full text-xxs">
           <thead>
             <tr className="text-center text-xxs font-bold text-white">
-              <th className="border bg-blue-400 p-2" rowSpan={2}>Kode</th>
-              <th className="border bg-blue-400 p-2" rowSpan={2}>Nama Promosi</th>
-              <th className="border bg-green-400 p-2" colSpan={3}>Minimum Beli/Struk</th>
-              <th className="border bg-blue-400 p-2" rowSpan={2}>Nilai CB</th>
-              <th className="border bg-blue-400 p-2" rowSpan={2}>Jumlah Alokasi</th>
-              <th className="border bg-blue-400 p-2" rowSpan={2}>Alokasi Keluar</th>
-              <th className="border bg-blue-400 p-2" rowSpan={2}>Sisa</th>
-              <th className="border bg-red-400 p-2" colSpan={4}>Maximum Beli/Struk</th>
-              <th className="border bg-green-400 p-2" colSpan={2}>Periode</th>
-              <th className="border bg-blue-400 p-2" rowSpan={2}>Jenis Mem</th>
-              <th className="border bg-blue-400 p-2" rowSpan={2}>Flag Promo</th>
+              <th className="border bg-blue-400 p-2" rowSpan={2}>
+                Kode
+              </th>
+              <th className="border bg-blue-400 p-2" rowSpan={2}>
+                Nama Promosi
+              </th>
+              <th className="border bg-green-400 p-2" colSpan={3}>
+                Minimum Beli/Struk
+              </th>
+              <th className="border bg-blue-400 p-2" rowSpan={2}>
+                Nilai CB
+              </th>
+              <th className="border bg-blue-400 p-2" rowSpan={2}>
+                Jumlah Alokasi
+              </th>
+              <th className="border bg-blue-400 p-2" rowSpan={2}>
+                Alokasi Keluar
+              </th>
+              <th className="border bg-blue-400 p-2" rowSpan={2}>
+                Sisa
+              </th>
+              <th className="border bg-red-400 p-2" colSpan={4}>
+                Maximum Beli/Struk
+              </th>
+              <th className="border bg-green-400 p-2" colSpan={2}>
+                Periode
+              </th>
+              <th className="border bg-blue-400 p-2" rowSpan={2}>
+                Jenis Mem
+              </th>
+              <th className="border bg-blue-400 p-2" rowSpan={2}>
+                Flag Promo
+              </th>
             </tr>
             <tr className="text-center text-xxs font-bold text-white">
               <th className="border bg-green-400 p-1">Harga</th>
@@ -174,7 +204,9 @@ export default function TabelPromoCashback({ plu }: TabelPromoCashbackProps) {
           </thead>
           <tbody>
             <tr>
-              <td colSpan={17} className="border p-2 text-center text-xxs text-gray-400">
+              <td
+                colSpan={17}
+                className="border p-2 text-center text-xxs text-gray-400 dark:text-gray-300">
                 Pilih PLU untuk melihat promo cashback
               </td>
             </tr>
@@ -185,24 +217,46 @@ export default function TabelPromoCashback({ plu }: TabelPromoCashbackProps) {
   }
 
   return (
-    <div className="table-promo-cashback overflow-x-auto rounded-lg bg-white p-2 shadow-xl">
-      <h1 className="bg-slate-300 p-1 text-center font-mono text-xl font-bold">
+    <div className="table-promo-cashback overflow-x-auto rounded-lg bg-white p-2 shadow-xl dark:bg-gray-800 dark:text-gray-200">
+      <h1 className="bg-slate-300 p-1 text-center font-mono text-xl font-bold dark:bg-slate-700 dark:text-gray-200">
         Table Promo Cashback
       </h1>
       <table className="w-full text-xxs">
         <thead>
-          <tr className="text-center text-xxs font-bold text-white">
-            <th className="border bg-blue-400 p-2" rowSpan={2}>Kode</th>
-            <th className="border bg-blue-400 p-2" rowSpan={2}>Nama Promosi</th>
-            <th className="border bg-green-400 p-2" colSpan={3}>Minimum Beli/Struk</th>
-            <th className="border bg-blue-400 p-2" rowSpan={2}>Nilai CB</th>
-            <th className="border bg-blue-400 p-2" rowSpan={2}>Jumlah Alokasi</th>
-            <th className="border bg-blue-400 p-2" rowSpan={2}>Alokasi Keluar</th>
-            <th className="border bg-blue-400 p-2" rowSpan={2}>Sisa</th>
-            <th className="border bg-red-400 p-2" colSpan={4}>Maximum Beli/Struk</th>
-            <th className="border bg-green-400 p-2" colSpan={2}>Periode</th>
-            <th className="border bg-blue-400 p-2" rowSpan={2}>Jenis Mem</th>
-            <th className="border bg-blue-400 p-2" rowSpan={2}>Flag Promo</th>
+          <tr className="text-center text-xxs font-bold text-white dark:text-gray-200">
+            <th className="border bg-blue-400 p-2" rowSpan={2}>
+              Kode
+            </th>
+            <th className="border bg-blue-400 p-2" rowSpan={2}>
+              Nama Promosi
+            </th>
+            <th className="border bg-green-400 p-2" colSpan={3}>
+              Minimum Beli/Struk
+            </th>
+            <th className="border bg-blue-400 p-2" rowSpan={2}>
+              Nilai CB
+            </th>
+            <th className="border bg-blue-400 p-2" rowSpan={2}>
+              Jumlah Alokasi
+            </th>
+            <th className="border bg-blue-400 p-2" rowSpan={2}>
+              Alokasi Keluar
+            </th>
+            <th className="border bg-blue-400 p-2" rowSpan={2}>
+              Sisa
+            </th>
+            <th className="border bg-red-400 p-2" colSpan={4}>
+              Maximum Beli/Struk
+            </th>
+            <th className="border bg-green-400 p-2" colSpan={2}>
+              Periode
+            </th>
+            <th className="border bg-blue-400 p-2" rowSpan={2}>
+              Jenis Mem
+            </th>
+            <th className="border bg-blue-400 p-2" rowSpan={2}>
+              Flag Promo
+            </th>
           </tr>
           <tr className="text-center text-xxs font-bold text-white">
             <th className="border bg-green-400 p-1">Harga</th>
@@ -219,27 +273,41 @@ export default function TabelPromoCashback({ plu }: TabelPromoCashbackProps) {
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={17} className="border p-2 text-center text-xxs text-gray-400">
+              <td
+                colSpan={17}
+                className="border p-2 text-center text-xxs text-gray-400 dark:text-gray-300">
                 Memuat...
               </td>
             </tr>
           ) : rows.length === 0 ? (
             <tr>
-              <td colSpan={17} className="border p-2 text-center text-xxs text-gray-400">
+              <td
+                colSpan={17}
+                className="border p-2 text-center text-xxs text-gray-400 dark:text-gray-300">
                 Tidak ada data
               </td>
             </tr>
           ) : (
             rows.map((r) => (
-              <tr key={r.kode} className="row-promo-cashback border text-center text-xxs">
+              <tr
+                key={r.kode}
+                className="row-promo-cashback border text-center text-xxs">
                 <td className="border p-1">{r.kode}</td>
                 <td className="border p-1">{r.namaPromosi}</td>
                 <td className="border p-1">{r.minBeliHarga}</td>
-                <td className="border p-1">{r.minBeliSponsor.toLocaleString()}</td>
-                <td className="border p-1">{r.minBeliTotal.toLocaleString()}</td>
+                <td className="border p-1">
+                  {r.minBeliSponsor.toLocaleString()}
+                </td>
+                <td className="border p-1">
+                  {r.minBeliTotal.toLocaleString()}
+                </td>
                 <td className="border p-1">{r.nilaiCB.toLocaleString()}</td>
-                <td className="border p-1">{r.jumlahAlokasi.toLocaleString()}</td>
-                <td className="border p-1">{r.alokasiKeluar.toLocaleString()}</td>
+                <td className="border p-1">
+                  {r.jumlahAlokasi.toLocaleString()}
+                </td>
+                <td className="border p-1">
+                  {r.alokasiKeluar.toLocaleString()}
+                </td>
                 <td className="border p-1">{r.sisa.toLocaleString()}</td>
                 <td className="border p-1">{r.maxStruk}</td>
                 <td className="border p-1">{r.maxMemHari}</td>

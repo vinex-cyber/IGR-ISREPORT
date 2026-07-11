@@ -121,7 +121,7 @@ export default function TabelSettingHarga() {
   );
 
   return (
-    <div className="table-setting-harga overflow-x-auto rounded-lg bg-white p-2 shadow-xl">
+    <div className="table-setting-harga overflow-x-auto rounded-lg bg-white p-2 shadow-xl dark:bg-gray-800 dark:text-gray-200">
       <button className="btn-hover float-end my-1 rounded bg-blue-500 px-2 py-0.5 text-xxs font-bold text-white">
         View Setting Harga
       </button>
