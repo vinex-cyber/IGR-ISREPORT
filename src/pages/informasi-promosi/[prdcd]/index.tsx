@@ -9,6 +9,7 @@ import FormInformasiPromosi from "@/components/form/informasi-promosi/FormInform
 import KartuProduk from "@/pages/informasi-promosi/KartuProduk";
 import TabelTrendSales from "@/pages/informasi-promosi/TabelTrendSales";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
+import TabelSettingHarga from "../TabelSettingHarga";
 import TabelMemberPricing from "../TabelMemberPricing";
 import TabelPromoCashback from "../TabelPromoCashback";
 import TabelPromoGift from "../TabelPromoGift";
@@ -45,6 +46,9 @@ export default function InformasiPromosiPrdcd({ defaultBranch }: Props) {
                 branch={branch}
                 onBranchChange={setBranch}
               />
+            </Reveal>
+            <Reveal>
+              <TabelSettingHarga key={`sh-${branch}-${prdcd}`} plu={prdcd} />
             </Reveal>
             <Reveal>
               <TabelMemberPricing key={`mp-${branch}-${prdcd}`} plu={prdcd} />

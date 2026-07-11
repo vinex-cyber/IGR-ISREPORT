@@ -7,22 +7,11 @@ import Reveal from "@/components/animation/Reveal";
 import FormInformasiPromosi from "@/components/form/informasi-promosi/FormInformasiPromosi";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
 
-import TabelSettingHarga from "./TabelSettingHarga";
-import TabelMemberPricing from "./TabelMemberPricing";
-import KartuProduk from "./KartuProduk";
-import TabelPromoCashback from "./TabelPromoCashback";
-import TabelPromoGift from "./TabelPromoGift";
-import TabelPromoInstore from "./TabelPromoInstore";
-import TabelPromoHJK from "./TabelPromoHJK";
-import TabelTrendSales from "./TabelTrendSales";
-
 export const getServerSideProps = getDefaultBranchServerSideProps;
 type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
 export default function InformasiPromosi({ defaultBranch }: Props) {
   const [branch, setBranch] = useState(defaultBranch);
-
-  const durationAnimasi = 900;
 
   return (
     <Layout title="Informasi Promosi" branch={branch}>
@@ -42,25 +31,7 @@ export default function InformasiPromosi({ defaultBranch }: Props) {
                 onBranchChange={setBranch}
               />
             </Reveal>
-            <Reveal>
-              <TabelSettingHarga />
-            </Reveal>
           </div>
-        </section>
-
-        <section className="mt-5 space-y-5">
-          <Reveal direction="left" duration={durationAnimasi} ease="outCubic">
-            <TabelPromoCashback />
-          </Reveal>
-          <Reveal direction="right" duration={durationAnimasi} ease="outCubic">
-            <TabelPromoGift />
-          </Reveal>
-          <Reveal direction="left" duration={durationAnimasi} ease="outCubic">
-            <TabelPromoInstore />
-          </Reveal>
-          <Reveal direction="right" duration={durationAnimasi} ease="outCubic">
-            <TabelPromoHJK />
-          </Reveal>
         </section>
       </div>
     </Layout>

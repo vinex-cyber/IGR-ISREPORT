@@ -17,7 +17,9 @@ export const QueryCashbackMaster = (
   // alokasiCondition: deny SQL statement termination & comment injection
   // Single quote diperbolehkan karena dibutuhkan untuk SQL string literal ('0', '1')
   if (/--|\/\*|DROP|DELETE|INSERT|UPDATE|EXEC/i.test(alokasiCondition)) {
-    throw new Error("Invalid alokasiCondition: contains dangerous SQL patterns");
+    throw new Error(
+      "Invalid alokasiCondition: contains dangerous SQL patterns",
+    );
   }
 
   return `
@@ -26,6 +28,9 @@ export const QueryCashbackMaster = (
       SELECT DISTINCT
         prmd_prdcd AS plup,
         prmd_hrgjual AS hrgp,
+        prmd_flag_pos AS flag_pos,
+        prmd_flag_klik AS flag_klik,
+        prmd_flag_spi AS flag_spi,
         CASE
           WHEN alk_member = 'PLATINUM' THEN 'PLATINUM'
           WHEN alk_member IN ('REGBIRUPLUS', 'REGBIRU') THEN 'BIRU'
@@ -38,7 +43,7 @@ export const QueryCashbackMaster = (
         AND prmd_prdcd ILIKE $1
     ),
     promo_filtered AS (
-      SELECT plup, hrgp FROM promo_md WHERE flag = '${flag}'
+      SELECT plup, hrgp, flag_pos, flag_klik, flag_spi FROM promo_md WHERE flag = '${flag}'
     ),
     product_master AS (
       SELECT
@@ -51,7 +56,8 @@ export const QueryCashbackMaster = (
     product_with_promo AS (
       SELECT DISTINCT
         pm.plun, pm.desk, pm.fracn, pm.unit,
-        pm.minjualn, pm.hrgn, pf.hrgp
+        pm.minjualn, pm.hrgn, pf.hrgp,
+        pf.flag_pos, pf.flag_klik, pf.flag_spi
       FROM product_master pm
       LEFT JOIN promo_filtered pf ON pm.plun = pf.plup
     ),
@@ -93,11 +99,19 @@ export const QueryCashbackMaster = (
       SELECT
         pwp.plun, pwp.desk, pwp.fracn, pwp.unit,
         pwp.minjualn, pwp.hrgn, pwp.hrgp,
+        pwp.flag_pos, pwp.flag_klik, pwp.flag_spi,
         CASE
           WHEN pwp.unit LIKE 'RCG' OR pwp.unit = 'HGR' THEN 1 * pwp.minjualn
           ELSE pwp.fracn * pwp.minjualn
         END AS qty,
-        CASE WHEN COALESCE(pwp.hrgp, 0) = '0' THEN pwp.hrgn ELSE pwp.hrgp END AS hrg,
+        CASE 
+          WHEN COALESCE(pwp.hrgp, 0) = 0
+            OR (COALESCE(NULLIF(pwp.flag_pos,''), 'N') = 'N' 
+            AND COALESCE(NULLIF(pwp.flag_klik,''), 'N') = 'N' 
+            AND COALESCE(NULLIF(pwp.flag_spi,''), 'N') = 'N')
+          THEN pwp.hrgn 
+          ELSE pwp.hrgp 
+        END AS hrg,
         cf.minrphc, cf.minjualc, cf.maxjualc, cf.maxrphc, cf.cbh, cf.cbd
       FROM product_with_promo pwp
       LEFT JOIN cashback_filtered cf ON SUBSTR(pwp.plun, 1, 6) || 0 = cf.pluc
