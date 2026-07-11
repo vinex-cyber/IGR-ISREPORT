@@ -9,6 +9,7 @@ import FormInformasiPromosi from "@/components/form/informasi-promosi/FormInform
 import KartuProduk from "@/pages/informasi-promosi/KartuProduk";
 import TabelTrendSales from "@/pages/informasi-promosi/TabelTrendSales";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
+import TabelMemberPricing from "../TabelMemberPricing";
 
 export const getServerSideProps = getDefaultBranchServerSideProps;
 type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
@@ -38,6 +39,9 @@ export default function InformasiPromosiPrdcd({ defaultBranch }: Props) {
                 branch={branch}
                 onBranchChange={setBranch}
               />
+            </Reveal>
+            <Reveal>
+              <TabelMemberPricing plu={prdcd} />
             </Reveal>
           </div>
 
