@@ -130,6 +130,7 @@ export default function TabelPromoCashback({ plu }: TabelPromoCashbackProps) {
   });
 
   const rows = data ? data.map(mapRow) : [];
+  const isActive = Boolean(plu) && !loading && rows.length > 0;
 
   useAnimeOnScroll(
     ".table-promo-cashback",
@@ -147,74 +148,7 @@ export default function TabelPromoCashback({ plu }: TabelPromoCashbackProps) {
     },
   );
 
-  if (!plu) {
-    return (
-      <div className="table-promo-cashback overflow-x-auto rounded-lg bg-white p-2 shadow-xl dark:bg-gray-800 dark:text-gray-200">
-        <h1 className="bg-slate-300 p-1 text-center font-mono text-xl font-bold dark:bg-slate-700 dark:text-gray-200">
-          Table Promo Cashback
-        </h1>
-        <table className="w-full text-xxs">
-          <thead>
-            <tr className="text-center text-xxs font-bold text-white">
-              <th className="border bg-blue-400 p-2" rowSpan={2}>
-                Kode
-              </th>
-              <th className="border bg-blue-400 p-2" rowSpan={2}>
-                Nama Promosi
-              </th>
-              <th className="border bg-green-400 p-2" colSpan={3}>
-                Minimum Beli/Struk
-              </th>
-              <th className="border bg-blue-400 p-2" rowSpan={2}>
-                Nilai CB
-              </th>
-              <th className="border bg-blue-400 p-2" rowSpan={2}>
-                Jumlah Alokasi
-              </th>
-              <th className="border bg-blue-400 p-2" rowSpan={2}>
-                Alokasi Keluar
-              </th>
-              <th className="border bg-blue-400 p-2" rowSpan={2}>
-                Sisa
-              </th>
-              <th className="border bg-red-400 p-2" colSpan={4}>
-                Maximum Beli/Struk
-              </th>
-              <th className="border bg-green-400 p-2" colSpan={2}>
-                Periode
-              </th>
-              <th className="border bg-blue-400 p-2" rowSpan={2}>
-                Jenis Mem
-              </th>
-              <th className="border bg-blue-400 p-2" rowSpan={2}>
-                Flag Promo
-              </th>
-            </tr>
-            <tr className="text-center text-xxs font-bold text-white">
-              <th className="border bg-green-400 p-1">Harga</th>
-              <th className="border bg-green-400 p-1">Sponsor Rp</th>
-              <th className="border bg-green-400 p-1">Total Rp</th>
-              <th className="border bg-red-400 p-1">Struk</th>
-              <th className="border bg-red-400 p-1">Mem / Hari</th>
-              <th className="border bg-red-400 p-1">Frek / Event</th>
-              <th className="border bg-red-400 p-1">Rp / Event</th>
-              <th className="border bg-green-400 p-1">Mulai</th>
-              <th className="border bg-green-400 p-1">Selesai</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td
-                colSpan={17}
-                className="border p-2 text-center text-xxs text-gray-400 dark:text-gray-300">
-                Pilih PLU untuk melihat promo cashback
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-  }
+  if (!isActive) return null;
 
   return (
     <div className="table-promo-cashback overflow-x-auto rounded-lg bg-white p-2 shadow-xl dark:bg-gray-800 dark:text-gray-200">

@@ -70,13 +70,13 @@ export default function InformasiPromosiPrdcd({ defaultBranch }: Props) {
             <TabelPromoCashback key={`cb-${branch}-${prdcd}`} plu={prdcd} />
           </Reveal>
           <Reveal direction="right" duration={durationAnimasi} ease="outCubic">
-            <TabelPromoGift />
+            <TabelPromoGift key={`gf-${branch}-${prdcd}`} plu={prdcd} />
           </Reveal>
           <Reveal direction="left" duration={durationAnimasi} ease="outCubic">
-            <TabelPromoInstore />
+            <TabelPromoInstore key={`is-${branch}-${prdcd}`} plu={prdcd} />
           </Reveal>
           <Reveal direction="right" duration={durationAnimasi} ease="outCubic">
-            <TabelPromoHJK />
+            <TabelPromoHJK key={`hjk-${branch}-${prdcd}`} plu={prdcd} />
           </Reveal>
         </section>
       </div>
