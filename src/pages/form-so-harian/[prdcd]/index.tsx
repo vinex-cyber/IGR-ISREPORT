@@ -103,7 +103,7 @@ export default function FormSoHarianDetail({
   return (
     <Layout title="Form SO Harian" branch={branch}>
       <div className="flex justify-between">
-        <h1 className="text-2xl font-bold mb-4">
+        <h1 className="text-xl font-bold mb-4">
           Form SO Harian - {branch} :{" "}
           {router.query.prdcd ? `PLU ${router.query.prdcd}` : ""}
         </h1>
@@ -152,7 +152,7 @@ export default function FormSoHarianDetail({
           onSubmit={methods.handleSubmit(onSubmit)}
           className="flex items-center gap-4">
           <CardFieldset className="relative rounded-lg border shadow">
-            <CardTitleLegend className="mx-6 px-2 text-md font-semibold">
+            <CardTitleLegend className="mx-4 px-2 text-md font-semibold">
               Input PLU
             </CardTitleLegend>
             <CardContent>
@@ -182,6 +182,8 @@ export default function FormSoHarianDetail({
         <div className="mt-6 bg-white dark:bg-slate-800" id="print-area">
           <ReportTable
             columns={displayColumns}
+            textHeader="xxs"
+            textBody="xxs"
             data={filteredData ?? []}
             customFooter={(data) => {
               const lpp =
@@ -217,7 +219,7 @@ export default function FormSoHarianDetail({
 
               return (
                 <>
-                  <tr className="bg-blue-400 font-semibold dark:bg-gray-400">
+                  <tr className="bg-blue-400 font-semibold dark:bg-gray-400 text-xxs">
                     <td className="border px-2 py-2">Acost</td>
                     <td colSpan={2} className="border px-2 py-2">
                       : {formatNumber(Number(acost))}
@@ -232,7 +234,7 @@ export default function FormSoHarianDetail({
                       {formatNumber(sumPlano)}
                     </td>
                   </tr>
-                  <tr className="bg-blue-400 font-semibold dark:bg-gray-400">
+                  <tr className="bg-blue-400 font-semibold dark:bg-gray-400 text-xxs">
                     <td className="border px-2 py-2">Flag</td>
                     <td colSpan={4} className="border px-2 py-2">
                       : {flag}
@@ -244,7 +246,7 @@ export default function FormSoHarianDetail({
                       {formatNumber(lpp)}
                     </td>
                   </tr>
-                  <tr className="bg-blue-400 font-semibold dark:bg-gray-400">
+                  <tr className="bg-blue-400 font-semibold dark:bg-gray-400 text-xxs">
                     <td className="border px-2 py-2">Keterangan</td>
                     <td colSpan={4} className="border px-2 py-2">
                       : {keterangan()}

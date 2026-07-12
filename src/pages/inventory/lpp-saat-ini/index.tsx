@@ -80,8 +80,8 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
     <Layout title="LPP Saat Ini" branch={branch}>
       <Form {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <h1 className="text-2xl font-bold text-blue-500">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-lg font-bold text-blue-500 md:text-2xl">
               LPP Saat Ini
               {branch ? ` - ${branch}` : ""}
             </h1>
@@ -115,7 +115,7 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
                   Group Flag
                 </CardTitleLegend>
 
-                <CardContent>
+                <CardContent className="text-xs">
                   <SelectGroupFlag<FilterLppSaatIniInput>
                     control={control}
                     name="groupFlag"
@@ -130,16 +130,17 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
                   Status Tag
                 </CardTitleLegend>
 
-                <CardContent>
+                <CardContent className="text-xs">
                   <SelectStatusTag<FilterLppSaatIniInput>
                     control={control}
                     name="statusTag"
                     labelAll="All Status Tag"
                     placeholder="All Status Tag"
                   />
-                  <CardDescription>
-                    <span className="px-3 text-xs text-muted-foreground">
-                      Discontinue: <i>ARNHOTX</i>
+                  <CardDescription className="text-xxs">
+                    <span className="px-3 text-xxs text-muted-foreground">
+                      Discontinue:{" "}
+                      <i className="font-semibold text-xxs">ARNHOTX</i>
                     </span>
                   </CardDescription>
                 </CardContent>
@@ -150,7 +151,7 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
                   Status Qty
                 </CardTitleLegend>
 
-                <CardContent>
+                <CardContent className="text-xs">
                   <SelectStatusQty<FilterLppSaatIniInput>
                     control={control}
                     name="statusQty"
@@ -164,6 +165,7 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
 
             <div>
               <CardProduk<FilterLppSaatIniInput>
+                textSize="text-xs"
                 control={control}
                 fields={{
                   plu: {
@@ -201,6 +203,7 @@ export default function LppSaatIniPage({ defaultBranch }: LppSaatIniPageProps) {
 
             <div>
               <CardSupplier<FilterLppSaatIniInput>
+                textSize="!text-xs"
                 control={control}
                 fields={{
                   kodeSupplier: {

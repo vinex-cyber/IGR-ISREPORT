@@ -32,12 +32,14 @@ interface InputMonitoringPluProps<TFieldValues extends FieldValues> {
   name: StringFieldName<TFieldValues>;
   placeholder?: string;
   disabled?: boolean;
+  className?: string;
 }
 
 const InputMonitoringPlu = <TFieldValues extends FieldValues>({
   name,
   placeholder = "Kode Monitoring PLU",
   disabled = false,
+  className,
 }: InputMonitoringPluProps<TFieldValues>) => {
   const [show, setShow] = useState(false);
 
@@ -55,6 +57,7 @@ const InputMonitoringPlu = <TFieldValues extends FieldValues>({
         disabled={disabled}
         iconRight={<Search className="h-4 w-4" />}
         onIconClick={handleShow}
+        className={className}
       />
 
       {!disabled && (

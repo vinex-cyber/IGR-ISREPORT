@@ -91,7 +91,7 @@ export default function ProdukBaruPage({ defaultBranch }: ProdukBaruPageProps) {
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
               <PeriodeRange<FilterProdukBaruInput>
                 control={control}
@@ -105,7 +105,7 @@ export default function ProdukBaruPage({ defaultBranch }: ProdukBaruPageProps) {
                 Produk
               </CardTitleLegend>
 
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-2 text-xs">
                 <SelectDivisi<FilterProdukBaruInput>
                   control={control}
                   name="div"

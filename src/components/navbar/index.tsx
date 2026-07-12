@@ -108,7 +108,7 @@ export default function Navbar({ branch, logoSrc }: NavbarProps) {
             variant="outline"
             size="icon"
             onClick={handleToggleTheme}
-            className="bg-white text-black hover:bg-gray-200 hover:text-black"
+            className="bg-white text-black hover:bg-gray-200 dark:bg-slate-900 dark:text-yellow-500 dark:hover:bg-slate-800 dark:hover:text-yellow-700"
             aria-label={isDark ? "Gunakan tema terang" : "Gunakan tema gelap"}>
             {isDark ? <Sun size={18} /> : <Moon size={18} />}
           </Button>

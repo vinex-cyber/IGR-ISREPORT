@@ -1,64 +1,193 @@
-# Coding Standards
+# PRD: Upgrade Next.js 15 → 16 + Hapus TanStack React Query
 
-## React Conventions
+**Status:** ✅ Done
+**Branch:** `informasi-promosi`
+**Commits:** `5ffde02` (phase 1), `5be3584` (phase 2)
 
-### Named useEffect Callbacks
-Semua `useEffect` **WAJIB** menggunakan named function, bukan anonymous arrow function.
+---
 
-**Benar:**
-```tsx
-useEffect(function autoStartAnimation() {
-  if (autoplay) start();
-  return function cancelAnimation() {
-    animRef.current?.cancel();
-  };
-}, [to, duration, ease, autoplay, start]);
+## Ringkasan
+
+Project ini menggunakan **Pages Router** — semua breaking changes Next.js 16 untuk App Router **tidak berdampak**. Upgrade hanya melibatkan update dependencies dan konfigurasi. Sekaligus hapus `@tanstack/react-query` karena `useFetchData` sudah ada sebagai pengganti.
+
+---
+
+## Yang Berubah
+
+### 1. Dependencies Update
+
+```bash
+npm install next@16 react@19.2 react-dom@19.2
+npm install -D @types/react@latest @types/react-dom@latest
 ```
 
-**Salah:**
+### 2. Node.js Version
+
+- **Minimum:** Node.js 20.9+
+- **Action:** Cek versi Node di server/deploy, upgrade jika masih < 20.9
+
+### 3. Lint Script
+
+- `next lint` **dihapus** di Next.js 16
+- Ganti di `package.json`:
+  ```json
+  "lint": "eslint src/"
+  ```
+- Atau buat `.eslintrc.json` jika belum ada
+
+### 4. Turbopack
+
+- Sudah default di Next.js 16
+- `npm run dev` sudah pakai `--turbopack` — tidak perlu ubah
+
+### 5. Hapus TanStack React Query
+
+**Files yang pakai `useQueryData`:**
+
+| File | Kegunaan |
+|------|----------|
+| `src/pages/informasi-promosi/KartuProduk.tsx` | Fetch data produk |
+| `src/pages/informasi-promosi/TabelTrendSales.tsx` | Fetch trend sales |
+| `src/components/DependentSelectWrapper.tsx` | Fetch dependent data |
+
+**Action:**
+1. Ganti `useQueryData` → `useFetchData` di 3 komponen di atas
+2. Hapus `QueryClientProvider` dari `src/pages/_app.tsx`
+3. Hapus `src/hooks/data/useQueryData.ts`
+4. `npm uninstall @tanstack/react-query`
+
+**Yang hilang:** Automatic caching (5 menit), background refetch, request deduplication
+**Yang didapat:** Bundle lebih kecil, 1 dependency kurang
+
+---
+
+## Yang TIDAK Berubah
+
+| Area | Alasan |
+|------|--------|
+| `src/pages/*` | Pages Router — tidak ada breaking change |
+| `src/pages/api/*` | API routes via Pages Router — aman |
+| `src/hooks/*` | React hooks biasa — tidak terpengaruh |
+| `src/components/*` | Components biasa — tidak terpengaruh |
+| `src/lib/*` | Library code — tidak terpengaruh |
+| `src/utils/*` | Utilities — tidak terpengaruh |
+| `src/schema/*` | Zod schemas — tidak terpengaruh |
+| Tailwind CSS v4 | Independent dari Next.js version |
+| shadcn/ui | Independent dari Next.js version |
+| `react-hook-form` | Independent dari Next.js version |
+
+---
+
+## Breaking Changes Next.js 16 (App Router only, TIDAK berdampak)
+
+| Perubahan | Dampak ke Project Ini |
+|-----------|----------------------|
+| `middleware.ts` → `proxy.ts` | ❌ Tidak pakai middleware |
+| Async `params`/`searchParams` | ❌ Pages Router, tidak ada `params` async |
+| Cache Components / `"use cache"` | ❌ App Router feature |
+| `revalidateTag()` 2 args | ❌ App Router feature |
+| `generateMetadata` async | ❌ App Router feature |
+| `sitemap` async `id` | ❌ App Router feature |
+| Parallel routes `default.js` required | ❌ Tidak pakai parallel routes |
+
+---
+
+## Checklist Eksekusi
+
+### Phase 1: Hapus TanStack React Query
+- [x] Ganti `useQueryData` → `useFetchData` di `KartuProduk.tsx`
+- [x] Ganti `useQueryData` → `useFetchData` di `TabelTrendSales.tsx`
+- [x] Ganti `useQueryData` → `useFetchData` di `DependentSelectWrapper.tsx`
+- [x] Hapus `QueryClientProvider` dari `_app.tsx`
+- [x] Hapus `src/hooks/data/useQueryData.ts`
+- [x] `npm uninstall @tanstack/react-query`
+- [x] `npm run lint` — pastikan lolos
+- [x] `npx tsc --noEmit` — pastikan lolos
+- [x] Test semua halaman informasi-promosi + dependent select
+
+### Phase 2: Upgrade Next.js 16
+- [x] Cek versi Node.js di environment deploy (>= 20.9) — v24.15.0
+- [x] `npm install next@16 react@19.2 react-dom@19.2`
+- [x] `npm install -D @types/react@latest @types/react-dom@latest`
+- [x] Ganti script `lint` di `package.json` → `eslint src/`
+- [x] Update `eslint.config.mjs` ke flat config native
+- [x] Disable React Compiler rules (`set-state-in-effect`, `preserve-manual-memoization`, `purity`)
+- [x] `npm run lint` — pastikan lolos
+- [x] `npx tsc --noEmit` — pastikan lolos
+- [x] `npm run build` — pastikan build sukses
+- [x] Commit & push
+
+---
+
+## useModalSlide Hook
+
+**File:** `src/hooks/animation/useModalSlide.ts`
+
+Hook reusable untuk animasi modal slide-in + close animation pakai animejs.
+
+### Parameter
+
+| Parameter | Tipe | Default | Deskripsi |
+|-----------|------|---------|-----------|
+| `isOpen` | `boolean` | - | Status modal |
+| `direction` | `"right" \| "left" \| "bottom"` | `"right"` | Arah slide masuk |
+| `openDuration` | `number` | `400` | Durasi animasi masuk (ms) |
+| `closeDuration` | `number` | `300` | Durasi animasi tutup (ms) |
+| `closeAnimation` | `CloseAnimation` | `"shatter"` | Efek animasi tutup |
+
+### Close Animation Options
+
+| Animasi | Efek |
+|---------|------|
+| `shatter` | Scale kecil + rotate 15° + fade |
+| `spin` | Putar 360° + scale 0 + fade |
+| `bounce` | Loncat ke atas + scale kecil + fade |
+| `dissolve` | Blur 8px + scale 1.1 + fade |
+| `flyRight` | Geser ke kanan + fade |
+
+### Return Value
+
 ```tsx
-useEffect(() => {
-  if (autoplay) start();
-  return () => {
-    animRef.current?.cancel();
-  };
-}, [to, duration, ease, autoplay, start]);
+const { overlayRef, contentRef, isClosing, handleClose } = useModalSlide({ isOpen });
 ```
 
-**Alasan:**
-- React DevTools menampilkan nama function → debugging lebih cepat
-- Stack trace lebih jelas saat ada error
-- Code lebih readable, developer baru langsung paham tujuan effect
+| Property | Deskripsi |
+|----------|-----------|
+| `overlayRef` | Ref untuk overlay (bg hitam transparan) |
+| `contentRef` | Ref untuk content modal |
+| `isClosing` | `true` saat animasi close berjalan |
+| `handleClose` | Fungsi untuk trigger close dengan animasi |
 
-**Penamaan:**
-- Effect function: `function <verbNoun>()` (contoh: `observeViewport`, `fetchData`, `closeOnEscape`)
-- Cleanup function: `function <cleanupNoun>()` (contoh: `disconnectObserver`, `abortFetch`, `removeEventListener`)
+### Contoh Penggunaan
 
-### Named Event Handlers
-Event handler yang didefinisikan inline juga sebaiknya diberi nama jika cukup kompleks.
-
-**Benar:**
 ```tsx
-function handleClose() {
-  setOpen(false);
+import { useModalSlide } from "@/hooks/animation/useModalSlide";
+
+function MyModal({ isOpen, onClose }: Props) {
+  const { overlayRef, contentRef, handleClose } = useModalSlide({
+    isOpen,
+    direction: "right",
+    openDuration: 400,
+    closeDuration: 300,
+    closeAnimation: "shatter",
+  });
+
+  return createPortal(
+    <div ref={overlayRef} onClick={() => handleClose(onClose)}>
+      <div ref={contentRef} onClick={(e) => e.stopPropagation()}>
+        {/* content */}
+        <button onClick={() => handleClose(onClose)}>Tutup</button>
+      </div>
+    </div>,
+    document.body
+  );
 }
-
-return <button onClick={handleClose}>Tutup</button>;
 ```
 
-**Boleh inline (simple):**
-```tsx
-return <button onClick={() => setOpen(false)}>Tutup</button>;
-```
+---
 
-## Animation Convention
-- Gunakan `useAnimeCounter` dari `@/hooks/animation/useAnimeCounter` untuk animasi angka
-- Gunakan `useAnimeOnScroll` dari `@/hooks/animation/useAnimeOnScroll` untuk animasi scroll-triggered
-- Gunakan `animePresets` dari `@/hooks/animation/animePresets` untuk preset animasi (fadeUp, scaleIn, dll)
-- `autoplay: true` (default) untuk animasi yang langsung jalan saat mount
-- `autoplay: false` + manual trigger untuk animasi yang menunggu event tertentu
+## Referensi
 
-## Type Safety
-- Dilarang menggunakan `any`
-- Gunakan `unknown`, `Record<string, unknown>`, atau generic type yang sesuai
-- Interface untuk props, type untuk data structures
+- [Next.js 16 Release Notes](https://nextjs.org/blog/next-16)
+- [Next.js 16 Upgrade Guide](https://nextjs.org/docs/app/guides/upgrading/version-16)
+- [Next.js 15 vs 16 Comparison](https://dev.to/descope/nextjs-15-vs-nextjs-16-whats-the-difference-1fjo)

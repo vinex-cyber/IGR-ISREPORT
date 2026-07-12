@@ -1,7 +1,13 @@
 // src/pages/informasi-promosi/KartuProduk.tsx
-import { useQueryData } from "@/hooks/data/useQueryData";
+import { useState } from "react";
+import { useFetchData } from "@/hooks/data/useFetchData";
 import { useAnimeCounter } from "@/hooks/animation/useAnimeCounter";
 import { Button } from "@/components/ui/button";
+import ModalSalesKartuProduk from "./modal/ModalSalesKartuProduk";
+import ModalLokasi from "./modal/ModalLokasi";
+import ModalSoIc from "./modal/ModalSoIc";
+import ModalPbPoBtb from "./modal/ModalPbPoBtb";
+import ModalBtb from "./modal/ModalBtb";
 
 interface KartuProdukRow {
   prd_prdcd: string;
@@ -22,10 +28,11 @@ interface KartuProdukRow {
 
 interface KartuProdukProps {
   plu?: string;
+  branch?: string;
 }
 
-export default function KartuProduk({ plu }: KartuProdukProps) {
-  const { data, isLoading, error } = useQueryData<KartuProdukRow[]>({
+export default function KartuProduk({ plu, branch }: KartuProdukProps) {
+  const { data, loading, error } = useFetchData<KartuProdukRow[]>({
     endpoint: "/informasi-promosi/data-produk",
     queryParams: plu ? { prdcd: plu } : undefined,
     enabled: Boolean(plu),
@@ -43,32 +50,48 @@ export default function KartuProduk({ plu }: KartuProdukProps) {
   const pcsCount = useAnimeCounter({ to: pcs, duration: 800 });
   const salesCount = useAnimeCounter({ to: avg, duration: 1200 });
 
+  const [isSalesOpen, setIsSalesOpen] = useState(false);
+  const [isLokasiOpen, setIsLokasiOpen] = useState(false);
+  const [isSoIcOpen, setIsSoIcOpen] = useState(false);
+  const [isPbOpen, setIsPbOpen] = useState(false);
+  const [isBtbOpen, setIsBtbOpen] = useState(false);
+
   const title = !plu
     ? "Pilih PLU untuk melihat detail"
     : row?.prd_deskripsipanjang
       ? row.prd_deskripsipanjang
-      : isLoading
+      : loading
         ? "Memuat..."
         : error
           ? "Gagal memuat"
           : "Produk tidak ditemukan";
   const onClick = (buttonText: string) => {
-    console.log(`Clicked  ${buttonText}`);
+    if (buttonText === "Sales") {
+      setIsSalesOpen(true);
+    } else if (buttonText === "Lokasi") {
+      setIsLokasiOpen(true);
+    } else if (buttonText === "So Ic") {
+      setIsSoIcOpen(true);
+    } else if (buttonText === "Pb") {
+      setIsPbOpen(true);
+    } else if (buttonText === "BTB") {
+      setIsBtbOpen(true);
+    }
   };
 
   return (
-    <div className="flex flex-col rounded-lg border bg-gray-50 shadow-xl h-full">
+    <div className="flex flex-col rounded-lg border bg-gray-50 shadow-xl h-full dark:bg-gray-800 dark:text-gray-200">
       <div className="flex flex-1 flex-col">
         <div className="grid grid-cols-3 border-b">
           <div className="border-r">
             <div className="grid grid-cols-2 border-b">
-              <div className="border-r bg-gray-200 p-1 text-xxs font-medium">
+              <div className="border-r bg-gray-200 p-1 text-xxs font-medium dark:bg-gray-700 dark:text-gray-200">
                 PLU IGR
               </div>
               <div className="p-1 text-xxs">{row?.prd_prdcd ?? "-"}</div>
             </div>
             <div className="grid grid-cols-2">
-              <div className="border-r bg-gray-200 p-1 text-xxs font-medium">
+              <div className="border-r bg-gray-200 p-1 text-xxs font-medium dark:bg-gray-700 dark:text-gray-200">
                 PLU OMI
               </div>
               <div className="p-1 text-xxs">{row?.prc_pluomi ?? "-"}</div>
@@ -124,9 +147,49 @@ export default function KartuProduk({ plu }: KartuProdukProps) {
           ))}
         </div>
       </div>
-      <div className="bg-gray-200 p-0.5 text-center text-xxs">
+      <div className="bg-gray-200 p-0.5 text-center text-xxs dark:bg-gray-700 dark:text-gray-200">
         {row?.flag ?? "IGR+K.IGR"}
       </div>
+
+      <ModalSalesKartuProduk
+        isOpen={isSalesOpen}
+        onClose={() => setIsSalesOpen(false)}
+        plu={plu ?? ""}
+        branch={branch ?? ""}
+        namaProduk={row?.prd_deskripsipanjang ?? ""}
+      />
+
+      <ModalLokasi
+        isOpen={isLokasiOpen}
+        onClose={() => setIsLokasiOpen(false)}
+        plu={plu ?? ""}
+        branch={branch ?? ""}
+        namaProduk={row?.prd_deskripsipanjang ?? ""}
+      />
+
+      <ModalSoIc
+        isOpen={isSoIcOpen}
+        onClose={() => setIsSoIcOpen(false)}
+        plu={plu ?? ""}
+        branch={branch ?? ""}
+        namaProduk={row?.prd_deskripsipanjang ?? ""}
+      />
+
+      <ModalPbPoBtb
+        isOpen={isPbOpen}
+        onClose={() => setIsPbOpen(false)}
+        plu={plu ?? ""}
+        branch={branch ?? ""}
+        namaProduk={row?.prd_deskripsipanjang ?? ""}
+      />
+
+      <ModalBtb
+        isOpen={isBtbOpen}
+        onClose={() => setIsBtbOpen(false)}
+        plu={plu ?? ""}
+        branch={branch ?? ""}
+        namaProduk={row?.prd_deskripsipanjang ?? ""}
+      />
     </div>
   );
 }

@@ -7,8 +7,14 @@ import Layout from "@/components/Layout";
 import Reveal from "@/components/animation/Reveal";
 import FormInformasiPromosi from "@/components/form/informasi-promosi/FormInformasiPromosi";
 import KartuProduk from "@/pages/informasi-promosi/KartuProduk";
-import TabelTrendSales from "@/pages/informasi-promosi/TabelTrendSales";
+import TabelTrendSales from "@/pages/informasi-promosi/table/TabelTrendSales";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
+import TabelSettingHarga from "../table/TabelSettingHarga";
+import TabelMemberPricing from "../table/TabelMemberPricing";
+import TabelPromoCashback from "../table/TabelPromoCashback";
+import TabelPromoGift from "../table/TabelPromoGift";
+import TabelPromoInstore from "../table/TabelPromoInstore";
+import TabelPromoHJK from "../table/TabelPromoHJK";
 
 export const getServerSideProps = getDefaultBranchServerSideProps;
 type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
@@ -20,6 +26,8 @@ export default function InformasiPromosiPrdcd({ defaultBranch }: Props) {
   const prdcd =
     typeof router.query.prdcd === "string" ? router.query.prdcd : "";
 
+  const durationAnimasi = 2000;
+
   return (
     <Layout title="Informasi Promosi" branch={branch}>
       <div className="px-4">
@@ -27,7 +35,7 @@ export default function InformasiPromosiPrdcd({ defaultBranch }: Props) {
           <div className="flex w-3/5 flex-col gap-5">
             <Reveal>
               <div>
-                <h1 className="font-mono text-xl text-blue-500 font-bold">
+                <h1 className="font-mono text-xl font-bold text-blue-500 dark:text-blue-400">
                   Informasi Promosi - {branch}
                   {prdcd ? ` - PLU ${prdcd}` : ""}
                 </h1>
@@ -39,16 +47,37 @@ export default function InformasiPromosiPrdcd({ defaultBranch }: Props) {
                 onBranchChange={setBranch}
               />
             </Reveal>
+            <Reveal>
+              <TabelSettingHarga key={`sh-${branch}-${prdcd}`} plu={prdcd} branch={branch} />
+            </Reveal>
+            <Reveal>
+              <TabelMemberPricing key={`mp-${branch}-${prdcd}`} plu={prdcd} />
+            </Reveal>
           </div>
 
           <div className="flex w-2/5 flex-col gap-5">
             <Reveal>
-              <KartuProduk plu={prdcd} />
+              <KartuProduk key={`kp-${branch}-${prdcd}`} plu={prdcd} branch={branch} />
             </Reveal>
             <Reveal>
-              <TabelTrendSales plu={prdcd} />
+              <TabelTrendSales key={`ts-${branch}-${prdcd}`} plu={prdcd} />
             </Reveal>
           </div>
+        </section>
+
+        <section className="mt-5 space-y-5">
+          <Reveal direction="left" duration={durationAnimasi} ease="outCubic">
+            <TabelPromoCashback key={`cb-${branch}-${prdcd}`} plu={prdcd} />
+          </Reveal>
+          <Reveal direction="right" duration={durationAnimasi} ease="outCubic">
+            <TabelPromoGift key={`gf-${branch}-${prdcd}`} plu={prdcd} />
+          </Reveal>
+          <Reveal direction="left" duration={durationAnimasi} ease="outCubic">
+            <TabelPromoInstore key={`is-${branch}-${prdcd}`} plu={prdcd} />
+          </Reveal>
+          <Reveal direction="right" duration={durationAnimasi} ease="outCubic">
+            <TabelPromoHJK key={`hjk-${branch}-${prdcd}`} plu={prdcd} />
+          </Reveal>
         </section>
       </div>
     </Layout>

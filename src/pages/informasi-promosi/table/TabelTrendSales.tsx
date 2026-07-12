@@ -2,7 +2,7 @@
 import { animate, stagger } from "animejs";
 import { useEffect, useRef, useState } from "react";
 import { useAnimeOnScroll } from "@/hooks/animation/useAnimeOnScroll";
-import { useQueryData } from "@/hooks/data/useQueryData";
+import { useFetchData } from "@/hooks/data/useFetchData";
 
 interface TrendSalesRow {
   sls_prdcd: string;
@@ -86,7 +86,7 @@ export default function TabelTrendSales({ plu }: TabelTrendSalesProps) {
   const [progress, setProgress] = useState(0);
   const [started, setStarted] = useState(false);
 
-  const { data, isLoading } = useQueryData<TrendSalesRow[]>({
+  const { data, loading } = useFetchData<TrendSalesRow[]>({
     endpoint: "/informasi-promosi/data-trend-sales",
     queryParams: plu ? { prdcd: plu } : undefined,
     enabled: Boolean(plu),
@@ -151,7 +151,7 @@ export default function TabelTrendSales({ plu }: TabelTrendSalesProps) {
 
   if (!plu) {
     return (
-      <div className="table-trend-sales rounded-lg bg-white p-2 shadow-xl">
+      <div className="table-trend-sales rounded-lg bg-white p-2 shadow-xl dark:bg-gray-800 dark:text-gray-200">
         <table className="w-full text-xxs">
           <thead>
             <tr className="border bg-blue-400 text-center text-xxs font-bold text-white">
@@ -167,7 +167,9 @@ export default function TabelTrendSales({ plu }: TabelTrendSalesProps) {
           </thead>
           <tbody>
             <tr>
-              <td colSpan={3} className="border p-2 text-center text-xxs text-gray-400">
+              <td
+                colSpan={3}
+                className="border p-2 text-center text-xxs text-gray-400 dark:text-gray-300">
                 Pilih PLU untuk melihat trend sales
               </td>
             </tr>
@@ -180,7 +182,7 @@ export default function TabelTrendSales({ plu }: TabelTrendSalesProps) {
   return (
     <div
       ref={ref}
-      className="table-trend-sales rounded-lg bg-white p-2 shadow-xl">
+      className="table-trend-sales rounded-lg bg-white p-2 shadow-xl dark:bg-gray-800 dark:text-gray-200">
       <table className="w-full text-xxs">
         <thead>
           <tr className="border bg-blue-400 text-center text-xxs font-bold text-white">
@@ -198,13 +200,13 @@ export default function TabelTrendSales({ plu }: TabelTrendSalesProps) {
           {months.map((m) => (
             <tr
               key={m.bulan}
-              className={`row-trend border text-center ${m.isCurrent ? "bg-amber-200" : ""}`}>
+              className={`row-trend border text-center ${m.isCurrent ? "bg-amber-200 dark:text-black" : ""}`}>
               <td className="border p-0">{m.bulan}</td>
               <td className="border p-0">
                 <input
                   type="text"
                   readOnly
-                  value={isLoading ? "..." : fmt(m.qty * progress)}
+                  value={loading ? "..." : fmt(m.qty * progress)}
                   className={`w-full bg-transparent px-1 py-0.5 text-right text-xxs outline-none ${m.isCurrent ? "bg-amber-200" : ""}`}
                 />
               </td>
@@ -212,7 +214,7 @@ export default function TabelTrendSales({ plu }: TabelTrendSalesProps) {
                 <input
                   type="text"
                   readOnly
-                  value={isLoading ? "..." : fmt(m.rupiah * progress)}
+                  value={loading ? "..." : fmt(m.rupiah * progress)}
                   className={`w-full bg-transparent px-1 py-0.5 text-right text-xxs outline-none ${m.isCurrent ? "bg-amber-200" : ""}`}
                 />
               </td>

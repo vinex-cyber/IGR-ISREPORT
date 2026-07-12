@@ -31,12 +31,14 @@ interface InputNamaProdukProps<TFieldValues extends FieldValues> {
   name: StringFieldName<TFieldValues>;
   placeholder?: string;
   disabled?: boolean;
+  className?: string;
 }
 
 const InputNamaProduk = <TFieldValues extends FieldValues>({
   name,
   placeholder = "Nama Produk",
   disabled = false,
+  className,
 }: InputNamaProdukProps<TFieldValues>) => {
   const [produkModal, setProdukModal] = useState(false);
 
@@ -54,6 +56,7 @@ const InputNamaProduk = <TFieldValues extends FieldValues>({
         disabled={disabled}
         iconRight={<Search className="h-4 w-4" />}
         onIconClick={handleProdukModal}
+        className={className}
       />
 
       {!disabled && (

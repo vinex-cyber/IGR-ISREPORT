@@ -1,5 +1,5 @@
 // src/components/form/informasi-promosi/FormInformasiPromosi.tsx
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, useWatch, FormProvider } from "react-hook-form";
 import { useRouter } from "next/router";
 
 import InputProdukPlu from "@/components/input/InputProdukPlu";
@@ -41,7 +41,8 @@ const FormInformasiPromosi = ({
     methods.reset({ prdcd: "" });
   };
 
-  const onDisbled = !methods.watch("prdcd");
+  const prdcd = useWatch({ control: methods.control, name: "prdcd" });
+  const isDisabled = !prdcd;
 
   return (
     <FormProvider {...methods}>
@@ -49,17 +50,20 @@ const FormInformasiPromosi = ({
         onSubmit={methods.handleSubmit(onSubmit)}
         className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <InputProdukPlu name="prdcd" className="bg-white" />
+          <InputProdukPlu
+            name="prdcd"
+            className="bg-white dark:bg-gray-800 dark:text-gray-200"
+          />
           <div>
             <Button
               type="submit"
-              disabled={onDisbled}
+              hidden={isDisabled}
               className="ml-2 hover:cursor-pointer bg-blue-500 text-white hover:bg-blue-600 dark:bg-accent dark:text-accent-foreground dark:hover:bg-accent/80">
               Submit
             </Button>
             <Button
               type="button"
-              disabled={onDisbled}
+              hidden={isDisabled}
               onClick={onReset}
               className="ml-2 hover:cursor-pointer bg-red-500 text-white hover:bg-red-600 dark:bg-accent dark:text-accent-foreground dark:hover:bg-accent/80">
               Reset

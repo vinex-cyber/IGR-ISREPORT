@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import SupplierModal, {
   type SupplierSelection,
 } from "@/components/modal/SupplierModal";
+import { cn } from "@/lib/utils";
 
 /**
  * Field kode supplier boleh bertipe:
@@ -88,6 +89,8 @@ export interface InputSerchSupplierProps<TFieldValues extends FieldValues> {
   disabled?: boolean;
 
   className?: string;
+
+  textSize?: string;
 }
 
 function normalizeToArray(value: unknown, separator: string): string[] {
@@ -122,6 +125,7 @@ export default function InputSerchSupplier<TFieldValues extends FieldValues>({
   allowManualInput = true,
   disabled = false,
   className = "",
+  textSize,
 }: InputSerchSupplierProps<TFieldValues>) {
   const [supplierModal, setSupplierModal] = useState(false);
 
@@ -192,7 +196,7 @@ export default function InputSerchSupplier<TFieldValues extends FieldValues>({
                   readOnly={!allowManualInput}
                   onBlur={field.onBlur}
                   onChange={(event) => handleManualChange(event.target.value)}
-                  className="pr-10"
+                  className={cn("pr-10", className, textSize)}
                 />
 
                 <Button

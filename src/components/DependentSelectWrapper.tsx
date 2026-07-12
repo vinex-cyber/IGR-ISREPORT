@@ -2,7 +2,7 @@
 
 import type { Control, FieldPathByValue, FieldValues } from "react-hook-form";
 
-import { useQueryData } from "@/hooks/data/useQueryData";
+import { useFetchData } from "@/hooks/data/useFetchData";
 import { useDependentSelect } from "@/hooks/useDependentSelect";
 import SelectTypeWrapper from "@/components/SelectTypeWrapper";
 
@@ -106,8 +106,8 @@ export function DependentSelectWrapper<T, FormType extends FieldValues>({
   const {
     data: queryData,
     error,
-    isLoading,
-  } = useQueryData<T[]>({
+    loading,
+  } = useFetchData<T[]>({
     endpoint: endpoint ?? "",
     enabled: Boolean(endpoint) && !disabled,
   });
@@ -162,7 +162,7 @@ export function DependentSelectWrapper<T, FormType extends FieldValues>({
       control={control}
       name={name}
       data={options}
-      loading={isLoading}
+      loading={loading}
       error={Boolean(error)}
       disabled={isDisabled}
       placeholder={resolvedPlaceholder}
