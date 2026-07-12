@@ -119,6 +119,73 @@ npm install -D @types/react@latest @types/react-dom@latest
 
 ---
 
+## useModalSlide Hook
+
+**File:** `src/hooks/animation/useModalSlide.ts`
+
+Hook reusable untuk animasi modal slide-in + close animation pakai animejs.
+
+### Parameter
+
+| Parameter | Tipe | Default | Deskripsi |
+|-----------|------|---------|-----------|
+| `isOpen` | `boolean` | - | Status modal |
+| `direction` | `"right" \| "left" \| "bottom"` | `"right"` | Arah slide masuk |
+| `openDuration` | `number` | `400` | Durasi animasi masuk (ms) |
+| `closeDuration` | `number` | `300` | Durasi animasi tutup (ms) |
+| `closeAnimation` | `CloseAnimation` | `"shatter"` | Efek animasi tutup |
+
+### Close Animation Options
+
+| Animasi | Efek |
+|---------|------|
+| `shatter` | Scale kecil + rotate 15° + fade |
+| `spin` | Putar 360° + scale 0 + fade |
+| `bounce` | Loncat ke atas + scale kecil + fade |
+| `dissolve` | Blur 8px + scale 1.1 + fade |
+| `flyRight` | Geser ke kanan + fade |
+
+### Return Value
+
+```tsx
+const { overlayRef, contentRef, isClosing, handleClose } = useModalSlide({ isOpen });
+```
+
+| Property | Deskripsi |
+|----------|-----------|
+| `overlayRef` | Ref untuk overlay (bg hitam transparan) |
+| `contentRef` | Ref untuk content modal |
+| `isClosing` | `true` saat animasi close berjalan |
+| `handleClose` | Fungsi untuk trigger close dengan animasi |
+
+### Contoh Penggunaan
+
+```tsx
+import { useModalSlide } from "@/hooks/animation/useModalSlide";
+
+function MyModal({ isOpen, onClose }: Props) {
+  const { overlayRef, contentRef, handleClose } = useModalSlide({
+    isOpen,
+    direction: "right",
+    openDuration: 400,
+    closeDuration: 300,
+    closeAnimation: "shatter",
+  });
+
+  return createPortal(
+    <div ref={overlayRef} onClick={() => handleClose(onClose)}>
+      <div ref={contentRef} onClick={(e) => e.stopPropagation()}>
+        {/* content */}
+        <button onClick={() => handleClose(onClose)}>Tutup</button>
+      </div>
+    </div>,
+    document.body
+  );
+}
+```
+
+---
+
 ## Referensi
 
 - [Next.js 16 Release Notes](https://nextjs.org/blog/next-16)

@@ -1,7 +1,9 @@
 // src/pages/informasi-promosi/ModalSettingHarga.tsx
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useModalSlide } from "@/hooks/animation/useModalSlide";
 import { exportToStyledExcel } from "@/utils/ExportExcel/exportToExcel";
+import { Download, X } from "lucide-react";
 
 interface SatuanJualItem {
   plu: string;
@@ -43,6 +45,12 @@ export default function ModalSettingHarga({
   onDelete,
 }: ModalSettingHargaProps) {
   const [displayData, setDisplayData] = useState<SatuanJualItem[]>(product);
+  const { overlayRef, contentRef, handleClose } = useModalSlide({
+    isOpen,
+    closeAnimation: "spin",
+    openDuration: 1000,
+    closeDuration: 1000,
+  });
 
   useEffect(
     function syncDisplayData() {
@@ -54,14 +62,14 @@ export default function ModalSettingHarga({
   useEffect(
     function closeOnEscape() {
       function handleKeyDown(e: KeyboardEvent) {
-        if (e.key === "Escape") onClose();
+        if (e.key === "Escape") handleClose(onClose);
       }
       document.addEventListener("keydown", handleKeyDown);
       return function removeEventListener() {
         document.removeEventListener("keydown", handleKeyDown);
       };
     },
-    [onClose],
+    [onClose, handleClose],
   );
 
   useEffect(
@@ -182,23 +190,26 @@ export default function ModalSettingHarga({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60"
-      onClick={onClose}>
+      ref={overlayRef}
+      className="fixed inset-0 z-[100] flex items-end justify-end bg-black/60 opacity-0 sm:items-center sm:justify-center"
+      onClick={() => handleClose(onClose)}>
       <div
-        className="relative flex max-h-[90vh] w-full max-w-4xl flex-col rounded-md bg-white p-6 shadow-lg"
+        ref={contentRef}
+        className="flex h-full w-full max-w-4xl flex-col bg-white p-6 shadow-2xl opacity-0 sm:h-auto sm:rounded-lg"
         onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold">Setting Harga</h2>
           <div className="flex gap-2">
             <button
-              className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-700"
+              className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-md transition-all hover:from-green-600 hover:to-emerald-700 hover:shadow-lg"
               onClick={handleExport}>
-              Export to Excel
+              <Download size={14} />
+              Export Excel
             </button>
             <button
-              className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-700"
-              onClick={onClose}>
-              Tutup
+              className="flex items-center gap-1 rounded-lg bg-gray-100 p-2 text-gray-600 transition-colors hover:bg-red-50 hover:text-red-600"
+              onClick={() => handleClose(onClose)}>
+              <X size={16} />
             </button>
           </div>
         </div>
