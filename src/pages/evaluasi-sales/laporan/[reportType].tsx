@@ -31,7 +31,6 @@ const LaporanPage = () => {
     filteredData,
     loading,
     error,
-    title,
     periode,
     totalRow,
     handleExport,
@@ -66,14 +65,14 @@ const LaporanPage = () => {
   };
 
   return (
-    <Layout title={title} branch={branch}>
-      <section className={reportDef.sectionClass || "space-y-4 p-4"}>
+    <Layout title={reportType} branch={branch}>
+      <section className={reportDef.sectionClass || "space-y-4"}>
         {loading && !isRefreshing ? (
           <LoadingIgr />
         ) : (
           <>
             <ReportHeader
-              title={title}
+              title={reportType}
               periode={periode}
               onExport={handleExport}
               onRefresh={handleRefresh}
@@ -92,10 +91,10 @@ const LaporanPage = () => {
                 showRowNumber
                 isRefreshing={isRefreshing}
                 headerGroups={config.headerGroups}
-                textHeaderGroup="xs"
-                textHeader="xs"
+                textHeaderGroup="xxs"
+                textHeader="xxs"
                 textBody="xxs"
-                textFooter="xs"
+                textFooter="xxs"
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
                 onSearchReset={() => setSearchTerm("")}

@@ -50,7 +50,10 @@ const FormInformasiPromosi = ({
         onSubmit={methods.handleSubmit(onSubmit)}
         className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <InputProdukPlu name="prdcd" className="bg-white dark:bg-gray-800 dark:text-gray-200" />
+          <InputProdukPlu
+            name="prdcd"
+            className="bg-white dark:bg-gray-800 dark:text-gray-200"
+          />
           <div>
             <Button
               type="submit"

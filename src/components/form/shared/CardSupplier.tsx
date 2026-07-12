@@ -110,6 +110,8 @@ export interface CardSupplierProps<TFieldValues extends FieldValues> {
 
   className?: string;
   contentClassName?: string;
+
+  textSize?: string;
 }
 
 export default function CardSupplier<TFieldValues extends FieldValues>({
@@ -118,6 +120,7 @@ export default function CardSupplier<TFieldValues extends FieldValues>({
   title = "Supplier",
   className = "",
   contentClassName = "",
+  textSize = "text-sm",
 }: CardSupplierProps<TFieldValues>) {
   return (
     <CardFieldset className={`relative rounded-lg border shadow ${className}`}>
@@ -136,6 +139,7 @@ export default function CardSupplier<TFieldValues extends FieldValues>({
             separator={fields.kodeSupplier.separator ?? ","}
             allowManualInput={fields.kodeSupplier.allowManualInput ?? true}
             disabled={fields.kodeSupplier.disabled ?? false}
+            textSize={textSize}
           />
         )}
         {fields.namaSupplier && (
@@ -144,6 +148,7 @@ export default function CardSupplier<TFieldValues extends FieldValues>({
             name={fields.namaSupplier.name}
             placeholder={fields.namaSupplier.placeholder ?? "Nama Supplier"}
             disabled={fields.namaSupplier.disabled ?? false}
+            textSize={textSize}
           />
         )}
       </CardContent>

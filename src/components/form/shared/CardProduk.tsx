@@ -61,6 +61,7 @@ interface CardProdukProps<TFieldValues extends FieldValues> {
   fields: CardProdukFields<TFieldValues>;
   title?: string;
   className?: string;
+  textSize?: string;
 }
 
 const CardProduk = <TFieldValues extends FieldValues>({
@@ -68,20 +69,22 @@ const CardProduk = <TFieldValues extends FieldValues>({
   fields,
   title = "Produk",
   className,
+  textSize,
 }: CardProdukProps<TFieldValues>) => {
   return (
     <CardFieldset
-      className={`relative rounded-lg border shadow ${className ?? ""}`}>
+      className={`relative rounded-lg border shadow ${textSize ?? ""} ${className ?? ""}`}>
       <CardTitleLegend className="mx-6 px-2 text-md font-semibold">
         {title}
       </CardTitleLegend>
 
-      <CardContent className="space-y-2">
+      <CardContent className={`space-y-2 ${textSize ?? ""} ${className ?? ""}`}>
         {fields.plu && (
           <InputProdukPlu<TFieldValues>
             name={fields.plu.name}
             placeholder={fields.plu.placeholder ?? "Input PLU"}
             disabled={fields.plu.disabled}
+            className={`!text-xs`}
           />
         )}
 
@@ -90,6 +93,7 @@ const CardProduk = <TFieldValues extends FieldValues>({
             name={fields.namaProduk.name}
             placeholder={fields.namaProduk.placeholder ?? "Nama Produk"}
             disabled={fields.namaProduk.disabled}
+            className={`!text-xs`}
           />
         )}
 
@@ -108,6 +112,7 @@ const CardProduk = <TFieldValues extends FieldValues>({
               fields.monitoringPlu.placeholder ?? "Kode Monitoring PLU"
             }
             disabled={fields.monitoringPlu.disabled}
+            className={`!text-xs`}
           />
         )}
 

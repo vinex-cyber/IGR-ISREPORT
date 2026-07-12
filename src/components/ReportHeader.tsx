@@ -27,16 +27,14 @@ const ReportHeader = ({
   return (
     <div className="flex justify-between items-center">
       <div>
-        <h1 className="text-2xl font-bold text-green-600">
-          📊 Laporan {title}
-        </h1>
+        <h1 className="text-md font-bold text-green-600">📊 Laporan {title}</h1>
 
-        <p>{periode}</p>
+        <p className="text-xs">{periode}</p>
 
         <Button
           variant="outline"
           size="sm"
-          className="hover:cursor-pointer"
+          className="hover:cursor-pointer text-xxs"
           onClick={() => router.back()}>
           ← Kembali
         </Button>

@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import SupplierModal, {
   type SupplierSelection,
 } from "@/components/modal/SupplierModal";
+import { cn } from "@/lib/utils";
 
 /**
  * Field nama supplier harus bertipe:
@@ -64,6 +65,7 @@ export interface InputNamaSupplierProps<TFieldValues extends FieldValues> {
   disabled?: boolean;
 
   className?: string;
+  textSize?: string;
 }
 
 export default function InputNamaSupplier<TFieldValues extends FieldValues>({
@@ -73,6 +75,7 @@ export default function InputNamaSupplier<TFieldValues extends FieldValues>({
   allowManualInput = true,
   disabled = false,
   className = "",
+  textSize = "text-sm",
 }: InputNamaSupplierProps<TFieldValues>) {
   const [supplierModal, setSupplierModal] = useState(false);
 
@@ -118,7 +121,7 @@ export default function InputNamaSupplier<TFieldValues extends FieldValues>({
                   readOnly={!allowManualInput}
                   onBlur={field.onBlur}
                   onChange={(event) => field.onChange(event.target.value)}
-                  className="pr-10"
+                  className={cn("pr-10", className, textSize)}
                 />
 
                 <Button

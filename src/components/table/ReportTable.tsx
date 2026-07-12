@@ -167,7 +167,7 @@ export function ReportTable<T extends Record<string, unknown>>({
             variant="outline"
             size="sm"
             onClick={onSearchReset}
-            className="h-8 bg-red-400 hover:bg-red-500 dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-black text-white shadow hover:cursor-pointer">
+            className="h-8 text-xxs bg-red-400 hover:bg-red-500 dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-black text-white shadow hover:cursor-pointer">
             <X size={14} />
             Reset
           </Button>
@@ -185,7 +185,7 @@ export function ReportTable<T extends Record<string, unknown>>({
       )}
 
       {/* ================= TABLE ================= */}
-      <div className="max-h-[65vh] overflow-y-auto shadow-xl rounded-md">
+      <div className="max-h-[60vh] overflow-y-auto shadow-xl rounded-md">
         <table className="min-w-full table-fixed">
           {/* ================= HEADER ================= */}
           <thead className="sticky top-0 z-10 bg-blue-400 border border-gray-400 dark:bg-gray-400">
@@ -348,14 +348,14 @@ export function ReportTable<T extends Record<string, unknown>>({
 
       {/* ================= PAGINATION ================= */}
       {isPaginated && (
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between text-xxs">
           {/* Limit selector + info total */}
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground">Tampilkan</span>
             <select
               value={limit}
               onChange={(e) => onLimitChange?.(Number(e.target.value))}
-              className="border rounded px-2 py-1 text-sm">
+              className="border rounded px-2 py-1 text-xxs">
               {LIMIT_OPTIONS.map((l) => (
                 <option key={l} value={l}>
                   {l}
