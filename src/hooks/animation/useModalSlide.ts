@@ -2,14 +2,17 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { animate } from "animejs";
 
-type CloseAnimation = "shatter" | "spin" | "bounce" | "dissolve" | "flyRight";
+export type CloseAnimation = "shatter" | "spin" | "bounce" | "dissolve" | "flyRight";
 
-interface UseModalSlideOptions {
-  isOpen: boolean;
+export interface ModalSlideConfig {
   direction?: "right" | "left" | "bottom";
   openDuration?: number;
   closeDuration?: number;
   closeAnimation?: CloseAnimation;
+}
+
+interface UseModalSlideOptions extends ModalSlideConfig {
+  isOpen: boolean;
 }
 
 const CLOSE_ANIMATIONS: Record<

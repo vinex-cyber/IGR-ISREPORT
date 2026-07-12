@@ -48,7 +48,7 @@ export default function InformasiPromosiPrdcd({ defaultBranch }: Props) {
               />
             </Reveal>
             <Reveal>
-              <TabelSettingHarga key={`sh-${branch}-${prdcd}`} plu={prdcd} />
+              <TabelSettingHarga key={`sh-${branch}-${prdcd}`} plu={prdcd} branch={branch} />
             </Reveal>
             <Reveal>
               <TabelMemberPricing key={`mp-${branch}-${prdcd}`} plu={prdcd} />
@@ -57,7 +57,7 @@ export default function InformasiPromosiPrdcd({ defaultBranch }: Props) {
 
           <div className="flex w-2/5 flex-col gap-5">
             <Reveal>
-              <KartuProduk key={`kp-${branch}-${prdcd}`} plu={prdcd} />
+              <KartuProduk key={`kp-${branch}-${prdcd}`} plu={prdcd} branch={branch} />
             </Reveal>
             <Reveal>
               <TabelTrendSales key={`ts-${branch}-${prdcd}`} plu={prdcd} />

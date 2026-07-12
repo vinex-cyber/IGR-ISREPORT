@@ -1,9 +1,8 @@
 // src/pages/informasi-promosi/ModalSettingHarga.tsx
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { useModalSlide } from "@/hooks/animation/useModalSlide";
 import { exportToStyledExcel } from "@/utils/ExportExcel/exportToExcel";
-import { Download, X } from "lucide-react";
+import { Download } from "lucide-react";
+import BaseModal from "@/components/ui/BaseModal";
 
 interface SatuanJualItem {
   plu: string;
@@ -19,15 +18,16 @@ interface SatuanJualItem {
 interface ModalSettingHargaProps {
   isOpen: boolean;
   onClose: () => void;
+  branch: string;
   product: SatuanJualItem[];
   onDelete: (pluKey: string) => void;
 }
 
 function fmtNum(n: number | string | undefined | null) {
   if (n === undefined || n === null || n === "") return "-";
-  const num = typeof n === "string" ? Number(n) : n;
-  if (isNaN(num)) return "-";
-  return Math.round(num).toLocaleString("en-US");
+  const val = typeof n === "string" ? Number(n) : n;
+  if (isNaN(val)) return "-";
+  return Math.round(val).toLocaleString("en-US");
 }
 
 function getCurrentDate() {
@@ -41,47 +41,17 @@ function getCurrentDate() {
 export default function ModalSettingHarga({
   isOpen,
   onClose,
+  branch,
   product,
   onDelete,
 }: ModalSettingHargaProps) {
   const [displayData, setDisplayData] = useState<SatuanJualItem[]>(product);
-  const { overlayRef, contentRef, handleClose } = useModalSlide({
-    isOpen,
-    closeAnimation: "spin",
-    openDuration: 1000,
-    closeDuration: 1000,
-  });
 
   useEffect(
     function syncDisplayData() {
       setDisplayData(product);
     },
     [product],
-  );
-
-  useEffect(
-    function closeOnEscape() {
-      function handleKeyDown(e: KeyboardEvent) {
-        if (e.key === "Escape") handleClose(onClose);
-      }
-      document.addEventListener("keydown", handleKeyDown);
-      return function removeEventListener() {
-        document.removeEventListener("keydown", handleKeyDown);
-      };
-    },
-    [onClose, handleClose],
-  );
-
-  useEffect(
-    function lockBodyScroll() {
-      if (isOpen) {
-        document.body.style.overflow = "hidden";
-      }
-      return function unlockBodyScroll() {
-        document.body.style.overflow = "";
-      };
-    },
-    [isOpen],
   );
 
   if (!isOpen || !displayData || displayData.length === 0) return null;
@@ -188,167 +158,149 @@ export default function ModalSettingHarga({
     });
   };
 
-  return createPortal(
-    <div
-      ref={overlayRef}
-      className="fixed inset-0 z-[100] flex items-end justify-end bg-black/60 opacity-0 sm:items-center sm:justify-center"
-      onClick={() => handleClose(onClose)}>
-      <div
-        ref={contentRef}
-        className="flex h-full w-full max-w-4xl flex-col bg-white p-6 shadow-2xl opacity-0 sm:h-auto sm:rounded-lg"
-        onClick={(e) => e.stopPropagation()}>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold">Setting Harga</h2>
-          <div className="flex gap-2">
-            <button
-              className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-md transition-all hover:from-green-600 hover:to-emerald-700 hover:shadow-lg"
-              onClick={handleExport}>
-              <Download size={14} />
-              Export Excel
-            </button>
-            <button
-              className="flex items-center gap-1 rounded-lg bg-gray-100 p-2 text-gray-600 transition-colors hover:bg-red-50 hover:text-red-600"
-              onClick={() => handleClose(onClose)}>
-              <X size={16} />
-            </button>
-          </div>
-        </div>
-
-        <div className="mb-2 flex-grow overflow-y-auto border shadow-xl">
-          <table className="w-full border-collapse">
-            <thead className="sticky top-0 z-10">
-              <tr className="text-xs">
+  return (
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Setting Harga - ${branch}`}
+      maxWidth="max-w-4xl"
+      slideOptions={{
+        closeAnimation: "spin",
+        openDuration: 1000,
+        closeDuration: 1000,
+      }}
+      contentClassName="p-0"
+      headerRight={
+        <button
+          className="flex items-center gap-1.5 rounded-lg bg-white/20 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/30"
+          onClick={handleExport}>
+          <Download size={14} />
+          Export Excel
+        </button>
+      }>
+      <div className="flex flex-grow flex-col overflow-auto">
+        <table className="w-full border-collapse">
+          <thead className="sticky top-0 z-10">
+            <tr className="text-xs">
+              <th
+                className="border bg-blue-400 p-2 text-center text-white"
+                rowSpan={2}>
+                #
+              </th>
+              <th
+                className="border bg-blue-400 p-2 text-center text-white"
+                rowSpan={2}>
+                Plu
+              </th>
+              <th
+                className="border bg-blue-400 p-2 text-center text-white"
+                rowSpan={2}>
+                Deskripsi
+              </th>
+              <th
+                className="border bg-blue-400 p-2 text-center text-white"
+                rowSpan={2}>
+                Satuan
+              </th>
+              <th
+                className="border bg-blue-400 p-2 text-center text-white"
+                rowSpan={2}>
+                Acost
+              </th>
+              <th
+                className="border bg-blue-400 p-2 text-center text-white"
+                rowSpan={2}>
+                Harga
+              </th>
+              <th
+                className="border bg-green-400 p-2 text-center text-white"
+                colSpan={4}>
+                Setting Harga
+              </th>
+              <th
+                className="border bg-green-400 p-2 text-center text-white"
+                colSpan={4}>
+                Setting Margin
+              </th>
+              <th
+                className="border bg-blue-400 p-2 text-center text-white"
+                rowSpan={2}>
+                Action
+              </th>
+            </tr>
+            <tr className="text-xs">
+              {[0, 1, 2, 3].map((i) => (
                 <th
-                  className="border bg-blue-400 p-2 text-center text-white"
-                  rowSpan={2}>
-                  #
+                  key={`h${i}`}
+                  className="border bg-green-400 p-2 text-center text-xs text-white">
+                  {i}
                 </th>
+              ))}
+              {[0, 1, 2, 3].map((i) => (
                 <th
-                  className="border bg-blue-400 p-2 text-center text-white"
-                  rowSpan={2}>
-                  Plu
+                  key={`m${i}`}
+                  className="border bg-green-400 p-2 text-center text-xs text-white">
+                  {i}
                 </th>
-                <th
-                  className="border bg-blue-400 p-2 text-center text-white"
-                  rowSpan={2}>
-                  Deskripsi
-                </th>
-                <th
-                  className="border bg-blue-400 p-2 text-center text-white"
-                  rowSpan={2}>
-                  Satuan
-                </th>
-                <th
-                  className="border bg-blue-400 p-2 text-center text-white"
-                  rowSpan={2}>
-                  Acost
-                </th>
-                <th
-                  className="border bg-blue-400 p-2 text-center text-white"
-                  rowSpan={2}>
-                  Harga
-                </th>
-                <th
-                  className="border bg-green-400 p-2 text-center text-white"
-                  colSpan={4}>
-                  Setting Harga
-                </th>
-                <th
-                  className="border bg-green-400 p-2 text-center text-white"
-                  colSpan={4}>
-                  Setting Margin
-                </th>
-                <th
-                  className="border bg-blue-400 p-2 text-center text-white"
-                  rowSpan={2}>
-                  Action
-                </th>
-              </tr>
-              <tr className="text-xs">
-                <th className="border bg-green-400 p-2 text-center text-white text-xs">
-                  0
-                </th>
-                <th className="border bg-green-400 p-2 text-center text-white text-xs">
-                  1
-                </th>
-                <th className="border bg-green-400 p-2 text-center text-white text-xs">
-                  2
-                </th>
-                <th className="border bg-green-400 p-2 text-center text-white text-xs">
-                  3
-                </th>
-                <th className="border bg-green-400 p-2 text-center text-white text-xs">
-                  0
-                </th>
-                <th className="border bg-green-400 p-2 text-center text-white text-xs">
-                  1
-                </th>
-                <th className="border bg-green-400 p-2 text-center text-white text-xs">
-                  2
-                </th>
-                <th className="border bg-green-400 p-2 text-center text-white text-xs">
-                  3
-                </th>
-              </tr>
-            </thead>
-            <tbody className="text-xxs">
-              {Object.keys(groupedData).map((pluKey, index) => {
-                const firstItem = displayData.find(
-                  (item) => item.plu.slice(0, 6) === pluKey,
-                );
-                return (
-                  <tr key={pluKey} className="border text-xxs">
-                    <td className="border p-2 text-center">{index + 1}</td>
-                    <td className="border p-2 text-center">{firstItem?.plu}</td>
-                    <td className="border p-2 whitespace-nowrap">
-                      {groupedData[pluKey].desk || "-"}
-                    </td>
-                    <td className="border p-2">{firstItem?.satuan || "-"}</td>
-                    <td className="border p-2 text-right">
-                      {fmtNum(firstItem?.acost)}
-                    </td>
-                    <td className="border p-2 text-right">
-                      {fmtNum(firstItem?.hrg)}
-                    </td>
-                    <td className="border p-2 text-right">
-                      {fmtNum(groupedData[pluKey].harga0)}
-                    </td>
-                    <td className="border p-2 text-right">
-                      {fmtNum(groupedData[pluKey].harga1)}
-                    </td>
-                    <td className="border p-2 text-right">
-                      {fmtNum(groupedData[pluKey].harga2)}
-                    </td>
-                    <td className="border p-2 text-right">
-                      {fmtNum(groupedData[pluKey].harga3)}
-                    </td>
-                    <td className="border p-2 text-right">
-                      {groupedData[pluKey].mrg0 || "-"}
-                    </td>
-                    <td className="border p-2 text-right">
-                      {groupedData[pluKey].mrg1 || "-"}
-                    </td>
-                    <td className="border p-2 text-right">
-                      {groupedData[pluKey].mrg2 || "-"}
-                    </td>
-                    <td className="border p-2 text-right">
-                      {groupedData[pluKey].mrg3 || "-"}
-                    </td>
-                    <td className="border p-2 text-center">
-                      <button
-                        className="rounded bg-blue-500 p-2 text-xs font-bold text-white hover:bg-blue-700"
-                        onClick={() => handleDelete(pluKey)}>
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="text-xxs">
+            {Object.keys(groupedData).map((pluKey, index) => {
+              const firstItem = displayData.find(
+                (item) => item.plu.slice(0, 6) === pluKey,
+              );
+              return (
+                <tr key={pluKey} className="border text-xxs">
+                  <td className="border p-2 text-center">{index + 1}</td>
+                  <td className="border p-2 text-center">{firstItem?.plu}</td>
+                  <td className="border p-2 whitespace-nowrap">
+                    {groupedData[pluKey].desk || "-"}
+                  </td>
+                  <td className="border p-2">{firstItem?.satuan || "-"}</td>
+                  <td className="border p-2 text-right">
+                    {fmtNum(firstItem?.acost)}
+                  </td>
+                  <td className="border p-2 text-right">
+                    {fmtNum(firstItem?.hrg)}
+                  </td>
+                  <td className="border p-2 text-right">
+                    {fmtNum(groupedData[pluKey].harga0)}
+                  </td>
+                  <td className="border p-2 text-right">
+                    {fmtNum(groupedData[pluKey].harga1)}
+                  </td>
+                  <td className="border p-2 text-right">
+                    {fmtNum(groupedData[pluKey].harga2)}
+                  </td>
+                  <td className="border p-2 text-right">
+                    {fmtNum(groupedData[pluKey].harga3)}
+                  </td>
+                  <td className="border p-2 text-right">
+                    {groupedData[pluKey].mrg0 || "-"}
+                  </td>
+                  <td className="border p-2 text-right">
+                    {groupedData[pluKey].mrg1 || "-"}
+                  </td>
+                  <td className="border p-2 text-right">
+                    {groupedData[pluKey].mrg2 || "-"}
+                  </td>
+                  <td className="border p-2 text-right">
+                    {groupedData[pluKey].mrg3 || "-"}
+                  </td>
+                  <td className="border p-2 text-center">
+                    <button
+                      className="rounded bg-blue-500 p-2 text-xs font-bold text-white hover:bg-blue-700"
+                      onClick={() => handleDelete(pluKey)}>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
-    </div>,
-    document.body,
+    </BaseModal>
   );
 }

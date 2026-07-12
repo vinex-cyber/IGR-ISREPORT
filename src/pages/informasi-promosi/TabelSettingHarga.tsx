@@ -224,9 +224,10 @@ function Row({ r, hargaInput, onInputChange, onAdd, onReset }: RowProps) {
 
 interface TabelSettingHargaProps {
   plu?: string;
+  branch: string;
 }
 
-export default function TabelSettingHarga({ plu }: TabelSettingHargaProps) {
+export default function TabelSettingHarga({ plu, branch }: TabelSettingHargaProps) {
   const { data, loading } = useFetchData<SettingHargaRow[]>({
     endpoint: "/informasi-promosi/data-setting-harga",
     queryParams: plu ? { prdcd: plu } : undefined,
@@ -342,6 +343,7 @@ export default function TabelSettingHarga({ plu }: TabelSettingHargaProps) {
       <ModalSettingHarga
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        branch={branch}
         product={itemsToEdit}
         onDelete={handleDeleteProduct}
       />

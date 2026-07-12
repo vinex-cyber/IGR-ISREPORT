@@ -1,7 +1,9 @@
 // src/pages/informasi-promosi/KartuProduk.tsx
+import { useState } from "react";
 import { useFetchData } from "@/hooks/data/useFetchData";
 import { useAnimeCounter } from "@/hooks/animation/useAnimeCounter";
 import { Button } from "@/components/ui/button";
+import ModalSalesKartuProduk from "./ModalSalesKartuProduk";
 
 interface KartuProdukRow {
   prd_prdcd: string;
@@ -22,9 +24,10 @@ interface KartuProdukRow {
 
 interface KartuProdukProps {
   plu?: string;
+  branch?: string;
 }
 
-export default function KartuProduk({ plu }: KartuProdukProps) {
+export default function KartuProduk({ plu, branch }: KartuProdukProps) {
   const { data, loading, error } = useFetchData<KartuProdukRow[]>({
     endpoint: "/informasi-promosi/data-produk",
     queryParams: plu ? { prdcd: plu } : undefined,
@@ -43,6 +46,8 @@ export default function KartuProduk({ plu }: KartuProdukProps) {
   const pcsCount = useAnimeCounter({ to: pcs, duration: 800 });
   const salesCount = useAnimeCounter({ to: avg, duration: 1200 });
 
+  const [isSalesOpen, setIsSalesOpen] = useState(false);
+
   const title = !plu
     ? "Pilih PLU untuk melihat detail"
     : row?.prd_deskripsipanjang
@@ -53,7 +58,9 @@ export default function KartuProduk({ plu }: KartuProdukProps) {
           ? "Gagal memuat"
           : "Produk tidak ditemukan";
   const onClick = (buttonText: string) => {
-    console.log(`Clicked  ${buttonText}`);
+    if (buttonText === "Sales") {
+      setIsSalesOpen(true);
+    }
   };
 
   return (
@@ -127,6 +134,14 @@ export default function KartuProduk({ plu }: KartuProdukProps) {
       <div className="bg-gray-200 p-0.5 text-center text-xxs dark:bg-gray-700 dark:text-gray-200">
         {row?.flag ?? "IGR+K.IGR"}
       </div>
+
+      <ModalSalesKartuProduk
+        isOpen={isSalesOpen}
+        onClose={() => setIsSalesOpen(false)}
+        plu={plu ?? ""}
+        branch={branch ?? ""}
+        namaProduk={row?.prd_deskripsipanjang ?? ""}
+      />
     </div>
   );
 }
