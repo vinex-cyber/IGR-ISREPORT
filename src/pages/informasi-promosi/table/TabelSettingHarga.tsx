@@ -6,7 +6,7 @@ import { useFetchData } from "@/hooks/data/useFetchData";
 import { useCallback, useState } from "react";
 import { Save, RotateCcw } from "lucide-react";
 import { FormatTanggal } from "@/utils/formatTanggal";
-import ModalSettingHarga from "./ModalSettingHarga";
+import ModalSettingHarga from "../modal/ModalSettingHarga";
 import { formatNumber } from "@/utils/formatNumber";
 
 interface SettingHargaRow {

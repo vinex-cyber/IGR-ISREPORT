@@ -3,7 +3,11 @@ import { useState } from "react";
 import { useFetchData } from "@/hooks/data/useFetchData";
 import { useAnimeCounter } from "@/hooks/animation/useAnimeCounter";
 import { Button } from "@/components/ui/button";
-import ModalSalesKartuProduk from "./ModalSalesKartuProduk";
+import ModalSalesKartuProduk from "./modal/ModalSalesKartuProduk";
+import ModalLokasi from "./modal/ModalLokasi";
+import ModalSoIc from "./modal/ModalSoIc";
+import ModalPbPoBtb from "./modal/ModalPbPoBtb";
+import ModalBtb from "./modal/ModalBtb";
 
 interface KartuProdukRow {
   prd_prdcd: string;
@@ -47,6 +51,10 @@ export default function KartuProduk({ plu, branch }: KartuProdukProps) {
   const salesCount = useAnimeCounter({ to: avg, duration: 1200 });
 
   const [isSalesOpen, setIsSalesOpen] = useState(false);
+  const [isLokasiOpen, setIsLokasiOpen] = useState(false);
+  const [isSoIcOpen, setIsSoIcOpen] = useState(false);
+  const [isPbOpen, setIsPbOpen] = useState(false);
+  const [isBtbOpen, setIsBtbOpen] = useState(false);
 
   const title = !plu
     ? "Pilih PLU untuk melihat detail"
@@ -60,6 +68,14 @@ export default function KartuProduk({ plu, branch }: KartuProdukProps) {
   const onClick = (buttonText: string) => {
     if (buttonText === "Sales") {
       setIsSalesOpen(true);
+    } else if (buttonText === "Lokasi") {
+      setIsLokasiOpen(true);
+    } else if (buttonText === "So Ic") {
+      setIsSoIcOpen(true);
+    } else if (buttonText === "Pb") {
+      setIsPbOpen(true);
+    } else if (buttonText === "BTB") {
+      setIsBtbOpen(true);
     }
   };
 
@@ -138,6 +154,38 @@ export default function KartuProduk({ plu, branch }: KartuProdukProps) {
       <ModalSalesKartuProduk
         isOpen={isSalesOpen}
         onClose={() => setIsSalesOpen(false)}
+        plu={plu ?? ""}
+        branch={branch ?? ""}
+        namaProduk={row?.prd_deskripsipanjang ?? ""}
+      />
+
+      <ModalLokasi
+        isOpen={isLokasiOpen}
+        onClose={() => setIsLokasiOpen(false)}
+        plu={plu ?? ""}
+        branch={branch ?? ""}
+        namaProduk={row?.prd_deskripsipanjang ?? ""}
+      />
+
+      <ModalSoIc
+        isOpen={isSoIcOpen}
+        onClose={() => setIsSoIcOpen(false)}
+        plu={plu ?? ""}
+        branch={branch ?? ""}
+        namaProduk={row?.prd_deskripsipanjang ?? ""}
+      />
+
+      <ModalPbPoBtb
+        isOpen={isPbOpen}
+        onClose={() => setIsPbOpen(false)}
+        plu={plu ?? ""}
+        branch={branch ?? ""}
+        namaProduk={row?.prd_deskripsipanjang ?? ""}
+      />
+
+      <ModalBtb
+        isOpen={isBtbOpen}
+        onClose={() => setIsBtbOpen(false)}
         plu={plu ?? ""}
         branch={branch ?? ""}
         namaProduk={row?.prd_deskripsipanjang ?? ""}

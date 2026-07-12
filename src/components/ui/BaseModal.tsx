@@ -72,7 +72,7 @@ export default function BaseModal({
       onClick={() => handleClose(onClose)}>
       <div
         ref={contentRef}
-        className={`flex h-full w-full ${maxWidth} flex-col bg-white shadow-2xl opacity-0 sm:h-auto sm:rounded-lg`}
+        className={`flex h-full w-full ${maxWidth} flex-col bg-white shadow-2xl opacity-0 sm:h-auto sm:max-h-[85vh] sm:rounded-lg`}
         onClick={(e) => e.stopPropagation()}>
 
         {/* Header */}
