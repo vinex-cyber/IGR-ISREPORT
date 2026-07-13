@@ -1,193 +1,77 @@
-# PRD: Upgrade Next.js 15 → 16 + Hapus TanStack React Query
+# PRD: Rich Text Editor (Tiptap) + Export PDF Surat Penawaran
 
-**Status:** ✅ Done
-**Branch:** `informasi-promosi`
-**Commits:** `5ffde02` (phase 1), `5be3584` (phase 2)
+## Latar Belakang
+Beberapa dokumen di aplikasi Next CPG (mis. **surat penawaran harga**) butuh editor
+rich text, dan hasilnya harus bisa diekspor ke PDF dengan teks **selectable**
+(bisa di-copy/cari) serta **kontrol layout penuh** (kop surat, garis, tabel, page break).
 
----
+## Pendekatan
+- Editor: **Tiptap v3** (headless, berbasis ProseMirror).
+- Output PDF: **Opsi 3** — parse JSON Tiptap → render manual via `jspdf` + `jspdf-autotable`
+  (teks asli selectable, layout terkontrol penuh).
+- Constraints project: Pages Router (harus `ssr: false`), React 19, tanpa `any`,
+  pakai `named useEffect`, komentar & pesan Bahasa Indonesia.
 
-## Ringkasan
+## Status Dependencies
+- `@tiptap/react@^3.27.3`, `@tiptap/pm@^3.27.3`, `@tiptap/starter-kit@^3.27.3`
+- `@tiptap/suggestion` (slash command), `@tiptap/extension-table` (TableKit),
+  `@tiptap/extension-image`, `@tiptap/extension-text-align`,
+  `@tiptap/extension-text-style` (TextStyle/FontSize/Color),
+  `@tiptap/extension-horizontal-rule`, `@tiptap/extensions` (Selection)
+- `jspdf@^4.2.1`, `jspdf-autotable@^5.0.7` (sudah ada di project)
 
-Project ini menggunakan **Pages Router** — semua breaking changes Next.js 16 untuk App Router **tidak berdampak**. Upgrade hanya melibatkan update dependencies dan konfigurasi. Sekaligus hapus `@tanstack/react-query` karena `useFetchData` sudah ada sebagai pengganti.
+## Rencana Tahapan
+- [x] **Tahap 1** — Install Tiptap deps.
+- [x] **Tahap 2** — Scaffold `EditorTiptap` (toolbar + dynamic `ssr:false`).
+- [x] **Tahap 2b** — Slash Command (`/` menu) untuk sisip blok (paragraf, heading, list,
+      kutipan, garis pemisah tipis/sedang/tebal, tabel, gambar, PLU).
+- [x] **Tahap 3** — Converter `editorJsonToPdf` (`src/utils/exportToPdf/editorPdf.ts`).
+      Parse node: heading (H1–H5), paragraph (align + fontSize + bold/italic + warna),
+      hardBreak, horizontalRule, bulletList/orderedList, tabel (kop + PLU).
+      Auto page break + embed logo (image → dataURL).
+- [x] **Tahap 4** — Preview + aksi di halaman (`/test-editor`): tombol Preview/Perbarui,
+      Tutup, Unduh (`doc.save`), Cetak (`doc.autoPrint`). Preview via `iframe` blob URL.
+- [x] **Tahap 5** — Polish:
+      - Kop surat per-branch (`getLetterheadInfo`) + logo + garis biru.
+      - Tabel PLU (header biru, border biru muda), align tabel (kiri/tengah/kanan),
+        tambah/hapus baris + renumber otomatis kolom "No".
+      - Ukuran font terbaca di toolbar (`useEditorState`), default isi surat 14.7px,
+        alamat 16px, tabel PLU ikut ukuran baris sebelumnya.
+      - Bubble toolbar saat teks diblok (paragraf/heading, ukuran font, bold/italic/strike, align).
 
----
-
-## Yang Berubah
-
-### 1. Dependencies Update
-
-```bash
-npm install next@16 react@19.2 react-dom@19.2
-npm install -D @types/react@latest @types/react-dom@latest
+## Arsitektur File
+```
+src/components/input/
+├── EditorTiptap.tsx              # wiring useEditor + render + modal PLU
+├── EditorTiptapDynamic.tsx       # wrapper dynamic(ssr:false)
+├── tableRowResize.ts             # PluTableRow + TableRowResize
+├── slash-command/                # extension.ts, items.ts, SlashCommandList.tsx
+└── editor/
+    ├── extensions/
+    │   ├── pluTable.ts           # PluTable (attr class+align), plugin sync align, findPluTable, getTableAlign, applyTableAlign
+    │   └── horizontalRule.ts     # ThickHorizontalRule (thin/medium/thick + color)
+    ├── plu/pluTableBuilder.ts    # createPluTable, addPluToExistingTable, renumberPluTable
+    ├── letterhead.ts             # buildLetterheadContent(branch)
+    ├── PluDescriptionModal.tsx
+    └── toolbar/
+        ├── blockHelpers.ts       # HEADING_LEVELS, getCurrent/setBlockType, getCurrentFontSize, DEFAULT_FONT_SIZE
+        ├── ToolbarButton.tsx     # tombol + Tooltip
+        ├── EditorToolbar.tsx     # toolbar utama persisten (useEditorState)
+        └── EditorBubbleMenu.tsx  # bubble toolbar saat select (useEditorState)
+src/utils/exportToPdf/editorPdf.ts   # buildEditorPdf, editorJsonToPdfBlobUrl, downloadEditorPdf, printEditorPdf
+src/configs/input/letterheadConfig.ts # LetterheadInfo + getLetterheadInfo(branch)
 ```
 
-### 2. Node.js Version
-
-- **Minimum:** Node.js 20.9+
-- **Action:** Cek versi Node di server/deploy, upgrade jika masih < 20.9
-
-### 3. Lint Script
-
-- `next lint` **dihapus** di Next.js 16
-- Ganti di `package.json`:
-  ```json
-  "lint": "eslint src/"
-  ```
-- Atau buat `.eslintrc.json` jika belum ada
-
-### 4. Turbopack
-
-- Sudah default di Next.js 16
-- `npm run dev` sudah pakai `--turbopack` — tidak perlu ubah
-
-### 5. Hapus TanStack React Query
-
-**Files yang pakai `useQueryData`:**
-
-| File | Kegunaan |
-|------|----------|
-| `src/pages/informasi-promosi/KartuProduk.tsx` | Fetch data produk |
-| `src/pages/informasi-promosi/TabelTrendSales.tsx` | Fetch trend sales |
-| `src/components/DependentSelectWrapper.tsx` | Fetch dependent data |
-
-**Action:**
-1. Ganti `useQueryData` → `useFetchData` di 3 komponen di atas
-2. Hapus `QueryClientProvider` dari `src/pages/_app.tsx`
-3. Hapus `src/hooks/data/useQueryData.ts`
-4. `npm uninstall @tanstack/react-query`
-
-**Yang hilang:** Automatic caching (5 menit), background refetch, request deduplication
-**Yang didapat:** Bundle lebih kecil, 1 dependency kurang
-
----
-
-## Yang TIDAK Berubah
-
-| Area | Alasan |
-|------|--------|
-| `src/pages/*` | Pages Router — tidak ada breaking change |
-| `src/pages/api/*` | API routes via Pages Router — aman |
-| `src/hooks/*` | React hooks biasa — tidak terpengaruh |
-| `src/components/*` | Components biasa — tidak terpengaruh |
-| `src/lib/*` | Library code — tidak terpengaruh |
-| `src/utils/*` | Utilities — tidak terpengaruh |
-| `src/schema/*` | Zod schemas — tidak terpengaruh |
-| Tailwind CSS v4 | Independent dari Next.js version |
-| shadcn/ui | Independent dari Next.js version |
-| `react-hook-form` | Independent dari Next.js version |
-
----
-
-## Breaking Changes Next.js 16 (App Router only, TIDAK berdampak)
-
-| Perubahan | Dampak ke Project Ini |
-|-----------|----------------------|
-| `middleware.ts` → `proxy.ts` | ❌ Tidak pakai middleware |
-| Async `params`/`searchParams` | ❌ Pages Router, tidak ada `params` async |
-| Cache Components / `"use cache"` | ❌ App Router feature |
-| `revalidateTag()` 2 args | ❌ App Router feature |
-| `generateMetadata` async | ❌ App Router feature |
-| `sitemap` async `id` | ❌ App Router feature |
-| Parallel routes `default.js` required | ❌ Tidak pakai parallel routes |
-
----
-
-## Checklist Eksekusi
-
-### Phase 1: Hapus TanStack React Query
-- [x] Ganti `useQueryData` → `useFetchData` di `KartuProduk.tsx`
-- [x] Ganti `useQueryData` → `useFetchData` di `TabelTrendSales.tsx`
-- [x] Ganti `useQueryData` → `useFetchData` di `DependentSelectWrapper.tsx`
-- [x] Hapus `QueryClientProvider` dari `_app.tsx`
-- [x] Hapus `src/hooks/data/useQueryData.ts`
-- [x] `npm uninstall @tanstack/react-query`
-- [x] `npm run lint` — pastikan lolos
-- [x] `npx tsc --noEmit` — pastikan lolos
-- [x] Test semua halaman informasi-promosi + dependent select
-
-### Phase 2: Upgrade Next.js 16
-- [x] Cek versi Node.js di environment deploy (>= 20.9) — v24.15.0
-- [x] `npm install next@16 react@19.2 react-dom@19.2`
-- [x] `npm install -D @types/react@latest @types/react-dom@latest`
-- [x] Ganti script `lint` di `package.json` → `eslint src/`
-- [x] Update `eslint.config.mjs` ke flat config native
-- [x] Disable React Compiler rules (`set-state-in-effect`, `preserve-manual-memoization`, `purity`)
-- [x] `npm run lint` — pastikan lolos
-- [x] `npx tsc --noEmit` — pastikan lolos
-- [x] `npm run build` — pastikan build sukses
-- [x] Commit & push
-
----
-
-## useModalSlide Hook
-
-**File:** `src/hooks/animation/useModalSlide.ts`
-
-Hook reusable untuk animasi modal slide-in + close animation pakai animejs.
-
-### Parameter
-
-| Parameter | Tipe | Default | Deskripsi |
-|-----------|------|---------|-----------|
-| `isOpen` | `boolean` | - | Status modal |
-| `direction` | `"right" \| "left" \| "bottom"` | `"right"` | Arah slide masuk |
-| `openDuration` | `number` | `400` | Durasi animasi masuk (ms) |
-| `closeDuration` | `number` | `300` | Durasi animasi tutup (ms) |
-| `closeAnimation` | `CloseAnimation` | `"shatter"` | Efek animasi tutup |
-
-### Close Animation Options
-
-| Animasi | Efek |
-|---------|------|
-| `shatter` | Scale kecil + rotate 15° + fade |
-| `spin` | Putar 360° + scale 0 + fade |
-| `bounce` | Loncat ke atas + scale kecil + fade |
-| `dissolve` | Blur 8px + scale 1.1 + fade |
-| `flyRight` | Geser ke kanan + fade |
-
-### Return Value
-
-```tsx
-const { overlayRef, contentRef, isClosing, handleClose } = useModalSlide({ isOpen });
-```
-
-| Property | Deskripsi |
-|----------|-----------|
-| `overlayRef` | Ref untuk overlay (bg hitam transparan) |
-| `contentRef` | Ref untuk content modal |
-| `isClosing` | `true` saat animasi close berjalan |
-| `handleClose` | Fungsi untuk trigger close dengan animasi |
-
-### Contoh Penggunaan
-
-```tsx
-import { useModalSlide } from "@/hooks/animation/useModalSlide";
-
-function MyModal({ isOpen, onClose }: Props) {
-  const { overlayRef, contentRef, handleClose } = useModalSlide({
-    isOpen,
-    direction: "right",
-    openDuration: 400,
-    closeDuration: 300,
-    closeAnimation: "shatter",
-  });
-
-  return createPortal(
-    <div ref={overlayRef} onClick={() => handleClose(onClose)}>
-      <div ref={contentRef} onClick={(e) => e.stopPropagation()}>
-        {/* content */}
-        <button onClick={() => handleClose(onClose)}>Tutup</button>
-      </div>
-    </div>,
-    document.body
-  );
-}
-```
-
----
-
-## Referensi
-
-- [Next.js 16 Release Notes](https://nextjs.org/blog/next-16)
-- [Next.js 16 Upgrade Guide](https://nextjs.org/docs/app/guides/upgrading/version-16)
-- [Next.js 15 vs 16 Comparison](https://dev.to/descope/nextjs-15-vs-nextjs-16-whats-the-difference-1fjo)
+## Catatan Teknis (Pitfalls)
+- Tiptap `useEditor` pakai `immediatelyRender: false` agar aman di client.
+- Pages Router: editor HARUS di-render via `dynamic(..., { ssr: false })`.
+- Konversi ke PDF di client (butuh `jsPDF` + `window.Image`/canvas untuk logo).
+- **Class editor asli `.ProseMirror`, bukan `.tiptap`** — CSS harus target `.ProseMirror`.
+- **Table align + `resizable:true`:** NodeView tidak meneruskan HTMLAttributes ke `<table>`.
+  Solusi: plugin ProseMirror di `pluTable.ts` menyinkron `margin-left/right` + `class` ke DOM.
+- **Toolbar reaktif:** WAJIB `useEditorState` (Tiptap v3 tidak re-render otomatis saat selection berubah),
+  kalau tidak ukuran font/active state jadi stale.
+- **BubbleMenu** di-import dari `@tiptap/react/menus` (bukan `@tiptap/react`).
+- **Cetak:** header "PDF.js viewer" + URL berasal dari header cetak browser — matikan via
+  print dialog (uncheck "Headers and footers"), bukan dari kode.
+- Ukuran font pakai satuan **px** (input toolbar strip `px`); jangan pakai `pt` biar terbaca.

@@ -184,3 +184,203 @@ body {
     width: 100%;
   }
 }
+
+/* Tiptap: ukuran font default isi surat */
+.ProseMirror {
+  font-size: 14.7px;
+}
+
+/* Tiptap: ukuran heading H1-H5 */
+.ProseMirror h1 {
+  font-size: 32px;
+  font-weight: 700;
+}
+.ProseMirror h2 {
+  font-size: 24px;
+  font-weight: 700;
+}
+.ProseMirror h3 {
+  font-size: 18.72px;
+  font-weight: 700;
+}
+.ProseMirror h4 {
+  font-size: 16px;
+  font-weight: 700;
+}
+.ProseMirror h5 {
+  font-size: 13.28px;
+  font-weight: 700;
+}
+
+/* Tiptap: border & gaya tabel */
+.ProseMirror table {
+  border-collapse: collapse;
+  table-layout: auto;
+  width: auto;
+  margin: 0;
+  overflow: hidden;
+}
+
+.ProseMirror td,
+.ProseMirror th {
+  border: 1px solid var(--border);
+  padding: 0.25rem 0.5rem;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+  min-width: 1em;
+}
+
+.ProseMirror th {
+  background: var(--muted);
+  font-weight: 600;
+  text-align: left;
+}
+
+/* Tiptap: garis pemisah (horizontal rule) */
+.ProseMirror hr {
+  border: none;
+  border-top: 2px solid var(--foreground);
+  margin: 0.75rem 0;
+}
+
+/* Tiptap: header kop surat (logo kiri + nama/alamat) */
+.ProseMirror .letterhead-header {
+  width: 100%;
+  margin: 0 0 0.25rem 0;
+  table-layout: auto;
+}
+
+.ProseMirror .letterhead-header td,
+.ProseMirror .letterhead-header th {
+  border: none;
+  padding: 0.25rem 0.5rem;
+  vertical-align: middle;
+}
+
+.ProseMirror .letterhead-header td:first-child {
+  width: 170px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.ProseMirror .letterhead-header img {
+  display: block;
+  max-height: 140px;
+  max-width: 100%;
+  width: auto;
+  margin: 0 auto;
+}
+
+/* Tiptap: tabel info kop surat (tanpa border, ':' sejajar) */
+.ProseMirror .letterhead-info {
+  width: auto;
+  margin: 0.25rem 0;
+  table-layout: auto;
+}
+
+.ProseMirror .letterhead-info td,
+.ProseMirror .letterhead-info th {
+  border: none;
+  padding: 0 0.25rem;
+  vertical-align: top;
+}
+
+.ProseMirror .letterhead-info td:first-child {
+  width: 6rem;
+}
+
+.ProseMirror .letterhead-info td:nth-child(2) {
+  width: 1rem;
+}
+
+/* Tiptap: pertahankan highlight seleksi saat editor kehilangan fokus */
+.ProseMirror .selection {
+  background: color-mix(in oklab, var(--ring) 30%, transparent);
+}
+
+.ProseMirror .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in oklab, var(--ring) 20%, transparent);
+  pointer-events: none;
+}
+
+/* Tiptap: tabel PLU */
+.ProseMirror .plu-table {
+  font-size: 0.65rem;
+  table-layout: auto;
+  width: auto;
+  margin: 0.5rem 0;
+}
+
+.ProseMirror .plu-table td,
+.ProseMirror .plu-table th {
+  padding: 0.15rem 0.4rem;
+}
+
+.ProseMirror .plu-table th {
+  background: #2563eb !important;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.ProseMirror .plu-table td,
+.ProseMirror .plu-table th {
+  border: 1px solid #93c5fd;
+}
+
+/* Tiptap: handle resize kolom (Excel-like) */
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -5px;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-foreground);
+  pointer-events: none;
+  cursor: col-resize;
+}
+
+.ProseMirror .column-resize-handle::after {
+  content: "<>";
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.ProseMirror th:hover > .column-resize-handle,
+.ProseMirror td:hover > .column-resize-handle {
+  color: var(--primary);
+}
+
+/* Tiptap: handle resize baris (vertikal) */
+.ProseMirror td::after,
+.ProseMirror th::after {
+  content: "↕";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--muted-foreground);
+  pointer-events: none;
+  cursor: row-resize;
+}
+
+.ProseMirror tr:hover > td::after,
+.ProseMirror tr:hover > th::after {
+  color: var(--primary);
+}

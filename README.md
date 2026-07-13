@@ -22,6 +22,7 @@
   - [useAnimeHover](#useanimehover)
   - [animePresets](#animepresets)
 - [Export](#export)
+- [Rich Text Editor (Tiptap)](#rich-text-editor-tiptap)
 - [Scripts](#scripts)
 
 ---
@@ -30,11 +31,12 @@
 
 | Kategori | Teknologi |
 |----------|-----------|
-| **Framework** | Next.js 15 (Pages Router), React 19, TypeScript |
+| **Framework** | Next.js 16 (Pages Router), React 19, TypeScript |
 | **Database** | PostgreSQL via `pg` — koneksi pool per branch |
 | **UI** | Tailwind CSS v4, shadcn/ui (Radix primitives), `lucide-react` |
 | **Form** | `react-hook-form` + `@hookform/resolvers` + `zod` |
-| **Data Fetching** | `axios`, `@tanstack/react-query` |
+| **Editor** | Tiptap v3 (`@tiptap/react`), `jspdf` + `jspdf-autotable` (PDF) |
+| **Data Fetching** | `axios`, `useFetchData` (manual state) |
 | **Charts** | `recharts` |
 | **Export** | `exceljs` (Excel), `jspdf` + `jspdf-autotable` (PDF) |
 | **Date** | `date-fns`, `react-day-picker` |
@@ -943,9 +945,68 @@ const { handleExport, isExporting } = useExportToExcel({
 
 ### PDF (Manual)
 
+Ada dua jalur PDF:
+
+1. **Laporan tabel** (`src/utils/exportToPdf/index.ts`) — `exportToPdf({ title, columns, data, mode })` dengan `mode: "preview" | "download" | "print"`.
+2. **Surat / dokumen bebas** dari editor Tiptap (`src/utils/exportToPdf/editorPdf.ts`):
+
 ```typescript
-import { exportToPdf } from "@/utils/exportToPdf";
+import {
+  buildEditorPdf,
+  editorJsonToPdfBlobUrl,
+  downloadEditorPdf,
+  printEditorPdf,
+} from "@/utils/exportToPdf/editorPdf";
+
+// Preview: JSON editor → blob URL → iframe
+const url = await editorJsonToPdfBlobUrl(json);
+// Unduh
+await downloadEditorPdf(json, "penawaran.pdf");
+// Cetak langsung (autoPrint)
+await printEditorPdf(json);
 ```
+
+---
+
+## Rich Text Editor (Tiptap)
+
+Editor rich text berbasis Tiptap v3 untuk menyusun dokumen (mis. surat penawaran).
+Render **WAJIB** via `dynamic(ssr:false)` di Pages Router.
+
+```typescript
+import { EditorTiptap } from "@/components/input/EditorTiptapDynamic";
+
+<EditorTiptap
+  value={content}
+  onChange={setContent}
+  editable
+  toolbarOffset={96}        // px, jarak dari atas (di bawah navbar)
+  contentMaxHeight="60vh"   // scroll area isi editor
+  branch={branch}           // untuk kop surat per-branch
+/>;
+```
+
+### Fitur
+- **Toolbar persisten** (`editor/toolbar/EditorToolbar.tsx`): paragraf/judul 1–5, ukuran font (px),
+  bold/italic/strike, list, kutipan, align teks, align tabel (kiri/tengah/kanan),
+  sisip kop surat, sisip PLU, undo/redo.
+- **Bubble toolbar** (`editor/toolbar/EditorBubbleMenu.tsx`): muncul saat teks diblok
+  (paragraf/judul, ukuran font, bold/italic/strike, align).
+- **Slash command** `/`: paragraf, heading, list, kutipan, garis pemisah (tipis/sedang/tebal),
+  tabel, gambar, PLU.
+- **Kop surat** per-branch (`configs/input/letterheadConfig.ts`): logo + nama + alamat + garis biru
+  + tanggal + Lampiran/Perihal.
+- **Tabel PLU**: header biru, border biru muda, tambah/hapus baris (nomor otomatis renumber),
+  font mengikuti baris pertama tabel yang ada.
+- Toolbar/bubble memakai `useEditorState` agar state (ukuran font, active) ikut update saat seleksi.
+
+### Konvensi Penting
+- Class editor di DOM adalah `.ProseMirror` (bukan `.tiptap`).
+- `BubbleMenu` di-import dari `@tiptap/react/menus`.
+- Dengan tabel `resizable:true`, atribut `class`/`style` tidak diteruskan ke `<table>`;
+  disinkron oleh plugin di `editor/extensions/pluTable.ts`.
+- Cetak: header "PDF.js viewer" + URL berasal dari header cetak browser — nonaktifkan via
+  dialog print (uncheck "Headers and footers").
 
 ---
 
@@ -994,7 +1055,7 @@ type ColumnConfig<T> = {
 |----------|--------|
 | `npm run dev` | `next dev --turbopack` |
 | `npm run build` | `next build` |
-| `npm run lint` | `next lint` |
+| `npm run lint` | `eslint src/` |
 | `npm run start` | `next start` |
 | `npm run create:api` | Generate API route (prompt interaktif) |
 | `npm run create:page` | Generate page (prompt interaktif) |
