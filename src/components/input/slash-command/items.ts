@@ -16,6 +16,7 @@ import {
   Image as ImageIcon,
   Table as TableIcon,
   Code as CodeIcon,
+  CodeXml as CodeXmlIcon,
   Barcode,
 } from "lucide-react"
 
@@ -205,6 +206,25 @@ export const slashCommandItems: SlashCommandItem[] = [
         .insertContent(
           `<table><tbody><tr><th>Kolom 1</th><th>Kolom 2</th></tr><tr><td>Sel 1</td><td>Sel 2</td></tr><tr><td>Sel 3</td><td>Sel 4</td></tr></tbody></table>`,
         )
+        .run()
+    },
+  },
+  {
+    title: "Kode",
+    description: "Sisipkan blok kode dengan syntax highlighting",
+    icon: CodeXmlIcon,
+    searchTerms: ["code", "kode", "syntax", "program"],
+    command: function insertCode({ editor, range }) {
+      const input = window.prompt(
+        "Bahasa (misal javascript, typescript, html, css, json, sql, python, bash)",
+        "javascript",
+      )
+      const language = input && input.trim() ? input.trim() : "plaintext"
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .setCodeBlock({ language })
         .run()
     },
   },

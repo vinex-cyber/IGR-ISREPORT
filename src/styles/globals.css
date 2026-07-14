@@ -384,3 +384,83 @@ body {
 .ProseMirror tr:hover > th::after {
   color: var(--primary);
 }
+
+/* Tiptap: code block + syntax highlighting (tema gelap ala VSCode) */
+.ProseMirror pre {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.ProseMirror pre code {
+  background: none;
+  padding: 0;
+  color: #c9d1d9;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.ProseMirror pre code.hljs {
+  display: block;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #6a9955;
+  font-style: italic;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-type,
+.hljs-built_in,
+.hljs-tag {
+  color: #569cd6;
+}
+.hljs-string,
+.hljs-attr,
+.hljs-regexp,
+.hljs-symbol,
+.hljs-meta {
+  color: #ce9178;
+}
+.hljs-number,
+.hljs-link {
+  color: #b5cea8;
+}
+.hljs-title,
+.hljs-section,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-function,
+.hljs-class,
+.hljs-property,
+.hljs-params {
+  color: #dcdcaa;
+}
+.hljs-attribute,
+.hljs-variable,
+.hljs-template-variable {
+  color: #9cdcfe;
+}
+.hljs-deletion {
+  color: #f44747;
+  background: #490202;
+}
+.hljs-addition {
+  color: #6a9955;
+  background: #04260f;
+}
+.hljs-emphasis {
+  font-style: italic;
+}
+.hljs-strong {
+  font-weight: 700;
+}

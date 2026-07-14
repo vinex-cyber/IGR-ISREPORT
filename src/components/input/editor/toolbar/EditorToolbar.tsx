@@ -22,6 +22,7 @@ import {
   FileText,
   Table,
   Code,
+  CodeXml,
 } from "lucide-react";
 
 import { ToolbarButton } from "./ToolbarButton";
@@ -33,6 +34,29 @@ import {
 import { getTableAlign, applyTableAlign } from "../extensions/pluTable";
 import { TableToolbarMenu } from "./TableToolbarMenu";
 import { buildLetterheadContent } from "../letterhead";
+
+const CODE_LANGUAGES: { value: string; label: string }[] = [
+  { value: "plaintext", label: "Teks biasa" },
+  { value: "javascript", label: "JavaScript" },
+  { value: "typescript", label: "TypeScript" },
+  { value: "jsx", label: "JSX" },
+  { value: "tsx", label: "TSX" },
+  { value: "html", label: "HTML" },
+  { value: "css", label: "CSS" },
+  { value: "json", label: "JSON" },
+  { value: "bash", label: "Bash / Shell" },
+  { value: "python", label: "Python" },
+  { value: "sql", label: "SQL" },
+  { value: "xml", label: "XML" },
+  { value: "markdown", label: "Markdown" },
+  { value: "java", label: "Java" },
+  { value: "c", label: "C" },
+  { value: "cpp", label: "C++" },
+  { value: "php", label: "PHP" },
+  { value: "go", label: "Go" },
+  { value: "rust", label: "Rust" },
+  { value: "yaml", label: "YAML" },
+];
 
 export function EditorToolbar({
   editor,
@@ -63,6 +87,8 @@ export function EditorToolbar({
         alignJustify: editor.isActive({ textAlign: "justify" }),
         isTable: editor.isActive("table"),
         tableAlign: editor.isActive("table") ? getTableAlign(editor) : null,
+        isCodeBlock: editor.isActive("codeBlock"),
+        codeLanguage: (editor.getAttributes("codeBlock").language as string) ?? "",
       };
     },
   });
@@ -210,6 +236,36 @@ export function EditorToolbar({
         }}>
         <Code />
       </ToolbarButton>
+      <ToolbarButton
+        label="Blok kode"
+        active={state.isCodeBlock}
+        onClick={function toggleCodeBlock() {
+          editor.chain().focus().toggleCodeBlock().run();
+        }}>
+        <CodeXml />
+      </ToolbarButton>
+      {state.isCodeBlock && (
+        <select
+          aria-label="Bahasa kode"
+          className="h-8 rounded-md border border-input bg-background px-2 text-sm outline-none focus:ring-1 focus:ring-ring"
+          value={state.codeLanguage}
+          onChange={function changeCodeLanguage(e) {
+            const lang = e.target.value || "plaintext";
+            editor
+              .chain()
+              .focus()
+              .updateAttributes("codeBlock", { language: lang })
+              .run();
+          }}>
+          {CODE_LANGUAGES.map(function renderLanguage(lang) {
+            return (
+              <option key={lang.value} value={lang.value}>
+                {lang.label}
+              </option>
+            );
+          })}
+        </select>
+      )}
       {state.isTable && (
         <>
           <div className="mx-1 h-5 w-px bg-border" />

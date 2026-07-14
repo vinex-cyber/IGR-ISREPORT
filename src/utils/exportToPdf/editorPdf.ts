@@ -2,6 +2,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { JSONContent } from "@tiptap/react";
+import { lowlight } from "@/components/input/editor/extensions/codeBlockLowlight";
 
 type AutoTableDoc = jsPDF & {
   lastAutoTable?: { finalY: number };
@@ -63,6 +64,13 @@ function plainText(node?: JSONContent): string {
   if (node.type === "hardBreak") return " ";
   if (!node.content) return "";
   return node.content.map(plainText).join("");
+}
+
+function codeText(node?: JSONContent): string {
+  if (!node) return "";
+  if (node.type === "text") return node.text ?? "";
+  if (!node.content) return "";
+  return node.content.map(codeText).join("");
 }
 
 function splitByHardBreak(content?: JSONContent[]): JSONContent[][] {
@@ -313,6 +321,160 @@ export async function buildEditorPdf(
     y += 10;
   }
 
+  function hljsColor(classes: unknown): RGB {
+    const list = Array.isArray(classes) ? (classes as string[]) : [];
+    const has = function check(c: string): boolean {
+      return list.includes(c);
+    };
+    if (has("hljs-comment") || has("hljs-quote")) return [106, 153, 85];
+    if (
+      has("hljs-keyword") ||
+      has("hljs-selector-tag") ||
+      has("hljs-literal") ||
+      has("hljs-type") ||
+      has("hljs-built_in") ||
+      has("hljs-tag")
+    )
+      return [86, 156, 214];
+    if (
+      has("hljs-string") ||
+      has("hljs-attr") ||
+      has("hljs-meta") ||
+      has("hljs-symbol") ||
+      has("hljs-regexp")
+    )
+      return [206, 145, 120];
+    if (has("hljs-number") || has("hljs-link")) return [181, 206, 168];
+    if (
+      has("hljs-title") ||
+      has("hljs-section") ||
+      has("hljs-name") ||
+      has("hljs-selector-id") ||
+      has("hljs-selector-class") ||
+      has("hljs-function") ||
+      has("hljs-class") ||
+      has("hljs-property") ||
+      has("hljs-params") ||
+      has("hljs-title.function_")
+    )
+      return [220, 220, 170];
+    if (
+      has("hljs-attribute") ||
+      has("hljs-variable") ||
+      has("hljs-template-variable")
+    )
+      return [156, 220, 254];
+    return [201, 209, 217];
+  }
+
+  type ColoredRun = { text: string; color: RGB };
+
+  function flattenHast(
+    node: unknown,
+    color: RGB | null,
+    out: ColoredRun[],
+  ): void {
+    const n = node as {
+      type: string;
+      value?: string;
+      properties?: { className?: unknown };
+      children?: unknown[];
+    };
+    if (n.type === "text") {
+      if (typeof n.value === "string") {
+        out.push({ text: n.value, color: color ?? [201, 209, 217] });
+      }
+      return;
+    }
+    const nextColor =
+      n.type === "element" ? hljsColor(n.properties?.className) : color;
+    (n.children ?? []).forEach(function walk(child) {
+      flattenHast(child, nextColor, out);
+    });
+  }
+
+  function renderCodeBlock(node: JSONContent): void {
+    const code = codeText(node);
+    const sizePx = 10.5;
+    const lineHeight = sizePx * PX_TO_PT * 1.35;
+    const padding = 8;
+    const innerW = contentWidth - padding * 2;
+    doc.setFont("courier", "normal");
+    doc.setFontSize(sizePx * PX_TO_PT);
+
+    const language = (node.attrs?.language as string) ?? "plaintext";
+    let runs: ColoredRun[] = [];
+    if (language && language !== "plaintext") {
+      try {
+        const tree = lowlight.registered(language)
+          ? lowlight.highlight(language, code)
+          : lowlight.highlightAuto(code);
+        flattenHast(tree, null, runs);
+      } catch {
+        runs = [{ text: code, color: [201, 209, 217] }];
+      }
+    } else {
+      runs = [{ text: code, color: [201, 209, 217] }];
+    }
+
+    type Item = { text: string; color: RGB; nl?: boolean };
+    const items: Item[] = [];
+    runs.forEach(function buildItems(run) {
+      const parts = run.text.split(/(\n)/);
+      parts.forEach(function eachPart(part, i) {
+        if (i % 2 === 1) {
+          items.push({ text: "\n", color: run.color, nl: true });
+          return;
+        }
+        if (part === "") return;
+        part.split(/(\s+)/).forEach(function eachSub(s) {
+          if (s === "") return;
+          items.push({ text: s, color: run.color });
+        });
+      });
+    });
+
+    const lines: Item[][] = [[]];
+    let lineWidth = 0;
+    items.forEach(function layout(item) {
+      if (item.nl) {
+        lines.push([]);
+        lineWidth = 0;
+        return;
+      }
+      const w = doc.getTextWidth(item.text);
+      if (lineWidth + w > innerW && lines[lines.length - 1].length > 0) {
+        lines.push([]);
+        lineWidth = 0;
+      }
+      lines[lines.length - 1].push(item);
+      lineWidth += w;
+    });
+
+    const blockHeight = lines.length * lineHeight + padding * 2;
+    ensureSpace(blockHeight);
+    const startY = y;
+    doc.setFillColor(13, 17, 23);
+    doc.rect(MARGIN, startY, contentWidth, blockHeight, "F");
+    doc.setDrawColor(48, 54, 61);
+    doc.setLineWidth(0.5);
+    doc.rect(MARGIN, startY, contentWidth, blockHeight);
+    let drawY = startY + padding + sizePx * PX_TO_PT;
+    lines.forEach(function drawLine(lineItems) {
+      let x = MARGIN + padding;
+      lineItems.forEach(function drawItem(it) {
+        doc.setTextColor(it.color[0], it.color[1], it.color[2]);
+        doc.text(it.text, x, drawY);
+        x += doc.getTextWidth(it.text);
+      });
+      drawY += lineHeight;
+    });
+    doc.setTextColor(0, 0, 0);
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(1);
+    y = startY + blockHeight + 10;
+  }
+
   async function renderNode(node: JSONContent): Promise<void> {
     switch (node.type) {
       case "heading":
@@ -323,6 +485,9 @@ export async function buildEditorPdf(
         break;
       case "horizontalRule":
         renderHorizontalRule(node);
+        break;
+      case "codeBlock":
+        renderCodeBlock(node);
         break;
       case "bulletList":
       case "orderedList":

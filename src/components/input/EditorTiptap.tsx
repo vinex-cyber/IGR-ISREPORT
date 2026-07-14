@@ -23,6 +23,7 @@ import {
 import { ThickHorizontalRule } from "./editor/extensions/horizontalRule";
 import { PluTable, findPluTable } from "./editor/extensions/pluTable";
 import { PluTableCell, PluTableHeader } from "./editor/extensions/pluTableCell";
+import { PluCodeBlock } from "./editor/extensions/codeBlockLowlight";
 import {
   createPluTable,
   addPluToExistingTable,
@@ -74,7 +75,7 @@ export function EditorTiptap({
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ horizontalRule: false }),
+      StarterKit.configure({ horizontalRule: false, codeBlock: false }),
       ThickHorizontalRule,
       Image,
       Selection,
@@ -95,6 +96,7 @@ export function EditorTiptap({
       PluTableCell,
       PluTableHeader,
       PluTable.configure({ resizable: true }),
+      PluCodeBlock,
       SlashCommand.configure({ onRequestPlu: handleRequestPlu }),
     ],
     content: value ?? undefined,
