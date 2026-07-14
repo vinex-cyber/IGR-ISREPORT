@@ -41,6 +41,7 @@ function buildQuery(conditions: string) {
       prd_prdcd,
       prd_deskripsipanjang,
       prd_frac||' / '||prd_unit AS satuan,
+      prd_hrgjual AS harga,
       COALESCE(st_saldoakhir, 0) AS st_saldoakhir,
 
       -- ranking gabungan

@@ -52,7 +52,7 @@ export default function TestEditorPage() {
   );
 
   return (
-    <Layout title="Test Editor" branch={branch}>
+    <Layout title="Editor Surat" branch={branch}>
       <div className="flex h-[calc(100vh-8rem)] flex-col">
         <div className="flex-none">
           <div className="mb-4 flex items-center justify-between gap-4">

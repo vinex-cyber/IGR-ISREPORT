@@ -292,6 +292,43 @@ export async function buildEditorPdf(
     y += 4;
   }
 
+  function measureGridTableWidth(node: JSONContent): number {
+    const rows = node.content ?? [];
+    if (rows.length === 0) return 0;
+    const colCount = rows.reduce(function maxCols(max, r) {
+      return Math.max(max, (r.content ?? []).length);
+    }, 0);
+    const colWidths = new Array(colCount).fill(0);
+    const padX = 2 * 2;
+    rows.forEach(function measureRow(r) {
+      (r.content ?? []).forEach(function measureCell(cell, ci) {
+        if (ci >= colWidths.length) return;
+        const isHeader = cell.type === "tableHeader";
+        doc.setFont("helvetica", isHeader ? "bold" : "normal");
+        doc.setFontSize(8);
+        const w = doc.getTextWidth(plainText(cell));
+        colWidths[ci] = Math.max(colWidths[ci], w + padX);
+      });
+    });
+    return colWidths.reduce(function sum(a, b) {
+      return a + b;
+    }, 0);
+  }
+
+  function tableHorizontalMargin(
+    align: string,
+    naturalWidth: number,
+  ): { left: number; right: number } {
+    const available = pageWidth - MARGIN * 2;
+    if (align === "center") {
+      return { left: MARGIN + Math.max(0, (available - naturalWidth) / 2), right: MARGIN };
+    }
+    if (align === "right") {
+      return { left: MARGIN + Math.max(0, available - naturalWidth), right: MARGIN };
+    }
+    return { left: MARGIN, right: MARGIN };
+  }
+
   function renderGridTable(node: JSONContent): void {
     const rows = node.content ?? [];
     if (rows.length === 0) return;
@@ -307,6 +344,10 @@ export async function buildEditorPdf(
       return (row.content ?? []).map(plainText);
     });
 
+    const align = (node.attrs?.align as string) ?? "left";
+    const naturalWidth = measureGridTableWidth(node);
+    const margins = tableHorizontalMargin(align, naturalWidth);
+
     autoTable(doc, {
       startY: y,
       head,
@@ -314,7 +355,7 @@ export async function buildEditorPdf(
       theme: "grid",
       styles: { fontSize: 8, cellPadding: 2, lineColor: BORDER_BLUE },
       headStyles: { fillColor: BLUE, textColor: 255, fontStyle: "bold" },
-      margin: { left: MARGIN, right: MARGIN },
+      margin: margins,
       tableWidth: "wrap",
     });
     y = (doc as AutoTableDoc).lastAutoTable?.finalY ?? y;

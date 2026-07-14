@@ -31,6 +31,7 @@ import {
 import { PluDescriptionModal } from "./editor/PluDescriptionModal";
 import { EditorToolbar } from "./editor/toolbar/EditorToolbar";
 import { EditorBubbleMenu } from "./editor/toolbar/EditorBubbleMenu";
+import { PromoInfoModal } from "./editor/PromoInfoModal";
 
 export interface EditorTiptapProps {
   value?: JSONContent | null;
@@ -64,6 +65,10 @@ export function EditorTiptap({
     editor: Editor;
     row: DaftarProdukRows;
   } | null>(null);
+
+  const [promoInfo, setPromoInfo] = React.useState<{ prdcd: string } | null>(
+    null,
+  );
 
   const handleRequestPlu = React.useCallback(function openPlu(ctx: {
     editor: Editor;
@@ -153,6 +158,12 @@ export function EditorTiptap({
               setPluRequest(null);
             }
           }}
+          infoAction={{
+            label: "Info",
+            onInfo: function openPromoInfo(row) {
+              setPromoInfo({ prdcd: String(row.prd_prdcd) });
+            },
+          }}
         />
       )}
 
@@ -209,6 +220,14 @@ export function EditorTiptap({
           </div>
         </Modal>
       )}
+
+      <PromoInfoModal
+        show={!!promoInfo}
+        prdcd={promoInfo?.prdcd ?? null}
+        onClose={function closePromoInfo() {
+          setPromoInfo(null);
+        }}
+      />
     </div>
   );
 }

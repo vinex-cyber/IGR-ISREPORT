@@ -25,6 +25,12 @@ interface GenericLookupModalProps<T extends Record<string, unknown>> {
 
   mode?: "client" | "server"; // 🔥 tambahan
   filterFn?: (item: T, keyword: string) => boolean; // 🔥 optional
+
+  // 🔥 tombol Info per baris (opt-in)
+  infoAction?: {
+    label?: string;
+    onInfo: (row: T) => void;
+  };
 }
 
 export function GenericLookupModal<T extends Record<string, unknown>>({
@@ -36,6 +42,7 @@ export function GenericLookupModal<T extends Record<string, unknown>>({
   title = "Pilih Data",
   mode = "server", // default tetap server
   filterFn,
+  infoAction,
 }: GenericLookupModalProps<T>) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -124,13 +131,18 @@ export function GenericLookupModal<T extends Record<string, unknown>>({
                         {col.label}
                       </th>
                     ))}
+                    {infoAction && (
+                      <th className="border px-2 py-1 text-center">Info</th>
+                    )}
                   </tr>
                 </thead>
 
                 <tbody>
                   {rows.length === 0 ? (
                     <tr>
-                      <td colSpan={columns.length} className="text-center py-4">
+                      <td
+                        colSpan={columns.length + (infoAction ? 1 : 0)}
+                        className="text-center py-4">
                         Data tidak ditemukan
                       </td>
                     </tr>
@@ -158,6 +170,19 @@ export function GenericLookupModal<T extends Record<string, unknown>>({
                             </td>
                           );
                         })}
+                        {infoAction && (
+                          <td className="border px-2 py-1 text-center">
+                            <button
+                              type="button"
+                              className="rounded bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700"
+                              onClick={function openInfo(e) {
+                                e.stopPropagation();
+                                infoAction.onInfo(row);
+                              }}>
+                              {infoAction.label ?? "Info"}
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))
                   )}

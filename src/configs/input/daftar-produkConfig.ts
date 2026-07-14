@@ -42,8 +42,9 @@ export type DaftarProdukRows = {
     // 🔥 isi field di sini
     prd_prdcd: string;
     prd_deskripsipanjang: string;
-    satuan: string
-    st_saldoakhir: number
+    satuan: string;
+    harga: number;
+    st_saldoakhir: number;
 };
 
 export const daftarProdukColumns: ColumnConfig<DaftarProdukRows>[] = [
@@ -62,6 +63,11 @@ export const daftarProdukColumns: ColumnConfig<DaftarProdukRows>[] = [
     {
         field: "st_saldoakhir",
         label: "LPP",
+        isNumeric: true
+    },
+    {
+        field: "harga",
+        label: "Harga",
         isNumeric: true
     },
 ];
