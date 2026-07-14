@@ -20,8 +20,8 @@ import {
   AlignHorizontalJustifyEnd,
   PackageSearch,
   FileText,
-  Rows3,
-  Trash2,
+  Table,
+  Code,
 } from "lucide-react";
 
 import { ToolbarButton } from "./ToolbarButton";
@@ -31,7 +31,7 @@ import {
   getCurrentFontSize,
 } from "./blockHelpers";
 import { getTableAlign, applyTableAlign } from "../extensions/pluTable";
-import { renumberPluTable } from "../plu/pluTableBuilder";
+import { TableToolbarMenu } from "./TableToolbarMenu";
 import { buildLetterheadContent } from "../letterhead";
 
 export function EditorToolbar({
@@ -185,6 +185,31 @@ export function EditorToolbar({
         }}>
         <AlignJustify />
       </ToolbarButton>
+      <div className="mx-1 h-5 w-px bg-border" />
+      <ToolbarButton
+        label="Sisip tabel"
+        onClick={function insertTable() {
+          editor
+            .chain()
+            .focus()
+            .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+            .run();
+        }}>
+        <Table />
+      </ToolbarButton>
+      <ToolbarButton
+        label="Sisip tabel dari HTML"
+        onClick={function insertHtmlTable() {
+          editor
+            .chain()
+            .focus()
+            .insertContent(
+              `<table><tbody><tr><th>Kolom 1</th><th>Kolom 2</th></tr><tr><td>Sel 1</td><td>Sel 2</td></tr><tr><td>Sel 3</td><td>Sel 4</td></tr></tbody></table>`,
+            )
+            .run();
+        }}>
+        <Code />
+      </ToolbarButton>
       {state.isTable && (
         <>
           <div className="mx-1 h-5 w-px bg-border" />
@@ -215,21 +240,7 @@ export function EditorToolbar({
             }}>
             <AlignHorizontalJustifyEnd />
           </ToolbarButton>
-          <ToolbarButton
-            label="Hapus baris"
-            onClick={function deleteRow() {
-              editor.chain().focus().deleteRow().run();
-              renumberPluTable(editor);
-            }}>
-            <Rows3 />
-          </ToolbarButton>
-          <ToolbarButton
-            label="Hapus tabel"
-            onClick={function deleteTable() {
-              editor.chain().focus().deleteTable().run();
-            }}>
-            <Trash2 />
-          </ToolbarButton>
+          <TableToolbarMenu editor={editor} />
         </>
       )}
       <div className="mx-1 h-5 w-px bg-border" />

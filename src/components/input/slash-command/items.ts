@@ -15,6 +15,7 @@ import {
   Minus,
   Image as ImageIcon,
   Table as TableIcon,
+  Code as CodeIcon,
   Barcode,
 } from "lucide-react"
 
@@ -188,6 +189,22 @@ export const slashCommandItems: SlashCommandItem[] = [
         .focus()
         .deleteRange(range)
         .insertTable({ rows, cols, withHeaderRow: true })
+        .run()
+    },
+  },
+  {
+    title: "Tabel (HTML)",
+    description: "Buat tabel dari HTML",
+    icon: CodeIcon,
+    searchTerms: ["table", "tabel", "html", "grid"],
+    command: function insertHtmlTable({ editor, range }) {
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertContent(
+          `<table><tbody><tr><th>Kolom 1</th><th>Kolom 2</th></tr><tr><td>Sel 1</td><td>Sel 2</td></tr><tr><td>Sel 3</td><td>Sel 4</td></tr></tbody></table>`,
+        )
         .run()
     },
   },

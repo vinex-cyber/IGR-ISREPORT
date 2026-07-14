@@ -22,6 +22,7 @@ import {
 
 import { ThickHorizontalRule } from "./editor/extensions/horizontalRule";
 import { PluTable, findPluTable } from "./editor/extensions/pluTable";
+import { PluTableCell, PluTableHeader } from "./editor/extensions/pluTableCell";
 import {
   createPluTable,
   addPluToExistingTable,
@@ -83,9 +84,16 @@ export function EditorTiptap({
       TextAlign.configure({
         types: ["heading", "paragraph", "tableCell", "tableHeader"],
       }),
-      TableKit.configure({ table: false, tableRow: false }),
+      TableKit.configure({
+        table: false,
+        tableRow: false,
+        tableCell: false,
+        tableHeader: false,
+      }),
       PluTableRow,
       TableRowResize,
+      PluTableCell,
+      PluTableHeader,
       PluTable.configure({ resizable: true }),
       SlashCommand.configure({ onRequestPlu: handleRequestPlu }),
     ],
