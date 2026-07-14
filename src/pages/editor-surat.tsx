@@ -34,6 +34,17 @@ export default function TestEditorPage() {
 
   const showActions = hasText(content);
 
+  const handleBranchChange = React.useCallback(function changeBranch(
+    next: string,
+  ) {
+    setBranch(next);
+    setContent(null);
+    setPdfUrl(function clear(prev) {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  }, []);
+
   const handlePreview = React.useCallback(
     function generatePreview() {
       if (!content) return;
@@ -61,7 +72,7 @@ export default function TestEditorPage() {
             </h1>
             <SettingsDatabase
               value={branch}
-              onChange={setBranch}
+              onChange={handleBranchChange}
               options={DATABASE_OPTIONS}
             />
           </div>
@@ -137,6 +148,7 @@ export default function TestEditorPage() {
             <div>
               <h2 className="mb-2 text-lg font-semibold">Editor</h2>
               <EditorTiptap
+                key={branch}
                 value={content}
                 onChange={setContent}
                 toolbarOffset={0}

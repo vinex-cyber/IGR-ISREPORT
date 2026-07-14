@@ -38,6 +38,20 @@ rich text, dan hasilnya harus bisa diekspor ke PDF dengan teks **selectable**
       - Ukuran font terbaca di toolbar (`useEditorState`), default isi surat 14.7px,
         alamat 16px, tabel PLU ikut ukuran baris sebelumnya.
       - Bubble toolbar saat teks diblok (paragraf/heading, ukuran font, bold/italic/strike, align).
+- [x] **Tahap 6** — Modal **Info Promo** dari editor: tombol "Info" di `GenericLookupModal`
+      (lookup produk PLU) membuka `PromoInfoModal` yang menampilkan Cashback, Gift,
+      Cashback Member, dan Promo MD (tabel `data-setting-harga`) secara berdampingan.
+      - `PromoInfoModal.tsx` dipecah jadi `editor/promoInfo/`: `promoInfoShared.tsx`,
+        `PromoMdSection.tsx`, `CashbackMemberSection.tsx`, `CashbackSection.tsx`, `GiftSection.tsx`.
+      - Banner tengah per section; Cashback Member & Promo MD bersebelahan; Cashback/Gift
+        di-hide bila `length === 0`.
+- [x] **Tahap 7** — PDF menghormati `align` tabel (kiri/tengah/kanan): `renderGridTable`
+      di `editorPdf.ts` mengukur lebar tabel (`measureGridTableWidth`) lalu center/right via
+      `tableHorizontalMargin` (bukan selalu full-width).
+- [x] **Tambahan** — `GenericLookupModal` menerima prop `infoAction` (`ReactNode`) untuk
+      menyisipkan tombol aksi (mis. Info Promo) di header modal.
+- [x] **Navbar** — link **Editor Surat** (`/editor-surat`) ditambah ke menu Store.
+
 
 ## Arsitektur File
 ```
@@ -53,6 +67,8 @@ src/components/input/
     ├── plu/pluTableBuilder.ts    # createPluTable, addPluToExistingTable, renumberPluTable
     ├── letterhead.ts             # buildLetterheadContent(branch)
     ├── PluDescriptionModal.tsx
+    ├── PromoInfoModal.tsx        # orchestrator modal Info Promo (infoAction di lookup PLU)
+    ├── promoInfo/                # PromoMdSection, CashbackMemberSection, CashbackSection, GiftSection, promoInfoShared
     └── toolbar/
         ├── blockHelpers.ts       # HEADING_LEVELS, getCurrent/setBlockType, getCurrentFontSize, DEFAULT_FONT_SIZE
         ├── ToolbarButton.tsx     # tombol + Tooltip

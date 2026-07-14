@@ -999,6 +999,12 @@ import { EditorTiptap } from "@/components/input/EditorTiptapDynamic";
 - **Tabel PLU**: header biru, border biru muda, tambah/hapus baris (nomor otomatis renumber),
   font mengikuti baris pertama tabel yang ada.
 - Toolbar/bubble memakai `useEditorState` agar state (ukuran font, active) ikut update saat seleksi.
+- **Modal Info Promo**: tombol "Info" di lookup PLU membuka `PromoInfoModal` yang menampilkan
+  Cashback, Gift, Cashback Member, dan Promo MD (tabel `data-setting-harga`) secara berdampingan.
+  Data dari API `data-promo-cashback`, `data-promo-gift`, `data-cashback-jenismember`,
+  `data-setting-harga` (filter `prdcd`).
+- **Export PDF menghormati align tabel**: tabel rata kiri/tengah/kanan di editor dipertahankan
+  di PDF (diukur lebarnya lalu di-center/right), bukan selalu full-width.
 
 ### Konvensi Penting
 - Class editor di DOM adalah `.ProseMirror` (bukan `.tiptap`).
