@@ -102,6 +102,11 @@ export const buildFilterLppSaatIni = (
     }
   }
 
+  if (filters.statusTag) {
+    conditions.push(`st_status_tag = $${params.length + 1}`);
+    params.push(filters.statusTag);
+  }
+
   return {
     conditions: conditions.length > 0 ? conditions.join("\nAND ") : "",
     params,
