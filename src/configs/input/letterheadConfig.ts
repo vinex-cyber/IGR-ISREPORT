@@ -20,25 +20,25 @@ const LETTERHEAD_BY_BRANCH: Record<string, LetterheadInfo> = {
   IGRCPG: {
     name: "INDOGROSIR CIPINANG",
     address:
-      "Alamat : Komplek Pasar Induk Beras Cipinang, Jl. Pisangan Lama Tim. No.1, RT.9/RW.9, Pisangan Tim., Kec. Pulo Gadung, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13230. \nTelp: (021) 4706455 | (wa) 0852-8571-2885 | klikindogrosir.com",
+      "Alamat : Komplek Pasar Induk Beras Cipinang, Jl. Pisangan Lama Tim. No.1, RT.9/RW.9, Pisangan Tim., Kec. Pulo Gadung, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13230. \nTelp: (021) 4706455 | (wa) 0852-8571-2885 | klikindogrosir.com | indogrosir.co.id",
     nomorCode: "IGR-CPG",
   },
   ICMCPG: {
     name: "ICM CIPINANG",
     address:
-      "Alamat : Komplek Pasar Induk Beras Cipinang, Jl. Pisangan Lama Tim. No.1, RT.9/RW.9, Pisangan Tim., Kec. Pulo Gadung, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13230. \nTelp: (021) 4706455 | (wa) 0852-8571-2885 | klikindogrosir.com",
+      "Alamat : Komplek Pasar Induk Beras Cipinang, Jl. Pisangan Lama Tim. No.1, RT.9/RW.9, Pisangan Tim., Kec. Pulo Gadung, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13230. \nTelp: (021) 4706455 | (wa) 0852-8571-2885 | klikindogrosir.com | indogrosir.co.id",
     nomorCode: "ICM-CPG",
   },
   SPICPG1I: {
     name: "SPI CILEUNGSI 1I",
     address:
-      "Alamat : (isi alamat SPI 1I)  | Telp: (000) 000-000 | Email: info@perusahaan.co.id",
+      "Jl. Raya Cileungsi - Jonggol Kp. Panangga No.RT 1/5 KM 7, Gandoang, Cileungsi, Bogor Regency, West Java 16820 | \n(wa) 0852-8571-2885 | klikindogrosir.com | indogrosir.co.id",
     nomorCode: "SPI-CPG1I",
   },
   SPICPG4L: {
     name: "SPI JATISARI 4L",
     address:
-      "Alamat : (isi alamat SPI 4L)  | Telp: (000) 000-000 | Email: info@perusahaan.co.id",
+      "GG. SENI - PAYANGAN, Jl. Wibawa Mukti II, RT.07/RW.006, Jatisari, Kec. Jatiasih, Kota Bks, Jawa Barat 17426  |\nwa: 0822-4635-7337 | klikindogrosir.com | indogrosir.co.id/",
     nomorCode: "SPI-CPG4L",
   },
 };

@@ -20,4 +20,9 @@ export const STORE_MENU = [
     href: "/form-so-harian",
     description: "Halaman untuk Cek Data SO harian.",
   },
+  {
+    title: "Editor Surat",
+    href: "/editor-surat",
+    description: "Halaman editor surat penawaran (Tiptap) dengan preview PDF.",
+  },
 ] satisfies readonly NavbarMenuItem[];
