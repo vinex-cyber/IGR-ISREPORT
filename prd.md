@@ -29,7 +29,7 @@ rich text, dan hasilnya harus bisa diekspor ke PDF dengan teks **selectable**
       Parse node: heading (H1–H5), paragraph (align + fontSize + bold/italic + warna),
       hardBreak, horizontalRule, bulletList/orderedList, tabel (kop + PLU).
       Auto page break + embed logo (image → dataURL).
-- [x] **Tahap 4** — Preview + aksi di halaman (`/test-editor`): tombol Preview/Perbarui,
+- [x] **Tahap 4** — Preview + aksi di halaman (`/editor-surat`): tombol Preview/Perbarui,
       Tutup, Unduh (`doc.save`), Cetak (`doc.autoPrint`). Preview via `iframe` blob URL.
 - [x] **Tahap 5** — Polish:
       - Kop surat per-branch (`getLetterheadInfo`) + logo + garis biru.
