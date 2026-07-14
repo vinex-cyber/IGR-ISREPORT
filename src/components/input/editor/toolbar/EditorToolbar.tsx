@@ -93,10 +93,15 @@ export function EditorToolbar({
     },
   });
 
+  const [fontSizeDraft, setFontSizeDraft] = React.useState(state.fontSize);
+  React.useEffect(function syncFontSizeDraft() {
+    setFontSizeDraft(state.fontSize);
+  }, [state.fontSize]);
+
   return (
     <div
-      style={{ top: toolbarOffset }}
-      className="sticky z-30 mx-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-1 rounded-2xl border border-input bg-background p-1.5 shadow-lg">
+      className={`sticky z-30 mx-auto w-full max-w-full rounded-2xl border border-input bg-background p-1.5 shadow-lg top-[${toolbarOffset}px]`}>
+      <div className="flex w-full max-w-full flex-nowrap items-center gap-1 overflow-x-auto">
       <select
         aria-label="Jenis teks"
         className="h-8 rounded-md border border-input bg-background px-2 text-sm outline-none focus:ring-1 focus:ring-ring"
@@ -119,14 +124,22 @@ export function EditorToolbar({
         placeholder="Ukuran"
         aria-label="Ukuran font (px)"
         className="h-8 w-20 rounded-md border border-input bg-background px-2 text-sm outline-none focus:ring-1 focus:ring-ring"
-        value={state.fontSize}
-        onChange={function changeFontSize(e) {
-          const val = e.target.value;
+        value={fontSizeDraft}
+        onChange={function changeFontSizeDraft(e) {
+          setFontSizeDraft(e.target.value);
+        }}
+        onBlur={function applyFontSize() {
+          const val = fontSizeDraft;
           if (!val) {
-            editor.chain().unsetFontSize().run();
+            editor.chain().focus().unsetFontSize().run();
             return;
           }
-          editor.chain().setFontSize(`${val}px`).run();
+          editor.chain().focus().setFontSize(`${val}px`).run();
+        }}
+        onKeyDown={function commitFontSize(e) {
+          if (e.key === "Enter") {
+            (e.target as HTMLInputElement).blur();
+          }
         }}
       />
       <div className="mx-1 h-5 w-px bg-border" />
@@ -331,6 +344,7 @@ export function EditorToolbar({
         }}>
         <Redo />
       </ToolbarButton>
+      </div>
     </div>
   );
 }

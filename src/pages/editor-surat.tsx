@@ -53,106 +53,114 @@ export default function TestEditorPage() {
 
   return (
     <Layout title="Test Editor" branch={branch}>
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <h1 className="text-2xl text-blue-500 font-bold">
-          Form Penawaran - {branch}
-        </h1>
-        <SettingsDatabase
-          value={branch}
-          onChange={setBranch}
-          options={DATABASE_OPTIONS}
-        />
-      </div>
-
-      {showActions && (
-        <div className="sticky top-20 z-40 mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-input bg-background/90 p-2.5 shadow-sm backdrop-blur">
-          <span className="pl-1 text-sm font-medium text-muted-foreground">
-            Dokumen PDF
-          </span>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              size="sm"
-              className="cursor-pointer gap-1.5"
-              onClick={handlePreview}>
-              {pdfUrl ? (
-                <RefreshCw className="size-4" />
-              ) : (
-                <Eye className="size-4" />
-              )}
-              {pdfUrl ? "Perbarui" : "Preview"}
-            </Button>
-            {pdfUrl && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="cursor-pointer gap-1.5"
-                onClick={function handleClosePreview() {
-                  setPdfUrl(function clear(prev) {
-                    if (prev) URL.revokeObjectURL(prev);
-                    return null;
-                  });
-                }}>
-                <X className="size-4" />
-                Tutup
-              </Button>
-            )}
-            <div className="mx-0.5 h-6 w-px bg-border" />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="cursor-pointer gap-1.5"
-              onClick={function handleDownload() {
-                downloadEditorPdf(content, "penawaran.pdf");
-              }}>
-              <Download className="size-4" />
-              Unduh
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              className="cursor-pointer gap-1.5"
-              onClick={function handlePrint() {
-                printEditorPdf(content);
-              }}>
-              <Printer className="size-4" />
-              Cetak
-            </Button>
-          </div>
-        </div>
-      )}
-
-      <div
-        className={
-          pdfUrl ? "grid grid-cols-1 gap-6 lg:grid-cols-2" : "grid grid-cols-1"
-        }>
-        <div>
-          <h2 className="mb-2 text-lg font-semibold">Editor</h2>
-          <EditorTiptap
-            value={content}
-            onChange={setContent}
-            toolbarOffset={showActions ? 148 : 96}
-            branch={branch}
-          />
-        </div>
-        {pdfUrl && (
-          <div>
-            <h2 className="mb-2 text-lg font-semibold">Preview PDF</h2>
-            <iframe
-              src={pdfUrl}
-              title="Preview PDF"
-              className="h-[80vh] w-full rounded-md border border-input"
+      <div className="flex h-[calc(100vh-8rem)] flex-col">
+        <div className="flex-none">
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <h1 className="text-2xl text-blue-500 font-bold">
+              Form Penawaran - {branch}
+            </h1>
+            <SettingsDatabase
+              value={branch}
+              onChange={setBranch}
+              options={DATABASE_OPTIONS}
             />
           </div>
-        )}
-      </div>
+        </div>
 
-      <h2 className="mb-2 mt-6 text-lg font-semibold">JSON Output</h2>
-      <pre className="overflow-auto rounded-md border border-input bg-muted/40 p-3 text-xs">
-        {JSON.stringify(content, null, 2)}
-      </pre>
+        {showActions && (
+          <div className="mb-4 flex flex-none flex-wrap items-center justify-between gap-3 rounded-xl border border-input bg-background/90 p-2.5 shadow-sm backdrop-blur">
+            <span className="pl-1 text-sm font-medium text-muted-foreground">
+              Dokumen PDF
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                className="cursor-pointer gap-1.5"
+                onClick={handlePreview}>
+                {pdfUrl ? (
+                  <RefreshCw className="size-4" />
+                ) : (
+                  <Eye className="size-4" />
+                )}
+                {pdfUrl ? "Perbarui" : "Preview"}
+              </Button>
+              {pdfUrl && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="cursor-pointer gap-1.5"
+                  onClick={function handleClosePreview() {
+                    setPdfUrl(function clear(prev) {
+                      if (prev) URL.revokeObjectURL(prev);
+                      return null;
+                    });
+                  }}>
+                  <X className="size-4" />
+                  Tutup
+                </Button>
+              )}
+              <div className="mx-0.5 h-6 w-px bg-border" />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="cursor-pointer gap-1.5"
+                onClick={function handleDownload() {
+                  downloadEditorPdf(content, "penawaran.pdf");
+                }}>
+                <Download className="size-4" />
+                Unduh
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                className="cursor-pointer gap-1.5"
+                onClick={function handlePrint() {
+                  printEditorPdf(content);
+                }}>
+                <Printer className="size-4" />
+                Cetak
+              </Button>
+            </div>
+          </div>
+        )}
+
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div
+            className={
+              pdfUrl
+                ? "grid grid-cols-1 gap-6 lg:grid-cols-2"
+                : "grid grid-cols-1"
+            }>
+            <div>
+              <h2 className="mb-2 text-lg font-semibold">Editor</h2>
+              <EditorTiptap
+                value={content}
+                onChange={setContent}
+                toolbarOffset={0}
+                branch={branch}
+              />
+            </div>
+            {pdfUrl && (
+              <div>
+                <h2 className="mb-2 text-lg font-semibold">Preview PDF</h2>
+                <iframe
+                  src={pdfUrl}
+                  title="Preview PDF"
+                  className="h-[80vh] w-full rounded-md border border-input"
+                />
+              </div>
+            )}
+          </div>
+
+          <h2 className="mb-2 mt-6 text-lg font-semibold">JSON Output</h2>
+          <pre className="overflow-auto rounded-md border border-input bg-muted/40 p-3 text-xs">
+            {JSON.stringify(content, null, 2)}
+          </pre>
+        </div>
+      </div>
     </Layout>
   );
 }
