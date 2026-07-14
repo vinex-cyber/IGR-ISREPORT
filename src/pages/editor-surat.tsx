@@ -154,11 +154,6 @@ export default function TestEditorPage() {
               </div>
             )}
           </div>
-
-          <h2 className="mb-2 mt-6 text-lg font-semibold">JSON Output</h2>
-          <pre className="overflow-auto rounded-md border border-input bg-muted/40 p-3 text-xs">
-            {JSON.stringify(content, null, 2)}
-          </pre>
         </div>
       </div>
     </Layout>
