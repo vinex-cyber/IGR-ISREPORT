@@ -34,7 +34,8 @@ import {
 } from "./blockHelpers";
 import { getTableAlign, applyTableAlign } from "../extensions/pluTable";
 import { TableToolbarMenu } from "./TableToolbarMenu";
-import { buildLetterheadContent, buildFooterContent } from "../letterhead";
+import { buildLetterheadContent } from "../letterhead";
+import { buildFooterContent } from "../footer";
 
 const CODE_LANGUAGES: { value: string; label: string }[] = [
   { value: "plaintext", label: "Teks biasa" },
