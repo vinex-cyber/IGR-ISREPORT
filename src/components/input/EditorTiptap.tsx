@@ -5,6 +5,24 @@ import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import { TableKit } from "@tiptap/extension-table";
+
+const ImageWithClass = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      class: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("class"),
+        renderHTML: (attributes) => {
+          if (!attributes.class) {
+            return {};
+          }
+          return { class: attributes.class };
+        },
+      },
+    };
+  },
+});
 import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle, FontSize, Color } from "@tiptap/extension-text-style";
 import { Selection } from "@tiptap/extensions";
@@ -82,7 +100,7 @@ export function EditorTiptap({
     extensions: [
       StarterKit.configure({ horizontalRule: false, codeBlock: false }),
       ThickHorizontalRule,
-      Image,
+      ImageWithClass,
       Selection,
       TextStyle,
       FontSize,

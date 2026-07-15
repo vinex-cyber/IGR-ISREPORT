@@ -12,7 +12,7 @@ type RGB = [number, number, number];
 
 const PX_TO_PT = 0.75;
 const DEFAULT_PX = 14.7;
-const MARGIN = 40;
+const MARGIN = 54;
 const LINE_HEIGHT = 1.3;
 const BLUE: RGB = [37, 99, 235];
 const BORDER_BLUE: RGB = [147, 197, 253];
@@ -130,10 +130,15 @@ export async function buildEditorPdf(
     }
   }
 
-  function applyFont(sizePx: number, bold: boolean, italic: boolean): void {
+  function applyFont(
+    sizePx: number,
+    bold: boolean,
+    italic: boolean,
+    family = "helvetica",
+  ): void {
     const style =
       bold && italic ? "bolditalic" : bold ? "bold" : italic ? "italic" : "normal";
-    doc.setFont("helvetica", style);
+    doc.setFont(family, style);
     doc.setFontSize(sizePx * PX_TO_PT);
   }
 
@@ -144,6 +149,7 @@ export async function buildEditorPdf(
       forceBold?: boolean;
       x?: number;
       width?: number;
+      family?: string;
     },
   ): void {
     const x = options.x ?? MARGIN;
@@ -170,7 +176,7 @@ export async function buildEditorPdf(
         })
         .join("");
 
-      applyFont(sizePx, bold, italic);
+      applyFont(sizePx, bold, italic, options.family);
       doc.setTextColor(color[0], color[1], color[2]);
       const lineHeight = sizePx * PX_TO_PT * LINE_HEIGHT;
       const wrapped = doc.splitTextToSize(text || " ", width);
@@ -189,12 +195,18 @@ export async function buildEditorPdf(
     doc.setTextColor(0, 0, 0);
   }
 
-  function renderHeading(node: JSONContent): void {
+  function renderHeading(
+    node: JSONContent,
+    family = "helvetica",
+    trailingGap = 12,
+  ): void {
     const level = Number(node.attrs?.level ?? 1);
     renderTextBlock(node, {
       defaultSizePx: HEADING_PX[level] ?? DEFAULT_PX,
       forceBold: true,
+      family,
     });
+    y += trailingGap;
   }
 
   function renderHorizontalRule(node: JSONContent): void {
@@ -206,12 +218,13 @@ export async function buildEditorPdf(
     const thickness =
       thicknessMap[(node.attrs?.thickness as string) ?? "medium"] ?? 2;
     const color = hexToRgb(node.attrs?.color as string) ?? [150, 150, 150];
-    ensureSpace(thickness + 8);
-    y += 4;
+    ensureSpace(thickness + 4);
+    y += 1;
     doc.setDrawColor(color[0], color[1], color[2]);
     doc.setLineWidth(thickness);
     doc.line(MARGIN, y, pageWidth - MARGIN, y);
-    y += thickness + 16;
+    const trailingGap = thickness <= 1 ? 34 : 1;
+    y += thickness + trailingGap;
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(1);
   }
@@ -219,57 +232,77 @@ export async function buildEditorPdf(
   async function renderLetterheadHeader(node: JSONContent): Promise<void> {
     const row = node.content?.[0];
     const cells = row?.content ?? [];
-    const imageNode = cells[0]?.content?.find(function isImage(child) {
+    const logoCell = cells[0];
+    const companyCell = cells[1];
+    const yStart = y;
+    const logoW = 170;
+    let imgH = 0;
+
+    const imageNode = logoCell?.content?.find(function isImage(child) {
       return child.type === "image";
     });
-    const textCell = cells[1];
-    const yStart = y;
-    let imgH = 0;
-    let textX = MARGIN;
-
     if (imageNode?.attrs?.src) {
       try {
         const src = String(imageNode.attrs.src);
-        const abs = src.startsWith("http") ? src : window.location.origin + src;
+        const abs = src.startsWith("http")
+          ? src
+          : window.location.origin + src;
         const { dataUrl, w, h } = await loadImageAsDataUrl(abs);
-        const displayW = 90;
-        const displayH = (h / w) * displayW;
+        const displayH = (h / w) * logoW;
         imgH = displayH;
-        doc.addImage(dataUrl, "PNG", MARGIN, yStart, displayW, displayH);
-        textX = MARGIN + displayW + 14;
+        doc.addImage(dataUrl, "PNG", MARGIN, yStart, logoW, displayH);
       } catch {
-        textX = MARGIN;
+        /* abaikan bila logo gagal dimuat */
       }
     }
 
-    const textWidth = pageWidth - MARGIN - textX;
-    if (imgH > 0) {
-      const nameSizePx =
-        runSizePx(
-          textCell?.content?.[0]?.content?.[0]?.marks,
-        ) ?? HEADING_PX[5];
-      const nameLineHeight = nameSizePx * PX_TO_PT * LINE_HEIGHT;
-      y = yStart + imgH / 2 - nameLineHeight / 2 + nameSizePx * PX_TO_PT * 0.8;
+    // nama singkat di bawah logo (sel kiri)
+    const nameBelow = logoCell?.content?.find(function isParagraph(child) {
+      return child.type === "paragraph";
+    });
+    if (nameBelow) {
+      y = yStart + imgH + 16;
+      renderTextBlock(nameBelow, {
+        defaultSizePx: 18,
+        forceBold: true,
+        family: "times",
+        x: MARGIN,
+        width: logoW,
+      });
     }
-    (textCell?.content ?? []).forEach(function renderTextCell(child) {
-      if (child.type === "heading") {
-        renderTextBlock(child, {
-          defaultSizePx: HEADING_PX[Number(child.attrs?.level ?? 5)] ?? DEFAULT_PX,
-          forceBold: true,
-          x: textX,
-          width: textWidth,
-        });
-      } else if (child.type === "paragraph") {
-        renderTextBlock(child, {
-          defaultSizePx: DEFAULT_PX,
-          x: textX,
-          width: textWidth,
-        });
-      }
+    const leftEnd = y;
+
+    // perusahaan + alamat di sel kanan
+    const textX = MARGIN + logoW + 14;
+    const textWidth = pageWidth - MARGIN - textX;
+    const nameNode = companyCell?.content?.find(function isHeading(child) {
+      return child.type === "heading";
+    });
+    const addrNode = companyCell?.content?.find(function isParagraph(child) {
+      return child.type === "paragraph";
     });
 
-    if (yStart + imgH > y) y = yStart + imgH;
-    y += 6;
+    y = yStart;
+    if (nameNode) {
+      renderTextBlock(nameNode, {
+        defaultSizePx: 20,
+        forceBold: true,
+        family: "times",
+        x: textX,
+        width: textWidth,
+      });
+    }
+    y += 4;
+    if (addrNode) {
+      renderTextBlock(addrNode, {
+        defaultSizePx: 14,
+        x: textX,
+        width: textWidth,
+      });
+    }
+    const rightEnd = y;
+
+    y = Math.max(leftEnd, rightEnd) + 4;
   }
 
   function renderLetterheadInfo(node: JSONContent): void {
@@ -290,6 +323,32 @@ export async function buildEditorPdf(
       y += lineHeight;
     });
     y += 4;
+  }
+
+  function renderLetterheadSignature(node: JSONContent): void {
+    const rows = node.content ?? [];
+    if (rows.length === 0) return;
+    const cells = rows[0].content ?? [];
+    const signCell = cells[cells.length - 1];
+    const blockWidth = (pageWidth - MARGIN * 2) / 2;
+    const startX = MARGIN + (pageWidth - MARGIN * 2) / 2;
+    (signCell?.content ?? []).forEach(function renderSignLine(child) {
+      if (child.type === "paragraph") {
+        const text = plainText(child);
+        const lineHeight = DEFAULT_PX * PX_TO_PT * LINE_HEIGHT;
+        if (text) {
+          applyFont(DEFAULT_PX, false, false);
+          ensureSpace(lineHeight);
+          doc.setTextColor(0, 0, 0);
+          doc.text(text, startX + blockWidth / 2, y, { align: "center" });
+          y += lineHeight;
+        } else {
+          ensureSpace(lineHeight);
+          y += lineHeight;
+        }
+      }
+    });
+    y += 6;
   }
 
   function measureGridTableWidth(node: JSONContent): number {
@@ -329,6 +388,22 @@ export async function buildEditorPdf(
     return { left: MARGIN, right: MARGIN };
   }
 
+  function cellHalign(cell: JSONContent): "left" | "center" | "right" {
+    const paragraph = (cell.content ?? []).find(function isParagraph(child) {
+      return child.type === "paragraph";
+    });
+    const align = paragraph?.attrs?.textAlign as string | undefined;
+    if (align === "center" || align === "right") return align;
+    return "left";
+  }
+
+  function toAutoTableCell(cell: JSONContent) {
+    return {
+      content: plainText(cell),
+      styles: { halign: cellHalign(cell) },
+    };
+  }
+
   function renderGridTable(node: JSONContent): void {
     const rows = node.content ?? [];
     if (rows.length === 0) return;
@@ -337,11 +412,11 @@ export async function buildEditorPdf(
       return cell.type === "tableHeader";
     });
     const head = isHeaderFirst
-      ? [firstRowCells.map(plainText)]
+      ? [firstRowCells.map(toAutoTableCell)]
       : undefined;
     const bodyRows = isHeaderFirst ? rows.slice(1) : rows;
     const body = bodyRows.map(function toBodyRow(row) {
-      return (row.content ?? []).map(plainText);
+      return (row.content ?? []).map(toAutoTableCell);
     });
 
     const align = (node.attrs?.align as string) ?? "left";
@@ -516,11 +591,11 @@ export async function buildEditorPdf(
     y = startY + blockHeight + 10;
   }
 
-  async function renderNode(node: JSONContent): Promise<void> {
+  async function renderNode(
+    node: JSONContent,
+    nextNode?: JSONContent,
+  ): Promise<void> {
     switch (node.type) {
-      case "heading":
-        renderHeading(node);
-        break;
       case "paragraph":
         renderTextBlock(node, { defaultSizePx: DEFAULT_PX });
         break;
@@ -550,12 +625,22 @@ export async function buildEditorPdf(
         });
         y += 4;
         break;
+      case "heading":
+        if (nextNode?.type === "table") {
+          y += 10;
+          renderHeading(node, "helvetica", -6);
+        } else {
+          renderHeading(node, "helvetica", 12);
+        }
+        break;
       case "table": {
         const cls = String(node.attrs?.class ?? "");
         if (cls === "letterhead-header") {
           await renderLetterheadHeader(node);
         } else if (cls === "letterhead-info") {
           renderLetterheadInfo(node);
+        } else if (cls === "letterhead-signature") {
+          renderLetterheadSignature(node);
         } else {
           renderGridTable(node);
         }
@@ -567,8 +652,8 @@ export async function buildEditorPdf(
   }
 
   const nodes = content?.content ?? [];
-  for (const node of nodes) {
-    await renderNode(node);
+  for (let i = 0; i < nodes.length; i += 1) {
+    await renderNode(nodes[i], nodes[i + 1]);
   }
 
   return doc;
