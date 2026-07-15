@@ -187,7 +187,7 @@ body {
 
 /* Tiptap: ukuran font default isi surat */
 .ProseMirror {
-  font-size: 14.7px;
+  font-size: 20px;
 }
 
 /* Tiptap: ukuran heading H1-H5 */
@@ -241,35 +241,69 @@ body {
 .ProseMirror hr {
   border: none;
   border-top: 2px solid var(--foreground);
-  margin: 0.75rem 0;
+  margin: 0.4rem 0;
+}
+
+.ProseMirror hr + hr {
+  margin-top: 0;
+}
+
+.ProseMirror hr + hr + p {
+  margin-top: 1.75rem;
 }
 
 /* Tiptap: header kop surat (logo kiri + nama/alamat) */
 .ProseMirror .letterhead-header {
   width: 100%;
-  margin: 0 0 0.25rem 0;
-  table-layout: auto;
+  margin: 0 0 4px 0;
+  table-layout: fixed;
+  border-collapse: collapse;
 }
 
 .ProseMirror .letterhead-header td,
 .ProseMirror .letterhead-header th {
   border: none;
-  padding: 0.25rem 0.5rem;
-  vertical-align: middle;
+  vertical-align: top;
 }
 
 .ProseMirror .letterhead-header td:first-child {
-  width: 170px;
+  width: 42%;
+  padding: 0 12px 0 0;
   text-align: center;
-  vertical-align: middle;
 }
 
-.ProseMirror .letterhead-header img {
+.ProseMirror .letterhead-header td:last-child {
+  width: 58%;
+  padding: 0 0 0 12px;
+  text-align: center;
+}
+
+.ProseMirror .letterhead-header img.letterhead-logo {
   display: block;
-  max-height: 140px;
+  width: 200px;
   max-width: 100%;
-  width: auto;
+  height: auto;
   margin: 0 auto;
+}
+
+.ProseMirror .letterhead-header .letterhead-logo-cell p {
+  font-family: "Georgia", "Palatino Linotype", "Book Antiqua", serif;
+  margin-top: 6px;
+}
+
+/* Kop surat: nama perusahaan pakai font serif elegan */
+.ProseMirror .letterhead-header td:last-child h5 {
+  font-family: "Georgia", "Palatino Linotype", "Book Antiqua", serif;
+  letter-spacing: 0.5px;
+  font-size: 20px;
+  margin: 0 0 4px 0;
+}
+
+.ProseMirror .letterhead-header td:last-child p {
+  font-size: 14px;
+  line-height: 1.35;
+  margin: 2px 0;
+  text-align: center;
 }
 
 /* Tiptap: tabel info kop surat (tanpa border, ':' sejajar) */

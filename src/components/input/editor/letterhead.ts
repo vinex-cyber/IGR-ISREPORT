@@ -14,6 +14,7 @@ export function buildLetterheadContent(branch?: string): JSONContent[] {
     text: string,
     align?: "left" | "center" | "right",
     fontSize: string = LETTERHEAD_FONT_SIZE,
+    bold = false,
   ): JSONContent {
     const node: JSONContent = { type: "paragraph" };
     if (align) node.attrs = { textAlign: align };
@@ -31,6 +32,7 @@ export function buildLetterheadContent(branch?: string): JSONContent[] {
                 type: "textStyle",
                 attrs: { fontSize },
               },
+              ...(bold ? [{ type: "bold" }] : []),
             ],
           });
       });
@@ -47,6 +49,12 @@ export function buildLetterheadContent(branch?: string): JSONContent[] {
       content: [infoCell(label), infoCell(":"), infoCell(value)],
     };
   }
+  function imageParagraph(src: string, alt: string): JSONContent {
+    return {
+      type: "image",
+      attrs: { src, alt, class: "letterhead-logo" },
+    };
+  }
   return [
     {
       type: "table",
@@ -57,47 +65,53 @@ export function buildLetterheadContent(branch?: string): JSONContent[] {
           content: [
             {
               type: "tableCell",
-              content: [{ type: "image", attrs: { src: logo, alt: info.name } }],
+              attrs: { class: "letterhead-logo-cell" },
+              content: [
+                imageParagraph(logo, info.name),
+                paragraph(info.name, "center", "18px", true),
+              ],
             },
             {
               type: "tableCell",
+              attrs: { class: "letterhead-company-cell" },
               content: [
                 {
                   type: "heading",
-                  attrs: { level: 5, textAlign: "left" },
+                  attrs: { level: 5, textAlign: "center" },
                   content: [
                     {
                       type: "text",
-                      text: info.name,
+                      text: info.perusahaan,
                       marks: [
                         {
                           type: "textStyle",
-                          attrs: { fontSize: "24px", color: "#2563eb" },
+                          attrs: { fontSize: "20px", color: "#2563eb" },
                         },
                         { type: "bold" },
                       ],
                     },
                   ],
                 },
+                paragraph(info.address, "center", "13px"),
               ],
             },
           ],
         },
       ],
     },
-    paragraph(info.address, "left", "16px"),
     {
       type: "horizontalRule",
-      attrs: { thickness: "medium", color: "#2563eb" },
+      attrs: { thickness: "thick", color: "#000000" },
+    },
+    {
+      type: "horizontalRule",
+      attrs: { thickness: "thin", color: "#000000" },
     },
     paragraph(`Jakarta, ${tanggal}`, "right"),
     {
       type: "table",
       attrs: { class: "letterhead-info" },
-      content: [
-        infoRow("Lampiran", ""),
-        infoRow("Perihal", "Penawaran Harga"),
-      ],
+      content: [infoRow("Lampiran", ""), infoRow("Perihal", "")],
     },
     paragraph(""),
     paragraph("Kepada Yth."),

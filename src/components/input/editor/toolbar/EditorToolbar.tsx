@@ -88,262 +88,264 @@ export function EditorToolbar({
         isTable: editor.isActive("table"),
         tableAlign: editor.isActive("table") ? getTableAlign(editor) : null,
         isCodeBlock: editor.isActive("codeBlock"),
-        codeLanguage: (editor.getAttributes("codeBlock").language as string) ?? "",
+        codeLanguage:
+          (editor.getAttributes("codeBlock").language as string) ?? "",
       };
     },
   });
 
   const [fontSizeDraft, setFontSizeDraft] = React.useState(state.fontSize);
-  React.useEffect(function syncFontSizeDraft() {
-    setFontSizeDraft(state.fontSize);
-  }, [state.fontSize]);
+  React.useEffect(
+    function syncFontSizeDraft() {
+      setFontSizeDraft(state.fontSize);
+    },
+    [state.fontSize],
+  );
 
   return (
     <div
       className={`sticky z-30 mx-auto w-full max-w-full rounded-2xl border border-input bg-background p-1.5 shadow-lg top-[${toolbarOffset}px]`}>
       <div className="flex w-full max-w-full flex-nowrap items-center gap-1 overflow-x-auto">
-      <select
-        aria-label="Jenis teks"
-        className="h-8 rounded-md border border-input bg-background px-2 text-sm outline-none focus:ring-1 focus:ring-ring"
-        value={state.blockType}
-        onChange={function changeBlockType(e) {
-          setBlockType(editor, e.target.value);
-        }}>
-        <option value="p">Paragraf</option>
-        <option value="h1">Judul 1</option>
-        <option value="h2">Judul 2</option>
-        <option value="h3">Judul 3</option>
-        <option value="h4">Judul 4</option>
-        <option value="h5">Judul 5</option>
-      </select>
-      <input
-        type="number"
-        min={8}
-        max={96}
-        step={0.1}
-        placeholder="Ukuran"
-        aria-label="Ukuran font (px)"
-        className="h-8 w-20 rounded-md border border-input bg-background px-2 text-sm outline-none focus:ring-1 focus:ring-ring"
-        value={fontSizeDraft}
-        onChange={function changeFontSizeDraft(e) {
-          setFontSizeDraft(e.target.value);
-        }}
-        onBlur={function applyFontSize() {
-          const val = fontSizeDraft;
-          if (!val) {
-            editor.chain().focus().unsetFontSize().run();
-            return;
-          }
-          editor.chain().focus().setFontSize(`${val}px`).run();
-        }}
-        onKeyDown={function commitFontSize(e) {
-          if (e.key === "Enter") {
-            (e.target as HTMLInputElement).blur();
-          }
-        }}
-      />
-      <div className="mx-1 h-5 w-px bg-border" />
-      <ToolbarButton
-        label="Tebal"
-        active={state.isBold}
-        onClick={function toggleBold() {
-          editor.chain().focus().toggleBold().run();
-        }}>
-        <Bold />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Miring"
-        active={state.isItalic}
-        onClick={function toggleItalic() {
-          editor.chain().focus().toggleItalic().run();
-        }}>
-        <Italic />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Coret"
-        active={state.isStrike}
-        onClick={function toggleStrike() {
-          editor.chain().focus().toggleStrike().run();
-        }}>
-        <Strikethrough />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Daftar tidak berurut"
-        active={state.isBulletList}
-        onClick={function toggleBulletList() {
-          editor.chain().focus().toggleBulletList().run();
-        }}>
-        <List />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Daftar berurut"
-        active={state.isOrderedList}
-        onClick={function toggleOrderedList() {
-          editor.chain().focus().toggleOrderedList().run();
-        }}>
-        <ListOrdered />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Kutipan"
-        active={state.isBlockquote}
-        onClick={function toggleBlockquote() {
-          editor.chain().focus().toggleBlockquote().run();
-        }}>
-        <Quote />
-      </ToolbarButton>
-      <div className="mx-1 h-5 w-px bg-border" />
-      <ToolbarButton
-        label="Rata kiri"
-        active={state.alignLeft}
-        onClick={function alignLeft() {
-          editor.chain().focus().setTextAlign("left").run();
-        }}>
-        <AlignLeft />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Rata tengah"
-        active={state.alignCenter}
-        onClick={function alignCenter() {
-          editor.chain().focus().setTextAlign("center").run();
-        }}>
-        <AlignCenter />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Rata kanan"
-        active={state.alignRight}
-        onClick={function alignRight() {
-          editor.chain().focus().setTextAlign("right").run();
-        }}>
-        <AlignRight />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Rata justify"
-        active={state.alignJustify}
-        onClick={function alignJustify() {
-          editor.chain().focus().setTextAlign("justify").run();
-        }}>
-        <AlignJustify />
-      </ToolbarButton>
-      <div className="mx-1 h-5 w-px bg-border" />
-      <ToolbarButton
-        label="Sisip tabel"
-        onClick={function insertTable() {
-          editor
-            .chain()
-            .focus()
-            .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-            .run();
-        }}>
-        <Table />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Sisip tabel dari HTML"
-        onClick={function insertHtmlTable() {
-          editor
-            .chain()
-            .focus()
-            .insertContent(
-              `<table><tbody><tr><th>Kolom 1</th><th>Kolom 2</th></tr><tr><td>Sel 1</td><td>Sel 2</td></tr><tr><td>Sel 3</td><td>Sel 4</td></tr></tbody></table>`,
-            )
-            .run();
-        }}>
-        <Code />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Blok kode"
-        active={state.isCodeBlock}
-        onClick={function toggleCodeBlock() {
-          editor.chain().focus().toggleCodeBlock().run();
-        }}>
-        <CodeXml />
-      </ToolbarButton>
-      {state.isCodeBlock && (
         <select
-          aria-label="Bahasa kode"
+          aria-label="Jenis teks"
           className="h-8 rounded-md border border-input bg-background px-2 text-sm outline-none focus:ring-1 focus:ring-ring"
-          value={state.codeLanguage}
-          onChange={function changeCodeLanguage(e) {
-            const lang = e.target.value || "plaintext";
+          value={state.blockType}
+          onChange={function changeBlockType(e) {
+            setBlockType(editor, e.target.value);
+          }}>
+          <option value="p">Paragraf</option>
+          <option value="h1">Judul 1</option>
+          <option value="h2">Judul 2</option>
+          <option value="h3">Judul 3</option>
+          <option value="h4">Judul 4</option>
+          <option value="h5">Judul 5</option>
+        </select>
+        <input
+          type="number"
+          min={8}
+          max={96}
+          step={0.1}
+          placeholder="Ukuran"
+          aria-label="Ukuran font (px)"
+          className="h-8 w-20 rounded-md border border-input bg-background px-2 text-sm outline-none focus:ring-1 focus:ring-ring"
+          value={fontSizeDraft}
+          onChange={function changeFontSizeDraft(e) {
+            setFontSizeDraft(e.target.value);
+          }}
+          onBlur={function applyFontSize() {
+            const val = fontSizeDraft;
+            if (!val) {
+              editor.chain().focus().unsetFontSize().run();
+              return;
+            }
+            editor.chain().focus().setFontSize(`${val}px`).run();
+          }}
+          onKeyDown={function commitFontSize(e) {
+            if (e.key === "Enter") {
+              (e.target as HTMLInputElement).blur();
+            }
+          }}
+        />
+        <div className="mx-1 h-5 w-px bg-border" />
+        <ToolbarButton
+          label="Tebal"
+          active={state.isBold}
+          onClick={function toggleBold() {
+            editor.chain().focus().toggleBold().run();
+          }}>
+          <Bold />
+        </ToolbarButton>
+        <ToolbarButton
+          label="Miring"
+          active={state.isItalic}
+          onClick={function toggleItalic() {
+            editor.chain().focus().toggleItalic().run();
+          }}>
+          <Italic />
+        </ToolbarButton>
+        <ToolbarButton
+          label="Coret"
+          active={state.isStrike}
+          onClick={function toggleStrike() {
+            editor.chain().focus().toggleStrike().run();
+          }}>
+          <Strikethrough />
+        </ToolbarButton>
+        <ToolbarButton
+          label="Daftar tidak berurut"
+          active={state.isBulletList}
+          onClick={function toggleBulletList() {
+            editor.chain().focus().toggleBulletList().run();
+          }}>
+          <List />
+        </ToolbarButton>
+        <ToolbarButton
+          label="Daftar berurut"
+          active={state.isOrderedList}
+          onClick={function toggleOrderedList() {
+            editor.chain().focus().toggleOrderedList().run();
+          }}>
+          <ListOrdered />
+        </ToolbarButton>
+        <ToolbarButton
+          label="Kutipan"
+          active={state.isBlockquote}
+          onClick={function toggleBlockquote() {
+            editor.chain().focus().toggleBlockquote().run();
+          }}>
+          <Quote />
+        </ToolbarButton>
+        <div className="mx-1 h-5 w-px bg-border" />
+        <ToolbarButton
+          label="Rata kiri"
+          active={state.alignLeft}
+          onClick={function alignLeft() {
+            editor.chain().focus().setTextAlign("left").run();
+          }}>
+          <AlignLeft />
+        </ToolbarButton>
+        <ToolbarButton
+          label="Rata tengah"
+          active={state.alignCenter}
+          onClick={function alignCenter() {
+            editor.chain().focus().setTextAlign("center").run();
+          }}>
+          <AlignCenter />
+        </ToolbarButton>
+        <ToolbarButton
+          label="Rata kanan"
+          active={state.alignRight}
+          onClick={function alignRight() {
+            editor.chain().focus().setTextAlign("right").run();
+          }}>
+          <AlignRight />
+        </ToolbarButton>
+        <ToolbarButton
+          label="Rata justify"
+          active={state.alignJustify}
+          onClick={function alignJustify() {
+            editor.chain().focus().setTextAlign("justify").run();
+          }}>
+          <AlignJustify />
+        </ToolbarButton>
+        <div className="mx-1 h-5 w-px bg-border" />
+        <ToolbarButton
+          label="Sisip tabel"
+          onClick={function insertTable() {
             editor
               .chain()
               .focus()
-              .updateAttributes("codeBlock", { language: lang })
+              .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
               .run();
           }}>
-          {CODE_LANGUAGES.map(function renderLanguage(lang) {
-            return (
-              <option key={lang.value} value={lang.value}>
-                {lang.label}
-              </option>
-            );
-          })}
-        </select>
-      )}
-      {state.isTable && (
-        <>
-          <div className="mx-1 h-5 w-px bg-border" />
-          <span className="px-1 text-xs font-medium text-muted-foreground">
-            Tabel
-          </span>
-          <ToolbarButton
-            label="Posisi tabel: kiri halaman"
-            active={state.tableAlign === "left"}
-            onClick={function tableAlignLeft() {
-              applyTableAlign(editor, "left");
+          <Table />
+        </ToolbarButton>
+        <ToolbarButton
+          label="Sisip tabel dari HTML"
+          onClick={function insertHtmlTable() {
+            editor
+              .chain()
+              .focus()
+              .insertContent(
+                `<table><tbody><tr><th>Kolom 1</th><th>Kolom 2</th></tr><tr><td>Sel 1</td><td>Sel 2</td></tr><tr><td>Sel 3</td><td>Sel 4</td></tr></tbody></table>`,
+              )
+              .run();
+          }}>
+          <Code />
+        </ToolbarButton>
+        <ToolbarButton
+          label="Blok kode"
+          active={state.isCodeBlock}
+          onClick={function toggleCodeBlock() {
+            editor.chain().focus().toggleCodeBlock().run();
+          }}>
+          <CodeXml />
+        </ToolbarButton>
+        {state.isCodeBlock && (
+          <select
+            aria-label="Bahasa kode"
+            className="h-8 rounded-md border border-input bg-background px-2 text-sm outline-none focus:ring-1 focus:ring-ring"
+            value={state.codeLanguage}
+            onChange={function changeCodeLanguage(e) {
+              const lang = e.target.value || "plaintext";
+              editor
+                .chain()
+                .focus()
+                .updateAttributes("codeBlock", { language: lang })
+                .run();
             }}>
-            <AlignHorizontalJustifyStart />
-          </ToolbarButton>
-          <ToolbarButton
-            label="Posisi tabel: tengah halaman"
-            active={state.tableAlign === "center"}
-            onClick={function tableAlignCenter() {
-              applyTableAlign(editor, "center");
-            }}>
-            <AlignHorizontalJustifyCenter />
-          </ToolbarButton>
-          <ToolbarButton
-            label="Posisi tabel: kanan halaman"
-            active={state.tableAlign === "right"}
-            onClick={function tableAlignRight() {
-              applyTableAlign(editor, "right");
-            }}>
-            <AlignHorizontalJustifyEnd />
-          </ToolbarButton>
-          <TableToolbarMenu editor={editor} />
-        </>
-      )}
-      <div className="mx-1 h-5 w-px bg-border" />
-      <ToolbarButton
-        label="Sisipkan kop surat"
-        onClick={function insertLetterhead() {
-          editor
-            .chain()
-            .focus()
-            .insertContentAt(0, buildLetterheadContent(branch))
-            .run();
-        }}>
-        <FileText />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Sisipkan produk (PLU)"
-        onClick={onRequestPlu}>
-        <PackageSearch />
-      </ToolbarButton>
-      <div className="mx-1 h-5 w-px bg-border" />
-      <ToolbarButton
-        label="Urungkan"
-        onClick={function undo() {
-          editor.chain().focus().undo().run();
-        }}>
-        <Undo />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Ulangi"
-        onClick={function redo() {
-          editor.chain().focus().redo().run();
-        }}>
-        <Redo />
-      </ToolbarButton>
+            {CODE_LANGUAGES.map(function renderLanguage(lang) {
+              return (
+                <option key={lang.value} value={lang.value}>
+                  {lang.label}
+                </option>
+              );
+            })}
+          </select>
+        )}
+        {state.isTable && (
+          <>
+            <div className="mx-1 h-5 w-px bg-border" />
+            <span className="px-1 text-xs font-medium text-muted-foreground">
+              Tabel
+            </span>
+            <ToolbarButton
+              label="Posisi tabel: kiri halaman"
+              active={state.tableAlign === "left"}
+              onClick={function tableAlignLeft() {
+                applyTableAlign(editor, "left");
+              }}>
+              <AlignHorizontalJustifyStart />
+            </ToolbarButton>
+            <ToolbarButton
+              label="Posisi tabel: tengah halaman"
+              active={state.tableAlign === "center"}
+              onClick={function tableAlignCenter() {
+                applyTableAlign(editor, "center");
+              }}>
+              <AlignHorizontalJustifyCenter />
+            </ToolbarButton>
+            <ToolbarButton
+              label="Posisi tabel: kanan halaman"
+              active={state.tableAlign === "right"}
+              onClick={function tableAlignRight() {
+                applyTableAlign(editor, "right");
+              }}>
+              <AlignHorizontalJustifyEnd />
+            </ToolbarButton>
+            <TableToolbarMenu editor={editor} />
+          </>
+        )}
+        <div className="mx-1 h-5 w-px bg-border" />
+        <ToolbarButton
+          label="Sisipkan kop surat"
+          onClick={function insertLetterhead() {
+            editor
+              .chain()
+              .focus()
+              .insertContentAt(0, buildLetterheadContent(branch))
+              .run();
+          }}>
+          <FileText />
+        </ToolbarButton>
+        <ToolbarButton label="Sisipkan produk (PLU)" onClick={onRequestPlu}>
+          <PackageSearch />
+        </ToolbarButton>
+        <div className="mx-1 h-5 w-px bg-border" />
+        <ToolbarButton
+          label="Urungkan"
+          onClick={function undo() {
+            editor.chain().focus().undo().run();
+          }}>
+          <Undo />
+        </ToolbarButton>
+        <ToolbarButton
+          label="Ulangi"
+          onClick={function redo() {
+            editor.chain().focus().redo().run();
+          }}>
+          <Redo />
+        </ToolbarButton>
       </div>
     </div>
   );
