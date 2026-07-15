@@ -990,9 +990,10 @@ import { EditorTiptap } from "@/components/input/EditorTiptapDynamic";
 - **Toolbar persisten** (`editor/toolbar/EditorToolbar.tsx`): paragraf/judul 1–5, ukuran font (px),
   bold/italic/strike, list, kutipan, align teks, align tabel (kiri/tengah/kanan),
   sisip kop surat, sisip footer, sisip PLU, undo/redo.
-- **Sisip footer** (`buildFooterContent` di `editor/letterhead.ts`): catatan (paragraf PPN 11%),
+- **Sisip footer** (`buildFooterContent` di `editor/footer.ts`): catatan (paragraf PPN 11%),
   paragraf penutup, dan tabel tanda tangan (rata kanan via `align: "right"`, class
-  `letterhead-signature`).
+  `letterhead-signature`). Helper `buildLetterheadParagraph` dipisah ke
+  `editor/letterheadHelpers.ts` dan dipakai bersama oleh `letterhead.ts` & `footer.ts`.
 - **Bubble toolbar** (`editor/toolbar/EditorBubbleMenu.tsx`): muncul saat teks diblok
   (paragraf/judul, ukuran font, bold/italic/strike, align).
 - **Slash command** `/`: paragraf, heading, list, kutipan, garis pemisah (tipis/sedang/tebal),

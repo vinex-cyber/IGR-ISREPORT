@@ -66,6 +66,8 @@ src/components/input/
     │   └── horizontalRule.ts     # ThickHorizontalRule (thin/medium/thick + color)
     ├── plu/pluTableBuilder.ts    # createPluTable, addPluToExistingTable, renumberPluTable
     ├── letterhead.ts             # buildLetterheadContent(branch)
+    ├── footer.ts                 # buildFooterContent (catatan, penutup, tanda tangan)
+    ├── letterheadHelpers.ts      # buildLetterheadParagraph (helper dipakai letterhead & footer)
     ├── PluDescriptionModal.tsx
     ├── PromoInfoModal.tsx        # orchestrator modal Info Promo (infoAction di lookup PLU)
     ├── promoInfo/                # PromoMdSection, CashbackMemberSection, CashbackSection, GiftSection, promoInfoShared
