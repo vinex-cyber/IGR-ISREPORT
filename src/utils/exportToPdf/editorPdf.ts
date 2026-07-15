@@ -388,6 +388,22 @@ export async function buildEditorPdf(
     return { left: MARGIN, right: MARGIN };
   }
 
+  function cellHalign(cell: JSONContent): "left" | "center" | "right" {
+    const paragraph = (cell.content ?? []).find(function isParagraph(child) {
+      return child.type === "paragraph";
+    });
+    const align = paragraph?.attrs?.textAlign as string | undefined;
+    if (align === "center" || align === "right") return align;
+    return "left";
+  }
+
+  function toAutoTableCell(cell: JSONContent) {
+    return {
+      content: plainText(cell),
+      styles: { halign: cellHalign(cell) },
+    };
+  }
+
   function renderGridTable(node: JSONContent): void {
     const rows = node.content ?? [];
     if (rows.length === 0) return;
@@ -396,11 +412,11 @@ export async function buildEditorPdf(
       return cell.type === "tableHeader";
     });
     const head = isHeaderFirst
-      ? [firstRowCells.map(plainText)]
+      ? [firstRowCells.map(toAutoTableCell)]
       : undefined;
     const bodyRows = isHeaderFirst ? rows.slice(1) : rows;
     const body = bodyRows.map(function toBodyRow(row) {
-      return (row.content ?? []).map(plainText);
+      return (row.content ?? []).map(toAutoTableCell);
     });
 
     const align = (node.attrs?.align as string) ?? "left";

@@ -989,7 +989,10 @@ import { EditorTiptap } from "@/components/input/EditorTiptapDynamic";
 ### Fitur
 - **Toolbar persisten** (`editor/toolbar/EditorToolbar.tsx`): paragraf/judul 1–5, ukuran font (px),
   bold/italic/strike, list, kutipan, align teks, align tabel (kiri/tengah/kanan),
-  sisip kop surat, sisip PLU, undo/redo.
+  sisip kop surat, sisip footer, sisip PLU, undo/redo.
+- **Sisip footer** (`buildFooterContent` di `editor/letterhead.ts`): catatan (paragraf PPN 11%),
+  paragraf penutup, dan tabel tanda tangan (rata kanan via `align: "right"`, class
+  `letterhead-signature`).
 - **Bubble toolbar** (`editor/toolbar/EditorBubbleMenu.tsx`): muncul saat teks diblok
   (paragraf/judul, ukuran font, bold/italic/strike, align).
 - **Slash command** `/`: paragraf, heading, list, kutipan, garis pemisah (tipis/sedang/tebal),
@@ -1005,6 +1008,11 @@ import { EditorTiptap } from "@/components/input/EditorTiptapDynamic";
   `data-setting-harga` (filter `prdcd`).
 - **Export PDF menghormati align tabel**: tabel rata kiri/tengah/kanan di editor dipertahankan
   di PDF (diukur lebarnya lalu di-center/right), bukan selalu full-width.
+- **Export PDF menghormati align teks per sel tabel**: `cellHalign`/`toAutoTableCell` di
+  `editorPdf.ts` membaca `textAlign` paragraf tiap sel dan meneruskannya ke `autoTable`
+  (`styles.halign`), sehingga align teks di dalam sel ikut di PDF.
+- **Deskripsi tabel PLU rapat**: heading deskripsi yang langsung diikuti tabel diberi
+  margin-top kecil dan gap bawah minim di PDF agar menempel ke tabelnya.
 
 ### Konvensi Penting
 - Class editor di DOM adalah `.ProseMirror` (bukan `.tiptap`).
