@@ -20,6 +20,7 @@ import {
   AlignHorizontalJustifyEnd,
   PackageSearch,
   FileText,
+  FileSignature,
   Table,
   Code,
   CodeXml,
@@ -33,7 +34,7 @@ import {
 } from "./blockHelpers";
 import { getTableAlign, applyTableAlign } from "../extensions/pluTable";
 import { TableToolbarMenu } from "./TableToolbarMenu";
-import { buildLetterheadContent } from "../letterhead";
+import { buildLetterheadContent, buildFooterContent } from "../letterhead";
 
 const CODE_LANGUAGES: { value: string; label: string }[] = [
   { value: "plaintext", label: "Teks biasa" },
@@ -327,6 +328,17 @@ export function EditorToolbar({
               .run();
           }}>
           <FileText />
+        </ToolbarButton>
+        <ToolbarButton
+          label="Sisipkan footer"
+          onClick={function insertFooter() {
+            editor
+              .chain()
+              .focus()
+              .insertContentAt(editor.state.doc.content.size, buildFooterContent())
+              .run();
+          }}>
+          <FileSignature />
         </ToolbarButton>
         <ToolbarButton label="Sisipkan produk (PLU)" onClick={onRequestPlu}>
           <PackageSearch />

@@ -324,6 +324,32 @@ export async function buildEditorPdf(
     y += 4;
   }
 
+  function renderLetterheadSignature(node: JSONContent): void {
+    const rows = node.content ?? [];
+    if (rows.length === 0) return;
+    const cells = rows[0].content ?? [];
+    const signCell = cells[cells.length - 1];
+    const blockWidth = (pageWidth - MARGIN * 2) / 2;
+    const startX = MARGIN + (pageWidth - MARGIN * 2) / 2;
+    (signCell?.content ?? []).forEach(function renderSignLine(child) {
+      if (child.type === "paragraph") {
+        const text = plainText(child);
+        const lineHeight = DEFAULT_PX * PX_TO_PT * LINE_HEIGHT;
+        if (text) {
+          applyFont(DEFAULT_PX, false, false);
+          ensureSpace(lineHeight);
+          doc.setTextColor(0, 0, 0);
+          doc.text(text, startX + blockWidth / 2, y, { align: "center" });
+          y += lineHeight;
+        } else {
+          ensureSpace(lineHeight);
+          y += lineHeight;
+        }
+      }
+    });
+    y += 6;
+  }
+
   function measureGridTableWidth(node: JSONContent): number {
     const rows = node.content ?? [];
     if (rows.length === 0) return 0;
@@ -588,6 +614,8 @@ export async function buildEditorPdf(
           await renderLetterheadHeader(node);
         } else if (cls === "letterhead-info") {
           renderLetterheadInfo(node);
+        } else if (cls === "letterhead-signature") {
+          renderLetterheadSignature(node);
         } else {
           renderGridTable(node);
         }

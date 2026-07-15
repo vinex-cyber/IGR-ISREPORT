@@ -122,3 +122,78 @@ export function buildLetterheadContent(branch?: string): JSONContent[] {
     paragraph(""),
   ];
 }
+
+export function buildFooterContent(): JSONContent[] {
+  function paragraph(
+    text: string,
+    align?: "left" | "center" | "right" | "justify",
+    fontSize: string = LETTERHEAD_FONT_SIZE,
+    bold = false,
+  ): JSONContent {
+    const node: JSONContent = { type: "paragraph" };
+    if (align) node.attrs = { textAlign: align };
+    if (text) {
+      const parts = text.split("\n");
+      const content: JSONContent[] = [];
+      parts.forEach(function appendPart(part, index) {
+        if (index > 0) content.push({ type: "hardBreak" });
+        if (part)
+          content.push({
+            type: "text",
+            text: part,
+            marks: [
+              { type: "textStyle", attrs: { fontSize } },
+              ...(bold ? [{ type: "bold" }] : []),
+            ],
+          });
+      });
+      node.content = content;
+    }
+    return node;
+  }
+  function listItem(text: string): JSONContent {
+    return { type: "listItem", content: [paragraph(text)] };
+  }
+  const catatan = [
+    "Harga sudah termasuk Pajak Pertambahan Nilai (PPN) 11%.",
+    "Penawaran ini berlaku sejak tanggal surat diterbitkan.",
+    "Penawaran dapat berubah sewaktu-waktu apabila terdapat perubahan harga dari pemasok.",
+  ];
+  return [
+    paragraph(""),
+    paragraph("Catatan :", "left", LETTERHEAD_FONT_SIZE, true),
+    {
+      type: "orderedList",
+      attrs: { start: 1 },
+      content: catatan.map(listItem),
+    },
+    paragraph(""),
+    paragraph(
+      "Demikian surat penawaran ini kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.",
+      "justify",
+    ),
+    paragraph(""),
+    {
+      type: "table",
+      attrs: { class: "letterhead-signature", align: "right" },
+      content: [
+        {
+          type: "tableRow",
+          content: [
+            { type: "tableCell", content: [paragraph("")] },
+            {
+              type: "tableCell",
+              content: [
+                paragraph("Hormat kami,", "center"),
+                paragraph(""),
+                paragraph(""),
+                paragraph(""),
+                paragraph("(Nama PIC)", "center", LETTERHEAD_FONT_SIZE, true),
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ];
+}
