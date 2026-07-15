@@ -111,15 +111,19 @@ export function buildLetterheadContent(branch?: string): JSONContent[] {
     {
       type: "table",
       attrs: { class: "letterhead-info" },
-      content: [infoRow("Lampiran", ""), infoRow("Perihal", "")],
+      content: [infoRow("Perihal", "Surat penawaran harga barang")],
     },
     paragraph(""),
     paragraph("Kepada Yth."),
     paragraph("Nama / Jabatan Penerima"),
     paragraph("di Tempat"),
     paragraph(""),
+    paragraph(""),
     paragraph("Dengan hormat,"),
     paragraph(""),
+    paragraph(
+      "Berikut kami sampaikan penawaran harga barang sebagai berikut :",
+    ),
   ];
 }
 
@@ -151,22 +155,13 @@ export function buildFooterContent(): JSONContent[] {
     }
     return node;
   }
-  function listItem(text: string): JSONContent {
-    return { type: "listItem", content: [paragraph(text)] };
-  }
-  const catatan = [
-    "Harga sudah termasuk Pajak Pertambahan Nilai (PPN) 11%.",
-    "Penawaran ini berlaku sejak tanggal surat diterbitkan.",
-    "Penawaran dapat berubah sewaktu-waktu apabila terdapat perubahan harga dari pemasok.",
-  ];
   return [
     paragraph(""),
     paragraph("Catatan :", "left", LETTERHEAD_FONT_SIZE, true),
-    {
-      type: "orderedList",
-      attrs: { start: 1 },
-      content: catatan.map(listItem),
-    },
+    paragraph(
+      "Harga yang tercantum dalam surat penawaran ini sudah termasuk Pajak Pertambahan Nilai (PPN) 11%, berlaku pada tanggal surat ini diterbitkan",
+      "justify",
+    ),
     paragraph(""),
     paragraph(
       "Demikian surat penawaran ini kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.",

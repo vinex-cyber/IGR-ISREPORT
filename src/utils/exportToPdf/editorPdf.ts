@@ -198,6 +198,7 @@ export async function buildEditorPdf(
   function renderHeading(
     node: JSONContent,
     family = "helvetica",
+    trailingGap = 12,
   ): void {
     const level = Number(node.attrs?.level ?? 1);
     renderTextBlock(node, {
@@ -205,7 +206,7 @@ export async function buildEditorPdf(
       forceBold: true,
       family,
     });
-    y += 12;
+    y += trailingGap;
   }
 
   function renderHorizontalRule(node: JSONContent): void {
@@ -574,7 +575,10 @@ export async function buildEditorPdf(
     y = startY + blockHeight + 10;
   }
 
-  async function renderNode(node: JSONContent): Promise<void> {
+  async function renderNode(
+    node: JSONContent,
+    nextNode?: JSONContent,
+  ): Promise<void> {
     switch (node.type) {
       case "paragraph":
         renderTextBlock(node, { defaultSizePx: DEFAULT_PX });
@@ -606,7 +610,12 @@ export async function buildEditorPdf(
         y += 4;
         break;
       case "heading":
-        renderHeading(node);
+        if (nextNode?.type === "table") {
+          y += 10;
+          renderHeading(node, "helvetica", -6);
+        } else {
+          renderHeading(node, "helvetica", 12);
+        }
         break;
       case "table": {
         const cls = String(node.attrs?.class ?? "");
@@ -627,8 +636,8 @@ export async function buildEditorPdf(
   }
 
   const nodes = content?.content ?? [];
-  for (const node of nodes) {
-    await renderNode(node);
+  for (let i = 0; i < nodes.length; i += 1) {
+    await renderNode(nodes[i], nodes[i + 1]);
   }
 
   return doc;
