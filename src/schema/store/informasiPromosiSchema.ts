@@ -15,3 +15,18 @@ export const InformasiPromosiSchema = z.object({
 });
 
 export type InformasiPromosiFilters = z.infer<typeof InformasiPromosiSchema>;
+
+export const TrendSalesDivisiSchema = z.object({
+  divisi: z
+    .string()
+    .optional()
+    .refine(
+      (v) => {
+        if (!v) return true;
+        return v.split(",").every((item) => /^[0-9]+$/.test(item.trim()));
+      },
+      { message: "Format kode divisi tidak valid" },
+    ),
+});
+
+export type TrendSalesDivisiFilters = z.infer<typeof TrendSalesDivisiSchema>;
