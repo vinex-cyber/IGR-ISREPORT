@@ -152,8 +152,7 @@ export function ChartTrendSalesDivisi({
 
   const cardTitle =
     title ?? (metric === "sales" ? "Sales per Divisi" : "Margin per Divisi");
-  const cardDescription =
-    description ?? "1 bar per bulan, warna berbeda per divisi";
+  const cardDescription = description ?? "1 bar per bulan";
 
   return (
     <ChartTooltipIndicatorLine
