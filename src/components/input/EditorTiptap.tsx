@@ -74,6 +74,11 @@ export function EditorTiptap({
     editor: Editor;
   } | null>(null);
 
+  const [pluRelated, setPluRelated] = React.useState<{
+    editor: Editor;
+    prdcd: string;
+  } | null>(null);
+
   const [pluChoice, setPluChoice] = React.useState<{
     editor: Editor;
     row: DaftarProdukRows;
@@ -94,6 +99,18 @@ export function EditorTiptap({
   }) {
     ctx.editor.chain().focus().deleteRange(ctx.range).run();
     setPluRequest({ editor: ctx.editor });
+  }, []);
+
+  const handleSelectFinalPlu = React.useCallback(function selectFinalPlu(
+    editor: Editor,
+    row: DaftarProdukRows,
+  ) {
+    const existing = findPluTable(editor);
+    if (existing) {
+      setPluChoice({ editor, row });
+    } else {
+      setPluDescription({ editor, row });
+    }
   }, []);
 
   const editor = useEditor({
@@ -164,17 +181,34 @@ export function EditorTiptap({
             setPluRequest(null);
           }}
           onSelect={function selectPlu(row) {
-            try {
-              const editor = pluRequest.editor;
-              const existing = findPluTable(editor);
-              if (existing) {
-                setPluChoice({ editor, row });
-              } else {
-                setPluDescription({ editor, row });
-              }
-            } finally {
-              setPluRequest(null);
-            }
+            const editor = pluRequest.editor;
+            setPluRequest(null);
+            setPluRelated({ editor, prdcd: String(row.prd_prdcd) });
+          }}
+          infoAction={{
+            label: "Info",
+            onInfo: function openPromoInfo(row) {
+              setPromoInfo({ prdcd: String(row.prd_prdcd) });
+            },
+          }}
+        />
+      )}
+
+      {pluRelated && (
+        <GenericLookupModal<DaftarProdukRows>
+          show={true}
+          title={`Pilih PLU Terkait (${pluRelated.prdcd})`}
+          endpoint={`/api/daftar-produk-terkait?prdcd=${encodeURIComponent(
+            pluRelated.prdcd,
+          )}`}
+          columns={daftarProdukColumns}
+          onClose={function closeRelatedModal() {
+            setPluRelated(null);
+          }}
+          onSelect={function selectRelatedPlu(row) {
+            const editor = pluRelated.editor;
+            setPluRelated(null);
+            handleSelectFinalPlu(editor, row);
           }}
           infoAction={{
             label: "Info",
