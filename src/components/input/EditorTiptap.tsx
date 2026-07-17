@@ -51,6 +51,7 @@ import { PluQtyModal } from "./editor/PluQtyModal";
 import { EditorToolbar } from "./editor/toolbar/EditorToolbar";
 import { EditorBubbleMenu } from "./editor/toolbar/EditorBubbleMenu";
 import { PromoInfoModal } from "./editor/PromoInfoModal";
+import { formatPlu } from "@/utils/formatPlu";
 
 export interface EditorTiptapProps {
   value?: JSONContent | null;
@@ -197,7 +198,7 @@ export function EditorTiptap({
           infoAction={{
             label: "Info",
             onInfo: function openPromoInfo(row) {
-              setPromoInfo({ prdcd: String(row.prd_prdcd) });
+              setPromoInfo({ prdcd: formatPlu(String(row.prd_prdcd)) });
             },
           }}
         />
@@ -222,7 +223,7 @@ export function EditorTiptap({
           infoAction={{
             label: "Info",
             onInfo: function openPromoInfo(row) {
-              setPromoInfo({ prdcd: String(row.prd_prdcd) });
+              setPromoInfo({ prdcd: formatPlu(String(row.prd_prdcd)) });
             },
           }}
         />
