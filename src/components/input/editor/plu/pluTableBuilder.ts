@@ -11,6 +11,8 @@ import { formatNumber } from "@/utils/formatNumber";
 import { findPluTable } from "../extensions/pluTable";
 
 const PLU_TABLE_FONT_SIZE = "10.4px";
+const QTY_LABEL = "Qty";
+const TOTAL_LABEL = "Total Harga";
 
 function pluText(text: string, fontSize: string = PLU_TABLE_FONT_SIZE): JSONContent {
   return {
@@ -18,6 +20,12 @@ function pluText(text: string, fontSize: string = PLU_TABLE_FONT_SIZE): JSONCont
     text,
     marks: [{ type: "textStyle", attrs: { fontSize } }],
   };
+}
+
+function getVisibleColumns(): ColumnConfig<DaftarProdukRows>[] {
+  return daftarProdukColumns.filter(function excludeLpp(col) {
+    return col.label !== "LPP";
+  });
 }
 
 function findExistingPluFontSize(node: PMNode): string {
@@ -47,72 +55,86 @@ function pluCellText(
   return col.isNumeric ? formatNumber(Number(raw ?? 0)) : String(raw ?? "");
 }
 
-function pluDataRowJSON(
-  columns: ColumnConfig<DaftarProdukRows>[],
-  row: DaftarProdukRows,
-  no: number,
-  fontSize: string = PLU_TABLE_FONT_SIZE,
-): JSONContent {
-  const noCell: JSONContent = {
+function cell(text: string, fontSize: string): JSONContent {
+  return {
     type: "tableCell",
     content: [
       {
         type: "paragraph",
-        content: [pluText(String(no), fontSize)],
+        content: text ? [pluText(text, fontSize)] : [],
       },
     ],
   };
+}
 
+function headerCell(text: string): JSONContent {
+  return {
+    type: "tableHeader",
+    content: [{ type: "paragraph", content: [pluText(text)] }],
+  };
+}
+
+function pluDataRowJSON(
+  columns: ColumnConfig<DaftarProdukRows>[],
+  row: DaftarProdukRows,
+  no: number,
+  qty: number | null,
+  withQtyColumns: boolean,
+  fontSize: string = PLU_TABLE_FONT_SIZE,
+): JSONContent {
+  const noCell = cell(String(no), fontSize);
   const dataCells = columns.map(function mapCell(col) {
-    const text = pluCellText(col, row);
-    return {
-      type: "tableCell",
-      content: [
-        {
-          type: "paragraph",
-          content: text ? [pluText(text, fontSize)] : [],
-        },
-      ],
-    };
+    return cell(pluCellText(col, row), fontSize);
   });
+
+  const cells: JSONContent[] = [noCell, ...dataCells];
+
+  if (withQtyColumns) {
+    const hasQty = typeof qty === "number" && qty > 0;
+    const total = hasQty ? qty * Number(row.harga ?? 0) : null;
+    cells.push(cell(hasQty ? formatNumber(qty) : "", fontSize));
+    cells.push(cell(total !== null ? formatNumber(total) : "", fontSize));
+  }
 
   return {
     type: "tableRow",
-    content: [noCell, ...dataCells],
+    content: cells,
   };
 }
 
 function buildPluTableNode(
-  columns: typeof daftarProdukColumns,
   rows: DaftarProdukRows[],
+  qtys: (number | null)[],
 ): JSONContent {
-  const visibleColumns = columns.filter(function excludeLpp(col) {
-    return col.label !== "LPP";
+  const visibleColumns = getVisibleColumns();
+  const withQtyColumns = qtys.some(function hasQty(q) {
+    return typeof q === "number" && q > 0;
   });
+
+  const headerCells: JSONContent[] = [
+    headerCell("No"),
+    ...visibleColumns.map(function mapHeader(col) {
+      return headerCell(col.label);
+    }),
+  ];
+  if (withQtyColumns) {
+    headerCells.push(headerCell(QTY_LABEL));
+    headerCells.push(headerCell(TOTAL_LABEL));
+  }
 
   const headerRow: JSONContent = {
     type: "tableRow",
-    content: [
-      {
-        type: "tableHeader",
-        content: [{ type: "paragraph", content: [pluText("No")] }],
-      },
-      ...visibleColumns.map(function mapHeader(col) {
-        return {
-          type: "tableHeader",
-          content: [
-            {
-              type: "paragraph",
-              content: [pluText(col.label)],
-            },
-          ],
-        };
-      }),
-    ],
+    content: headerCells,
   };
 
   const dataRows = rows.map(function mapRow(row, index) {
-    return pluDataRowJSON(visibleColumns, row, index + 1);
+    return pluDataRowJSON(
+      visibleColumns,
+      row,
+      index + 1,
+      qtys[index] ?? null,
+      withQtyColumns,
+    );
   });
 
   return {
@@ -126,8 +148,9 @@ export function createPluTable(
   editor: Editor,
   row: DaftarProdukRows,
   description?: string,
+  qty?: number | null,
 ): void {
-  const table = buildPluTableNode(daftarProdukColumns, [row]);
+  const table = buildPluTableNode([row], [qty ?? null]);
   if (description && description.trim()) {
     const descriptionNode: JSONContent = {
       type: "heading",
@@ -191,24 +214,127 @@ export function renumberPluTable(editor: Editor): void {
   editor.view.dispatch(tr);
 }
 
+// ============================================================
+// Baca isi tabel PLU existing menjadi baris teks mentah
+// (dipakai saat perlu rebuild tabel untuk menambah kolom qty)
+// ============================================================
+function tableToTextRows(node: PMNode): string[][] {
+  const rows: string[][] = [];
+  node.forEach(function eachRow(rowNode) {
+    const cells: string[] = [];
+    rowNode.forEach(function eachCell(cellNode) {
+      cells.push(cellNode.textContent);
+    });
+    rows.push(cells);
+  });
+  return rows;
+}
+
+// Deteksi apakah tabel existing sudah punya kolom Qty & Total Harga
+function existingHasQtyColumns(node: PMNode): boolean {
+  const headerRow = node.firstChild;
+  if (!headerRow) return false;
+  const labels: string[] = [];
+  headerRow.forEach(function eachHeader(cellNode) {
+    labels.push(cellNode.textContent.trim());
+  });
+  return labels.includes(QTY_LABEL) && labels.includes(TOTAL_LABEL);
+}
+
+// Bangun ulang node tabel dari baris teks + tambahkan kolom qty
+function rebuildTableWithQty(
+  existingRows: string[][],
+  fontSize: string,
+  newRow: DaftarProdukRows,
+  newQty: number | null,
+): JSONContent {
+  const visibleColumns = getVisibleColumns();
+  const baseColCount = 1 + visibleColumns.length; // No + kolom data
+
+  const headerCells: JSONContent[] = [
+    headerCell("No"),
+    ...visibleColumns.map(function mapHeader(col) {
+      return headerCell(col.label);
+    }),
+    headerCell(QTY_LABEL),
+    headerCell(TOTAL_LABEL),
+  ];
+
+  // Baris data lama (skip header), qty & total dikosongkan
+  const dataRows: JSONContent[] = existingRows
+    .slice(1)
+    .map(function mapOldRow(textCells, index) {
+      const cells: JSONContent[] = [];
+      cells.push(cell(String(index + 1), fontSize));
+      for (let i = 1; i < baseColCount; i += 1) {
+        cells.push(cell(textCells[i] ?? "", fontSize));
+      }
+      cells.push(cell("", fontSize));
+      cells.push(cell("", fontSize));
+      return { type: "tableRow", content: cells } as JSONContent;
+    });
+
+  // Baris baru
+  const newNo = dataRows.length + 1;
+  const newRowJSON = pluDataRowJSON(
+    visibleColumns,
+    newRow,
+    newNo,
+    newQty,
+    true,
+    fontSize,
+  );
+
+  return {
+    type: "table",
+    attrs: { class: "plu-table" },
+    content: [
+      { type: "tableRow", content: headerCells } as JSONContent,
+      ...dataRows,
+      newRowJSON,
+    ],
+  };
+}
+
 export function addPluToExistingTable(
   editor: Editor,
   row: DaftarProdukRows,
+  qty?: number | null,
 ): void {
   const existing = findPluTable(editor);
   if (!existing) {
-    createPluTable(editor, row);
+    createPluTable(editor, row, undefined, qty);
     return;
   }
-  const visibleColumns = daftarProdukColumns.filter(function excludeLpp(col) {
-    return col.label !== "LPP";
-  });
-  const dataRowCount = existing.node.childCount - 1;
+
   const fontSize = findExistingPluFontSize(existing.node);
+  const hasQtyCol = existingHasQtyColumns(existing.node);
+  const wantQty = typeof qty === "number" && qty > 0;
+
+  // Perlu rebuild tabel bila PLU baru punya qty tapi tabel lama belum ada kolomnya
+  if (wantQty && !hasQtyCol) {
+    const textRows = tableToTextRows(existing.node);
+    const rebuilt = rebuildTableWithQty(textRows, fontSize, row, qty ?? null);
+    editor
+      .chain()
+      .focus()
+      .insertContentAt(
+        { from: existing.pos, to: existing.pos + existing.node.nodeSize },
+        rebuilt,
+      )
+      .run();
+    return;
+  }
+
+  // Tabel sudah punya kolom qty (atau PLU baru tanpa qty) -> cukup tambah baris
+  const visibleColumns = getVisibleColumns();
+  const dataRowCount = existing.node.childCount - 1;
   const rowJSON = pluDataRowJSON(
     visibleColumns,
     row,
     dataRowCount + 1,
+    qty ?? null,
+    hasQtyCol,
     fontSize,
   );
   const insertPos = existing.pos + existing.node.nodeSize - 1;

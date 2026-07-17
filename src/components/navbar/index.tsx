@@ -62,10 +62,12 @@ export default function Navbar({ branch, logoSrc }: NavbarProps) {
         <Image
           src={resolvedLogoSrc}
           alt={`Logo ${branch ?? "Aplikasi"}`}
-          width={120}
-          height={60}
+          width={480}
+          height={240}
           priority
-          className="h-auto max-h-[60px] w-auto object-contain"
+          quality={100}
+          style={{ height: 44, width: "auto" }}
+          className="object-contain"
         />
       </Link>
 

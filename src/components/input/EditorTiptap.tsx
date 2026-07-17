@@ -47,6 +47,7 @@ import {
   addPluToExistingTable,
 } from "./editor/plu/pluTableBuilder";
 import { PluDescriptionModal } from "./editor/PluDescriptionModal";
+import { PluQtyModal } from "./editor/PluQtyModal";
 import { EditorToolbar } from "./editor/toolbar/EditorToolbar";
 import { EditorBubbleMenu } from "./editor/toolbar/EditorBubbleMenu";
 import { PromoInfoModal } from "./editor/PromoInfoModal";
@@ -79,14 +80,21 @@ export function EditorTiptap({
     prdcd: string;
   } | null>(null);
 
+  const [pluQty, setPluQty] = React.useState<{
+    editor: Editor;
+    row: DaftarProdukRows;
+  } | null>(null);
+
   const [pluChoice, setPluChoice] = React.useState<{
     editor: Editor;
     row: DaftarProdukRows;
+    qty: number | null;
   } | null>(null);
 
   const [pluDescription, setPluDescription] = React.useState<{
     editor: Editor;
     row: DaftarProdukRows;
+    qty: number | null;
   } | null>(null);
 
   const [promoInfo, setPromoInfo] = React.useState<{ prdcd: string } | null>(
@@ -101,15 +109,16 @@ export function EditorTiptap({
     setPluRequest({ editor: ctx.editor });
   }, []);
 
-  const handleSelectFinalPlu = React.useCallback(function selectFinalPlu(
+  const handleQtyConfirmed = React.useCallback(function afterQty(
     editor: Editor,
     row: DaftarProdukRows,
+    qty: number | null,
   ) {
     const existing = findPluTable(editor);
     if (existing) {
-      setPluChoice({ editor, row });
+      setPluChoice({ editor, row, qty });
     } else {
-      setPluDescription({ editor, row });
+      setPluDescription({ editor, row, qty });
     }
   }, []);
 
@@ -208,13 +217,26 @@ export function EditorTiptap({
           onSelect={function selectRelatedPlu(row) {
             const editor = pluRelated.editor;
             setPluRelated(null);
-            handleSelectFinalPlu(editor, row);
+            setPluQty({ editor, row });
           }}
           infoAction={{
             label: "Info",
             onInfo: function openPromoInfo(row) {
               setPromoInfo({ prdcd: String(row.prd_prdcd) });
             },
+          }}
+        />
+      )}
+
+      {pluQty && (
+        <PluQtyModal
+          onCancel={function cancelQty() {
+            setPluQty(null);
+          }}
+          onConfirm={function confirmQty(qty) {
+            const { editor, row } = pluQty;
+            setPluQty(null);
+            handleQtyConfirmed(editor, row, qty);
           }}
         />
       )}
@@ -229,6 +251,7 @@ export function EditorTiptap({
               pluDescription.editor,
               pluDescription.row,
               description.trim(),
+              pluDescription.qty,
             );
             setPluDescription(null);
           }}
@@ -251,7 +274,11 @@ export function EditorTiptap({
               <Button
                 type="button"
                 onClick={function addToExisting() {
-                  addPluToExistingTable(pluChoice.editor, pluChoice.row);
+                  addPluToExistingTable(
+                    pluChoice.editor,
+                    pluChoice.row,
+                    pluChoice.qty,
+                  );
                   setPluChoice(null);
                 }}>
                 Tambah ke tabel yang ada
@@ -263,6 +290,7 @@ export function EditorTiptap({
                   setPluDescription({
                     editor: pluChoice.editor,
                     row: pluChoice.row,
+                    qty: pluChoice.qty,
                   });
                   setPluChoice(null);
                 }}>

@@ -87,24 +87,40 @@ function splitByHardBreak(content?: JSONContent[]): JSONContent[][] {
 
 function loadImageAsDataUrl(
   src: string,
+  minWidthPx = 0,
 ): Promise<{ dataUrl: string; w: number; h: number }> {
   return new Promise(function executor(resolve, reject) {
     const img = new window.Image();
     img.crossOrigin = "anonymous";
     img.onload = function onLoad() {
+      const naturalW = img.naturalWidth;
+      const naturalH = img.naturalHeight;
+
+      // Supersample: bila gambar sumber lebih kecil dari lebar target,
+      // gambar ke canvas beresolusi lebih tinggi (kelipatan bulat) agar
+      // hasil di PDF tidak pecah saat diperbesar.
+      let scale = 1;
+      if (minWidthPx > naturalW && naturalW > 0) {
+        scale = Math.ceil(minWidthPx / naturalW);
+      }
+      const targetW = naturalW * scale;
+      const targetH = naturalH * scale;
+
       const canvas = document.createElement("canvas");
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
+      canvas.width = targetW;
+      canvas.height = targetH;
       const ctx = canvas.getContext("2d");
       if (!ctx) {
         reject(new Error("Canvas context tidak tersedia"));
         return;
       }
-      ctx.drawImage(img, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, targetW, targetH);
       resolve({
         dataUrl: canvas.toDataURL("image/png"),
-        w: img.naturalWidth,
-        h: img.naturalHeight,
+        w: naturalW,
+        h: naturalH,
       });
     };
     img.onerror = function onError() {
@@ -235,7 +251,7 @@ export async function buildEditorPdf(
     const logoCell = cells[0];
     const companyCell = cells[1];
     const yStart = y;
-    const logoW = 170;
+    const logoW = 120;
     let imgH = 0;
 
     const imageNode = logoCell?.content?.find(function isImage(child) {
@@ -247,7 +263,10 @@ export async function buildEditorPdf(
         const abs = src.startsWith("http")
           ? src
           : window.location.origin + src;
-        const { dataUrl, w, h } = await loadImageAsDataUrl(abs);
+        // Target piksel logo: lebar tampilan (pt -> px) dikali faktor DPI
+        // agar tajam saat dicetak (supersample bila sumber kecil).
+        const targetPx = Math.round((logoW / PX_TO_PT) * 3);
+        const { dataUrl, w, h } = await loadImageAsDataUrl(abs, targetPx);
         const displayH = (h / w) * logoW;
         imgH = displayH;
         doc.addImage(dataUrl, "PNG", MARGIN, yStart, logoW, displayH);
