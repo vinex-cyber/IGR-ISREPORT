@@ -82,6 +82,6 @@ SELECT     prd.prd_kodedivisi AS st_div,
     LEFT JOIN (${QueryPoOutStanding()}) poo ON prd.prd_prdcd = poo.tpod_prdcd
     LEFT JOIN (${QueryGroupFlag()}) sii ON prd.prd_prdcd = sii.plu
     WHERE prd.prd_prdcd LIKE '%0'
-  ${filters.conditions ? `AND ${filters.conditions}` : ""}
+   ${filters.conditions ? `AND ${filters.conditions}` : ""}
     `;
 };

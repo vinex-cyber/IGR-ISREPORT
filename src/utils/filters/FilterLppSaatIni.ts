@@ -103,7 +103,9 @@ export const buildFilterLppSaatIni = (
   }
 
   if (filters.statusTag) {
-    conditions.push(`st_status_tag = $${params.length + 1}`);
+    conditions.push(
+      `CASE WHEN COALESCE(prd.prd_kodetag, ' ') IN ('A','R','N','H','O','T','X') THEN 'Discontinue' ELSE 'Active' END = $${params.length + 1}`,
+    );
     params.push(filters.statusTag);
   }
 

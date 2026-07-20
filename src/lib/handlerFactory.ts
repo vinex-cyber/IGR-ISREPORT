@@ -73,10 +73,15 @@ export function createGetHandler<TFilters>(
       let total: number;
       let rows: unknown[];
 
+      async function executeQuery(q: string, p: QueryParam[]) {
+        const stmtName = `q_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        return pool.query({ name: stmtName, text: q, values: p.length > 0 ? p : undefined });
+      }
+
       if (config.paginated) {
         const { pageSize, offset } = parsePageParams(req);
 
-        const countResult = await pool.query(
+        const countResult = await executeQuery(
           `SELECT COUNT(*) AS cnt FROM (${query}) AS pagination_count`,
           params,
         );
@@ -84,10 +89,10 @@ export function createGetHandler<TFilters>(
 
         const paramIdx = paramCount + 1;
         const paginatedQuery = `${query} LIMIT $${paramIdx} OFFSET $${paramIdx + 1}`;
-        const result = await pool.query(paginatedQuery, [...params, pageSize, offset]);
+        const result = await executeQuery(paginatedQuery, [...params, pageSize, offset]);
         rows = result.rows;
       } else {
-        const result = await pool.query(query, params);
+        const result = await executeQuery(query, params);
         rows = result.rows;
         total = rows.length;
       }
