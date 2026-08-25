@@ -1,7 +1,7 @@
 // src/components/charts/ChartTrendSalesDivisi.tsx
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 import { ChartTooltipIndicatorLine } from "@/components/charts/ChartTooltipIndicatorLine";
 import { useFetchData } from "@/hooks/data/useFetchData";
@@ -89,21 +89,27 @@ type ChartTrendSalesDivisiProps = {
   metric?: "sales" | "margin";
   title?: string;
   description?: string;
+  branch?: string;
 };
 
 export function ChartTrendSalesDivisi({
   metric = "sales",
   title,
   description,
+  branch,
 }: ChartTrendSalesDivisiProps) {
   const currentMonth = useMemo(() => {
     const m = String(new Date().getMonth() + 1).padStart(2, "0");
     return (MONTHS.includes(m as (typeof MONTHS)[number]) ? m : "01") as string;
   }, []);
 
-  const { data, loading } = useFetchData<TrendDivisiRow[]>({
+  const { data, loading, refetch } = useFetchData<TrendDivisiRow[]>({
     endpoint: "/chart/trend-sales-divisi",
   });
+
+  useEffect(function refetchOnBranchChange() {
+    refetch();
+  }, [branch, refetch]);
 
   const { chartData, chartConfig, series } = useMemo(() => {
     const rows = data ?? [];

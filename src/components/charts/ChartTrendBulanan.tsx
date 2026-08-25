@@ -1,7 +1,7 @@
 // src/components/charts/ChartTrendBulanan.tsx
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
 import {
@@ -60,21 +60,27 @@ type ChartTrendBulananProps = {
   metric: "sales" | "margin";
   title?: string;
   description?: string;
+  branch?: string;
 };
 
 export function ChartTrendBulanan({
   metric,
   title,
   description,
+  branch,
 }: ChartTrendBulananProps) {
   const currentMonth = useMemo(() => {
     const m = String(new Date().getMonth() + 1).padStart(2, "0");
     return (MONTHS.includes(m as (typeof MONTHS)[number]) ? m : "01") as string;
   }, []);
 
-  const { data, loading } = useFetchData<TrendDivisiRow[]>({
+  const { data, loading, refetch } = useFetchData<TrendDivisiRow[]>({
     endpoint: "/chart/trend-sales-divisi",
   });
+
+  useEffect(function refetchOnBranchChange() {
+    refetch();
+  }, [branch, refetch]);
 
   const chartData = useMemo(() => {
     const rows = data ?? [];
