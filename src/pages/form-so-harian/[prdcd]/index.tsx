@@ -23,7 +23,7 @@ import {
 import { buildReport } from "@/utils/reportBuilder";
 import { formatNumber } from "@/utils/formatNumber";
 import { exportToPdf } from "@/utils/exportToPdf";
-import { RiFilePdf2Fill } from "react-icons/ri";
+import { FileText } from "lucide-react";
 import InputProdukPlu from "@/components/input/InputProdukPlu";
 import SettingsDatabase from "@/components/Settings/SettingsDatabase";
 import { DATABASE_OPTIONS } from "@/configs/database-options";
@@ -132,7 +132,7 @@ export default function FormSoHarianDetail({
                 mode: "download",
               })
             }>
-            <RiFilePdf2Fill className="mr-2" />
+            <FileText className="mr-2" />
             PDF
           </Button>
         )}

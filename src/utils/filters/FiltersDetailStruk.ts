@@ -256,14 +256,3 @@ export const FilterDetailStruk = (filters: FilterDetailStrukInput) => {
     params,
   };
 };
-
-// Fungsi untuk mengubah query menjadi objek
-export const parseFiltersDetailStruk = (
-  query: Partial<FilterDetailStrukInput>,
-) => {
-  const { ...rest } = query;
-
-  return {
-    ...rest,
-  };
-};

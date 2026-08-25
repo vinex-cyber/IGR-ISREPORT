@@ -22,13 +22,3 @@ export const FilterFormSoHarian = (filters: FilterFormSoHarianInput) => {
     params,
   };
 };
-
-export const parseFiltersFormSoHarian = (
-  query: Partial<FilterFormSoHarianInput>,
-) => {
-  const { ...rest } = query;
-
-  return {
-    ...rest,
-  };
-};

@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 
 const axiosClient = axios.create({
   baseURL: "/api",
@@ -9,21 +9,7 @@ const axiosClient = axios.create({
 });
 
 axiosClient.interceptors.response.use(
-  (response: AxiosResponse) => {
-    const res = response.data;
-
-    if (res && typeof res === "object" && "data" in res) {
-      // ← spread semua field, tidak perlu tambah manual kalau ada field baru
-      response.data = { ...res };
-    } else {
-      response.data = {
-        data: res,
-        success: true,
-      };
-    }
-
-    return response;
-  },
+  (response) => response,
   (error) => {
     const message =
       error?.response?.data?.message || error.message || "Terjadi kesalahan";

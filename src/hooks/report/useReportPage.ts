@@ -1,7 +1,6 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 
 import { useFetchData } from "@/hooks/data/useFetchData";
-import { useRefreshRouter } from "@/hooks/useRefreshRouter";
 import { useReportQueryEndpoint } from "@/hooks/report/useReportQueryEndpoint";
 import { useReportTableLogic } from "@/hooks/report/useReportTableLogic";
 import { useTotalRow } from "@/hooks/report/useTotalRow";
@@ -82,7 +81,18 @@ export function useReportPage<T extends object>(
     enabled: fetchEnabled,
   });
 
-  const { isRefreshing, handleRefresh } = useRefreshRouter(loading, refetch);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await refetch();
+  }, [refetch]);
+
+  useEffect(function syncRefreshingState() {
+    if (!loading) {
+      setIsRefreshing(false);
+    }
+  }, [loading]);
 
   // ── Client-side filter (dari semua data) ────────────────────
   const {

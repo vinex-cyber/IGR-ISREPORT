@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { TfiSearch } from "react-icons/tfi";
+import { Search } from "lucide-react";
 
 /**
  * Komponen SearchInput
@@ -27,7 +27,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
     <div className="relative w-full max-w-sm">
       {/* Wrapper flex untuk icon agar center tanpa top-1/2 */}
       <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-        <TfiSearch className="text-gray-400 text-sm" />
+        <Search className="text-gray-400 text-sm" />
       </div>
       <Input
         type="text"

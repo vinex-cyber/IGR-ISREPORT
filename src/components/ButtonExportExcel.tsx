@@ -1,5 +1,5 @@
 // src/components/ButtonExportExcel.tsx
-import { RiFileExcel2Line } from "react-icons/ri";
+import { FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
@@ -29,7 +29,7 @@ const ButtonExportExcel = ({
           </>
         ) : (
           <>
-            <RiFileExcel2Line />
+            <FileSpreadsheet />
             Export to Excel
           </>
         )}

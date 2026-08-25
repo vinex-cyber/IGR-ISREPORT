@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { LuRefreshCw } from "react-icons/lu";
+import { RefreshCw } from "lucide-react";
 import clsx from "clsx";
 
 interface ButtonRefreshProps {
@@ -26,10 +26,10 @@ const ButtonRefresh = ({ disabled, onClick, className, size, isRefreshing }: But
             <span className="flex items-center gap-2">
                 {isRefreshing ? (
                     <span className="animate-spin">
-                        <LuRefreshCw />
+                        <RefreshCw />
                     </span>
                 ) : (
-                    <LuRefreshCw />
+                    <RefreshCw />
                 )}
                 {/* <span className="hidden sm:inline">
                     {isRefreshing ? "Refreshing..." : "Refresh"}

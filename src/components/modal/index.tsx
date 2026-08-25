@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { IoCloseCircleSharp } from "react-icons/io5";
+import { XCircle } from "lucide-react";
 
 interface ModalProps {
   show: boolean;
@@ -165,7 +165,7 @@ export default function Modal({
           onClick={onClose}
           className="absolute right-2 top-2 z-10 cursor-pointer text-gray-500 hover:text-gray-800"
           aria-label="Close Modal">
-          <IoCloseCircleSharp
+          <XCircle
             size={30}
             className="h-10 w-10 text-red-500 hover:text-red-800"
           />

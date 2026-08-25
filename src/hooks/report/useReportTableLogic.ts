@@ -6,7 +6,7 @@ import { useFilteredData } from "@/hooks/useFilteredData";
 import { useTitleFromQuery } from "./useTitleFromQuery";
 import { useTotalRow } from "./useTotalRow";
 
-import { formatReportPeriod } from "@/utils/formatReportPeriode";
+import { FormatTanggal } from "@/utils/formatTanggal";
 
 export const useReportTableLogic = <T extends object>(
   data: T[] | undefined,
@@ -32,7 +32,9 @@ export const useReportTableLogic = <T extends object>(
   const endDate =
     typeof router.query.endDate === "string" ? router.query.endDate : "";
 
-  const periode = formatReportPeriod(startDate, endDate);
+  const periode = startDate || endDate
+    ? `Periode: ${FormatTanggal(startDate)} s/d ${FormatTanggal(endDate)}`
+    : "";
 
   const rawTotalRow = useTotalRow(
     paginated ? (totals ? [totals as T] : []) : filteredData,
@@ -41,13 +43,7 @@ export const useReportTableLogic = <T extends object>(
     allFields,
   );
 
-  const totalRow = paginated
-    ? rawTotalRow.length > 0
-      ? rawTotalRow
-      : undefined
-    : rawTotalRow.length > 0
-      ? rawTotalRow
-      : undefined;
+  const totalRow = rawTotalRow.length > 0 ? rawTotalRow : undefined;
 
   return {
     filteredData,
