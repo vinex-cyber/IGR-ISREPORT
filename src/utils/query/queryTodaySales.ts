@@ -81,15 +81,17 @@ LEFT JOIN tbmaster_divisi div ON sls.trjd_divisioncode = div.div_kodedivisi
 // GROUP BY tinggal pakai tanpa subquery ekstra.
 export const TodaySalesByMemberQuery = (): string => `
 SELECT
-  jenis_member,
+  jenis_member AS jenis,
   to_char(now(), 'DD-MM-YYYY') AS tanggal,
-  count(DISTINCT dtl_cusno) AS jumlah_member,
-  count(DISTINCT dtl_struk) AS jumlah_struk,
-  count(DISTINCT dtl_prdcd_ctn) AS jumlah_produk,
-  trunc(sum(dtl_qty_pcs)) AS total_qty,
-  trunc(sum(dtl_gross)) AS total_gross,
-  trunc(sum(dtl_netto)) AS total_netto,
-  trunc(sum(dtl_margin)) AS total_margin
+  count(DISTINCT dtl_cusno)::int AS jumlah_member,
+  count(DISTINCT dtl_struk)::int AS jumlah_struk,
+  count(DISTINCT dtl_prdcd_ctn)::int AS jumlah_produk,
+  trunc(sum(dtl_qty_pcs))::float8 AS total_qty,
+  trunc(sum(dtl_gross))::float8 AS total_gross,
+  trunc(sum(dtl_netto))::float8 AS total_netto,
+  trunc(sum(dtl_margin))::float8 AS total_margin,
+  (SELECT count(*) FROM tbtr_jualsummary
+    WHERE js_resetamt = 0 AND js_cashdrawerend IS NULL)::int AS jumlah_kasir
 FROM (${BASE_DETAIL}) agg
 GROUP BY jenis_member
 ORDER BY jenis_member
@@ -98,9 +100,9 @@ ORDER BY jenis_member
 export const TodaySalesByDivisiQuery = (): string => `
 SELECT
   namadivisi,
-  trunc(sum(dtl_netto)) AS netto,
-  trunc(sum(dtl_margin)) AS margin,
-  count(DISTINCT dtl_prdcd_ctn) AS jumlah_produk
+  trunc(sum(dtl_netto))::float8 AS netto,
+  trunc(sum(dtl_margin))::float8 AS margin,
+  count(DISTINCT dtl_prdcd_ctn)::int AS jumlah_produk
 FROM (${BASE_DETAIL}) agg
 GROUP BY namadivisi
 ORDER BY netto DESC

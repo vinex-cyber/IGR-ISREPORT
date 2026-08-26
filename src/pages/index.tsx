@@ -14,55 +14,6 @@ import { FormatTanggal } from "@/utils/formatTanggal";
 import type { DefaultBranchPageProps } from "@/utils/server/getDefaultBranchServerSideProps";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
 
-function buildCharts(branch: string) {
-  return [
-    {
-      id: "trend-sales",
-      node: (
-        <ChartTrendBulanan
-          metric="sales"
-          title="Tren Sales Bulanan"
-          description="Total sales per bulan, dalam juta"
-          branch={branch}
-        />
-      ),
-    },
-    {
-      id: "trend-margin",
-      node: (
-        <ChartTrendBulanan
-          metric="margin"
-          title="Tren Margin Bulanan"
-          description="Total margin per bulan, dalam juta"
-          branch={branch}
-        />
-      ),
-    },
-    {
-      id: "trend-divisi-sales",
-      node: (
-        <ChartTrendSalesDivisi
-          metric="sales"
-          title="Sales per Divisi"
-          description="Stacked bar per bulan, dalam juta"
-          branch={branch}
-        />
-      ),
-    },
-    {
-      id: "trend-divisi-margin",
-      node: (
-        <ChartTrendSalesDivisi
-          metric="margin"
-          title="Margin per Divisi"
-          description="Stacked bar per bulan, dalam juta"
-          branch={branch}
-        />
-      ),
-    },
-  ];
-}
-
 export const getServerSideProps = getDefaultBranchServerSideProps;
 
 export default function Home({ defaultBranch }: DefaultBranchPageProps) {
@@ -91,7 +42,7 @@ export default function Home({ defaultBranch }: DefaultBranchPageProps) {
             </div>
           </div>
           <h1 className="mt-3 text-2xl font-bold tracking-tight md:text-3xl">
-            Dashboard {branch || "Cabang"}
+            Dashboard {branch}
           </h1>
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">
             Pantau tren sales, margin, dan performa divisi dalam satu tampilan.
@@ -109,9 +60,30 @@ export default function Home({ defaultBranch }: DefaultBranchPageProps) {
         </div>
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {buildCharts(branch).map((chart) => (
-            <div key={chart.id}>{chart.node}</div>
-          ))}
+          <ChartTrendBulanan
+            metric="sales"
+            title="Tren Sales Bulanan"
+            description="Total sales per bulan, dalam juta"
+            branch={branch}
+          />
+          <ChartTrendBulanan
+            metric="margin"
+            title="Tren Margin Bulanan"
+            description="Total margin per bulan, dalam juta"
+            branch={branch}
+          />
+          <ChartTrendSalesDivisi
+            metric="sales"
+            title="Sales per Divisi"
+            description="Stacked bar per bulan, dalam juta"
+            branch={branch}
+          />
+          <ChartTrendSalesDivisi
+            metric="margin"
+            title="Margin per Divisi"
+            description="Stacked bar per bulan, dalam juta"
+            branch={branch}
+          />
         </div>
       </div>
     </Layout>

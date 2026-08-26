@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import {
   Card,
@@ -13,48 +13,20 @@ import {
 } from "@/components/ui/card";
 import {
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
 import { useFetchData } from "@/hooks/data/useFetchData";
 
-const MONTHS = [
-  "01", "02", "03", "04", "05", "06",
-  "07", "08", "09", "10", "11", "12",
-] as const;
+const MONTH_LABELS = [
+  "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+  "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
+];
 
-type TrendDivisiRow = {
-  kodedivisi: string;
-  namadivisi: string;
-  sls_rph_01: number; sls_rph_02: number; sls_rph_03: number;
-  sls_rph_04: number; sls_rph_05: number; sls_rph_06: number;
-  sls_rph_07: number; sls_rph_08: number; sls_rph_09: number;
-  sls_rph_10: number; sls_rph_11: number; sls_rph_12: number;
-  mgr_01: number; mgr_02: number; mgr_03: number;
-  mgr_04: number; mgr_05: number; mgr_06: number;
-  mgr_07: number; mgr_08: number; mgr_09: number;
-  mgr_10: number; mgr_11: number; mgr_12: number;
-};
-
-const MONTH_LABEL: Record<string, string> = {
-  "01": "Jan", "02": "Feb", "03": "Mar", "04": "Apr",
-  "05": "Mei", "06": "Jun", "07": "Jul", "08": "Agu",
-  "09": "Sep", "10": "Okt", "11": "Nov", "12": "Des",
-};
-
-const chartConfig = {
-  value: {
-    label: "Nilai",
-    color: "var(--chart-1)",
-  },
-} satisfies ChartConfig;
-
-function getMonthOrder(currentMonth: string): string[] {
-  const idx = MONTHS.indexOf(currentMonth as (typeof MONTHS)[number]);
-  const start = (idx + 1) % MONTHS.length;
-  return [...MONTHS.slice(start), ...MONTHS.slice(0, start)];
-}
+type TahunanRow = Record<string, number | string | null>;
 
 type ChartTrendBulananProps = {
   metric: "sales" | "margin";
@@ -63,87 +35,101 @@ type ChartTrendBulananProps = {
   branch?: string;
 };
 
+const now = new Date();
+const YEARS = [
+  now.getFullYear() - 2,
+  now.getFullYear() - 1,
+  now.getFullYear(),
+];
+const CUR_MONTH = String(now.getMonth() + 1).padStart(2, "0");
+
 export function ChartTrendBulanan({
   metric,
   title,
   description,
   branch,
 }: ChartTrendBulananProps) {
-  const currentMonth = useMemo(() => {
-    const m = String(new Date().getMonth() + 1).padStart(2, "0");
-    return (MONTHS.includes(m as (typeof MONTHS)[number]) ? m : "01") as string;
-  }, []);
-
-  const { data, loading, refetch } = useFetchData<TrendDivisiRow[]>({
-    endpoint: "/chart/trend-sales-divisi",
+  const { data, loading, refetch } = useFetchData<TahunanRow[]>({
+    endpoint: "/chart/trend-tahunan",
+    queryParams: { metric },
   });
 
   useEffect(function refetchOnBranchChange() {
     refetch();
   }, [branch, refetch]);
 
-  const chartData = useMemo(() => {
-    const rows = data ?? [];
-    const order = getMonthOrder(currentMonth);
-    const field = metric === "sales" ? "sls_rph" : "mgr";
+  const row = data?.[0];
 
-    return order.map((m) => {
-      let total = 0;
-      for (const row of rows) {
-        total += Number(row[`${field}_${m}` as keyof TrendDivisiRow]) || 0;
-      }
-      return {
-        month: MONTH_LABEL[m] ?? m,
-        value: Number((total / 1_000_000).toFixed(2)),
-      };
-    });
-  }, [data, currentMonth, metric]);
+  const chartData = useMemo(
+    () =>
+      MONTH_LABELS.map((bulan, i) => {
+        const idx = String(i + 1).padStart(2, "0");
+        const point: Record<string, string | number | null> = { bulan };
+        for (const y of YEARS) {
+          const v = row?.[`v${y}_${idx}`];
+          point[`y${y}`] = v == null ? null : Math.round(Number(v) / 1_000_000);
+        }
+        return point;
+      }),
+    [row],
+  );
 
-  if (loading) {
+  const chartConfig = {
+    [`y${YEARS[0]}`]: { label: String(YEARS[0]), color: "var(--chart-4)" },
+    [`y${YEARS[1]}`]: { label: String(YEARS[1]), color: "var(--chart-3)" },
+    [`y${YEARS[2]}`]: { label: String(YEARS[2]), color: "var(--chart-1)" },
+  } satisfies ChartConfig;
+
+  if (loading || !row) {
     return (
-      <div className="rounded-lg border p-4 text-sm text-muted-foreground">
-        Memuat data...
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{title ?? (metric === "sales" ? "Tren Sales Bulanan" : "Tren Margin Bulanan")}</CardTitle>
+          <CardDescription>{description ?? "Perbandingan tiga tahun, dalam juta"}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[250px] animate-pulse rounded bg-muted" />
+        </CardContent>
+      </Card>
     );
   }
-
-  const cardTitle =
-    title ?? (metric === "sales" ? "Trend Sales per Bulan" : "Trend Margin per Bulan");
-  const cardDescription = description ?? "Dalam juta";
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{cardTitle}</CardTitle>
-        <CardDescription>{cardDescription}</CardDescription>
+        <CardTitle>
+          {title ?? (metric === "sales" ? "Tren Sales Bulanan" : "Tren Margin Bulanan")}
+        </CardTitle>
+        <CardDescription>
+          {description ?? `${YEARS[0]} vs ${YEARS[1]} vs ${YEARS[2]} (Jan–${MONTH_LABELS[Number(CUR_MONTH) - 1]}), dalam juta`}
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
-          <LineChart
-            accessibilityLayer
-            data={chartData}
-            margin={{ left: 12, right: 12 }}
-          >
+        <ChartContainer config={chartConfig} className="h-[250px] w-full">
+          <LineChart accessibilityLayer data={chartData} margin={{ left: 12, right: 12 }}>
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="month"
+              dataKey="bulan"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
               interval={0}
               tick={{ fontSize: 11 }}
             />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
-            />
-            <Line
-              dataKey="value"
-              type="monotone"
-              stroke="var(--color-value)"
-              strokeWidth={2}
-              dot={false}
-            />
+            <YAxis tickLine={false} axisLine={false} width={40} tick={{ fontSize: 11 }} />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+            <ChartLegend content={<ChartLegendContent />} />
+            {YEARS.map((y, i) => (
+              <Line
+                key={y}
+                dataKey={`y${y}`}
+                type="monotone"
+                stroke={`var(--color-y${y})`}
+                strokeWidth={2}
+                dot={i < 2 ? false : { r: 2 }}
+                connectNulls={i === 2}
+              />
+            ))}
           </LineChart>
         </ChartContainer>
       </CardContent>

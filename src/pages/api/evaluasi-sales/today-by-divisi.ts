@@ -1,28 +1,18 @@
 // src/pages/api/evaluasi-sales/today-by-divisi.ts
-import type { NextApiRequest, NextApiResponse } from "next";
-import { getPool } from "@/lib/db";
-import { checkMethod, handleServerError } from "@/lib/apiHandler";
-import { getRequestBranch } from "@/utils/getRequestBranch";
+import { z } from "zod";
+
+import { createGetHandler } from "@/lib/handlerFactory";
 import { TodaySalesByDivisiQuery } from "@/utils/query/queryTodaySales";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (!checkMethod(req, res, "GET")) return;
+const buildQuery = () => TodaySalesByDivisiQuery();
 
-  const branch = getRequestBranch(req);
-
-  try {
-    const pool = getPool(branch);
-    const result = await pool.query(TodaySalesByDivisiQuery());
-
-    const rows = result.rows.map((r) => ({
-      namadivisi: String(r.namadivisi),
-      netto: Number(r.netto),
-      margin: Number(r.margin),
-      jumlah_produk: Number(r.jumlah_produk),
-    }));
-
-    return res.status(200).json({ success: true, data: rows });
-  } catch (error) {
-    return handleServerError(res, error, branch, "Today By Divisi");
-  }
-}
+export default createGetHandler({
+  schema: z.object({}),
+  buildFilters: () => ({ conditions: "", params: [] }),
+  buildQuery,
+  successMessage: "Data sales hari ini per divisi berhasil diambil.",
+  emptyMessage: (branch) =>
+    `Belum ada transaksi hari ini untuk branch '${branch}'.`,
+  errorContext: "Sales Hari Ini per Divisi",
+  return404IfEmpty: false,
+});
