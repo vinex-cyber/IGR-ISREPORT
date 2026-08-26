@@ -109,6 +109,11 @@ export function DashboardKpi({ branch }: { branch?: string }) {
     const growth =
       salesPrev > 0 ? ((salesThis - salesPrev) / salesPrev) * 100 : 0;
 
+    const marginThis = sumField(rows, "mgr", [thisMonth]);
+    const marginPrev = sumField(rows, "mgr", [prevMonth]);
+    const marginGrowth =
+      marginPrev > 0 ? ((marginThis - marginPrev) / marginPrev) * 100 : 0;
+
     return [
       {
         key: "sales",
@@ -135,14 +140,27 @@ export function DashboardKpi({ branch }: { branch?: string }) {
       },
       {
         key: "growth",
-        label: "Pertumbuhan Bulan Ini",
+        label: "Pertumbuhan Sales",
         value: growth,
         decimals: 1,
         suffix: "%",
         delta: growth,
-        icon: Wallet,
+        icon: ShoppingBag,
         accentClass:
           growth >= 0
+            ? "text-emerald-600 dark:text-emerald-400"
+            : "text-red-600 dark:text-red-400",
+      },
+      {
+        key: "margin-growth",
+        label: "Pertumbuhan Margin",
+        value: marginGrowth,
+        decimals: 1,
+        suffix: "%",
+        delta: marginGrowth,
+        icon: Wallet,
+        accentClass:
+          marginGrowth >= 0
             ? "text-emerald-600 dark:text-emerald-400"
             : "text-red-600 dark:text-red-400",
       },
@@ -151,7 +169,7 @@ export function DashboardKpi({ branch }: { branch?: string }) {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
@@ -166,7 +184,7 @@ export function DashboardKpi({ branch }: { branch?: string }) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
       {kpis.map((kpi) => {
         const Icon = kpi.icon;
         const positive = (kpi.delta ?? 0) >= 0;
