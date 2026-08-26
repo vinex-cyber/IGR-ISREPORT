@@ -23,8 +23,14 @@ export default function Home({ defaultBranch }: DefaultBranchPageProps) {
     <Layout title="Dashboard" branch={branch}>
       <div className="space-y-6">
         <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/10 via-card to-card p-6 shadow-sm md:p-8">
-          <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-primary/10 blur-3xl" aria-hidden />
-          <div className="pointer-events-none absolute -bottom-20 -left-10 size-40 rounded-full bg-chart-1/10 blur-3xl" aria-hidden />
+          <div
+            className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-primary/10 blur-3xl"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute -bottom-20 -left-10 size-40 rounded-full bg-chart-1/10 blur-3xl"
+            aria-hidden
+          />
           <div className="flex flex-wrap items-center gap-3">
             <span className="inline-flex items-center gap-2 rounded-full bg-card/80 px-3 py-1 text-xs font-medium text-muted-foreground ring-1 ring-border/60">
               <BarChart3 className="size-3.5 text-chart-1" aria-hidden />
@@ -60,30 +66,34 @@ export default function Home({ defaultBranch }: DefaultBranchPageProps) {
         </div>
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <ChartTrendBulanan
-            metric="sales"
-            title="Tren Sales Bulanan"
-            description="Total sales per bulan, dalam juta"
-            branch={branch}
-          />
-          <ChartTrendBulanan
-            metric="margin"
-            title="Tren Margin Bulanan"
-            description="Total margin per bulan, dalam juta"
-            branch={branch}
-          />
-          <ChartTrendSalesDivisi
-            metric="sales"
-            title="Sales per Divisi"
-            description="Stacked bar per bulan, dalam juta"
-            branch={branch}
-          />
-          <ChartTrendSalesDivisi
-            metric="margin"
-            title="Margin per Divisi"
-            description="Stacked bar per bulan, dalam juta"
-            branch={branch}
-          />
+          <div className="space-y-4">
+            <ChartTrendBulanan
+              metric="sales"
+              title="Tren Sales Bulanan"
+              description="Total sales per bulan, dalam juta"
+              branch={branch}
+            />
+            <ChartTrendSalesDivisi
+              metric="sales"
+              title="Sales per Divisi"
+              description="Perbandingan tiga tahun per divisi, dalam juta"
+              branch={branch}
+            />
+          </div>
+          <div className="space-y-4">
+            <ChartTrendBulanan
+              metric="margin"
+              title="Tren Margin Bulanan"
+              description="Total margin per bulan, dalam juta"
+              branch={branch}
+            />
+            <ChartTrendSalesDivisi
+              metric="margin"
+              title="Margin per Divisi"
+              description="Perbandingan tiga tahun per divisi, dalam juta"
+              branch={branch}
+            />
+          </div>
         </div>
       </div>
     </Layout>
