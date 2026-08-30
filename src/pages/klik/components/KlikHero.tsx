@@ -105,13 +105,13 @@ export function KlikHero({ branch, onBranchChange, options }: KlikHeroProps) {
       const id = setInterval(() => {
         refetch();
         refetchSales();
-        refetchPertumbuhan();
+        // ponytail: pertumbuhan (query berat ~5-6s) dimuat sekali, tidak dipolling
       }, 60_000);
       return function clearPollInterval() {
         clearInterval(id);
       };
     },
-    [refetch, refetchSales, refetchPertumbuhan],
+    [refetch, refetchSales],
   );
 
   return (
