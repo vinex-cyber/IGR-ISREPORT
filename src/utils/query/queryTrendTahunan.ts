@@ -42,14 +42,14 @@ export const QueryTrendTahunan = (rekap: RekapSource[]): string => {
       FROM (
         SELECT DISTINCT trjd_transactiontype, trjd_prdcd, trjd_flagtax2,
                trjd_quantity, trjd_nominalamt, trjd_baseprice, trjd_create_by,
-               trjd_recordid
+               trjd_recordid, trjd_transactionno, trjd_cashierstation, trjd_seqno
         FROM tbtr_jualdetail
         WHERE trjd_transactiondate >= date_trunc('month', now())
           AND trjd_recordid IS NULL
         UNION ALL
         SELECT DISTINCT trjd_transactiontype, trjd_prdcd, trjd_flagtax2,
                trjd_quantity, trjd_nominalamt, trjd_baseprice, trjd_create_by,
-               trjd_recordid
+               trjd_recordid, trjd_transactionno, trjd_cashierstation, trjd_seqno
         FROM tbtr_jualdetail_interface
         WHERE trjd_transactiondate >= date_trunc('month', now())
           AND trjd_recordid IS NULL
