@@ -40,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })),
     );
 
-    const result = await pool.query(QueryTrendTahunanDivisi(rekap), [metric]);
+    const result = await pool.query(QueryTrendTahunanDivisi(rekap, metric), [metric]);
     return res.status(200).json({
       success: true,
       message: "Data trend tahunan per divisi berhasil diambil.",

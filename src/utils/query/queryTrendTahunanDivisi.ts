@@ -9,7 +9,10 @@ import type { RekapSource } from "@/utils/query/queryTrendTahunan";
 
 // ponytail: sama dengan QueryTrendTahunan tapi GROUP BY divisi —
 // nama tabel arsip di-resolve endpoint via information_schema.
-export const QueryTrendTahunanDivisi = (rekap: RekapSource[]): string => {
+export const QueryTrendTahunanDivisi = (
+  rekap: RekapSource[],
+  metric: "sales" | "margin" = "sales",
+): string => {
   const curYear = new Date().getFullYear();
   const cur = String(new Date().getMonth() + 1).padStart(2, "0");
   const years = [curYear - 2, curYear - 1, curYear];
@@ -86,9 +89,11 @@ export const QueryTrendTahunanDivisi = (rekap: RekapSource[]): string => {
     if (year === liveYear) {
       return MONTHS.map((m) => {
         if (m === cur) {
-          return `(CASE WHEN $1 = 'margin'
-                 THEN (SELECT margin FROM mtd WHERE kd IS NOT DISTINCT FROM live.kd)
-                 ELSE live.l${m} END) AS v${year}_${m}`;
+          // ponytail: mtd hanya di-JOIN saat metric=margin (lihat query utama).
+          // Subquery berkorelasi per-divisi lama membuat mtd (3,5s) dievaluasi
+          // berulang → margin meledak ~54s & kena recovery conflict.
+          const curVal = metric === "margin" ? "m.margin" : `live.l${m}`;
+          return `${curVal} AS v${year}_${m}`;
         }
         return `(CASE WHEN '${m}' <= '${cur}' THEN live.l${m} END) AS v${year}_${m}`;
       }).join(",\n            ");
@@ -125,12 +130,12 @@ export const QueryTrendTahunanDivisi = (rekap: RekapSource[]): string => {
                ON a.SLS_PRDCD = b.ST_PRDCD AND b.ST_LOKASI = '01'
         LEFT JOIN tbmaster_divisi d ON p.prd_kodedivisi = d.div_kodedivisi
         GROUP BY COALESCE(p.prd_kodedivisi, '~')
-    )${rekapSources.length > 0 ? ",\n    " + rekapCtes : ""},
-    mtd AS (${mtdMargin})
+    )${rekapSources.length > 0 ? ",\n    " + rekapCtes : ""}${metric === "margin" ? ",\n    mtd AS (" + mtdMargin + ")" : ""}
     SELECT  COALESCE(${kdParts.join(", ")}) AS kodedivisi,
             COALESCE(${namaParts.join(", ")}) AS namadivisi,
             ${years.map(yearCols).join(",\n            ")}
     FROM live
+    ${metric === "margin" ? "LEFT JOIN mtd AS m ON m.kd IS NOT DISTINCT FROM live.kd" : ""}
     ${joins}
     ORDER BY 1
   `;

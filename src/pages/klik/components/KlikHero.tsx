@@ -2,21 +2,21 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { format } from "date-fns";
+import { addMonths, format } from "date-fns";
 import {
-  Activity,
-  Clock,
-  MoonStar,
+  CircleDollarSign,
   MousePointerClick,
-  Sparkles,
+  Percent,
   ShoppingBagIcon,
+  Sparkles,
+  TrendingUp,
 } from "lucide-react";
 
 import SettingsDatabase from "@/components/Settings/SettingsDatabase";
 import type { DatabaseOption } from "@/configs/database-options";
 import { useFetchData } from "@/hooks/data/useFetchData";
 import { FormatTanggal } from "@/utils/formatTanggal";
-import { AnimatedNumber } from "./AnimatedNumber";
+import { KpiTile } from "./KpiTile";
 
 type KlikHeroProps = {
   branch: string;
@@ -24,36 +24,18 @@ type KlikHeroProps = {
   options: readonly DatabaseOption[];
 };
 
-const OTHER_STATS: {
-  icon: typeof ShoppingBagIcon;
-  tint: string;
-  label: string;
-  text: string;
-}[] = [
-  {
-    icon: Clock,
-    tint: "bg-chart-2/10 text-chart-2",
-    label: "Waktu Puncak",
-    text: "19:00 – 21:00",
-  },
-  {
-    icon: Activity,
-    tint: "bg-chart-3/10 text-chart-3",
-    label: "Konversi",
-    text: "18,4%",
-  },
-  {
-    icon: MoonStar,
-    tint: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
-    label: "Retur",
-    text: "2,1%",
-  },
-];
+type SalesHarianRow = { tgl: string; nett: number };
+type PertumbuhanRow = { bulan: string; nett: number; margin: number };
 
 export function KlikHero({ branch, onBranchChange, options }: KlikHeroProps) {
   const today = useMemo(
     () => format(new Date(), "yyyy-MM-dd"),
     // ponytail: hitung sekali per mount; refresh tengah malam (UTC+7) tak ditangani
+    [],
+  );
+  const yesterday = useMemo(
+    () => format(new Date(Date.now() - 86_400_000), "yyyy-MM-dd"),
+    // ponytail: satu hari sebelum hari ini; tengah malam tak ditangani
     [],
   );
 
@@ -66,21 +48,70 @@ export function KlikHero({ branch, onBranchChange, options }: KlikHeroProps) {
     queryParams: { startDate: today },
   });
 
+  const {
+    data: salesData,
+    loading: salesLoading,
+    refetch: refetchSales,
+  } = useFetchData<SalesHarianRow[]>({
+    endpoint: "klik/sales-harian",
+    queryParams: { startDate: yesterday, endDate: today },
+  });
+
+  const salesHarian = useMemo(() => {
+    const byTgl = new Map((salesData ?? []).map((r) => [r.tgl, r.nett]));
+    return {
+      hariIni: byTgl.get(format(new Date(), "dd-MM-yyyy")) ?? 0,
+      kemarin:
+        byTgl.get(format(new Date(Date.now() - 86_400_000), "dd-MM-yyyy")) ?? 0,
+    };
+  }, [salesData]);
+
+  const {
+    data: pertumbuhanData,
+    loading: pertumbuhanLoading,
+    refetch: refetchPertumbuhan,
+  } = useFetchData<PertumbuhanRow[]>({
+    endpoint: "klik/pertumbuhan",
+  });
+
+  const pertumbuhan = useMemo(() => {
+    const byBulan = new Map(
+      (pertumbuhanData ?? []).map((r) => [r.bulan, r]),
+    );
+    const ini = byBulan.get(format(new Date(), "yyyy-MM"));
+    const lalu = byBulan.get(format(addMonths(new Date(), -1), "yyyy-MM"));
+    const pct = (cur: number | undefined, prev: number | undefined) =>
+      prev && prev !== 0 && cur !== undefined
+        ? ((cur - prev) / prev) * 100
+        : 0;
+    return {
+      sales: pct(ini?.nett, lalu?.nett),
+      margin: pct(ini?.margin, lalu?.margin),
+    };
+  }, [pertumbuhanData]);
+
   useEffect(
     function refetchOnBranchChange() {
       refetch();
+      refetchSales();
+      refetchPertumbuhan();
     },
-    [branch, refetch],
+    // ponytail: refetch semua saat branch berganti
+    [branch, refetch, refetchSales, refetchPertumbuhan],
   );
 
   useEffect(
     function pollEveryMinute() {
-      const id = setInterval(refetch, 60_000);
+      const id = setInterval(() => {
+        refetch();
+        refetchSales();
+        refetchPertumbuhan();
+      }, 60_000);
       return function clearPollInterval() {
         clearInterval(id);
       };
     },
-    [refetch],
+    [refetch, refetchSales, refetchPertumbuhan],
   );
 
   return (
@@ -125,43 +156,50 @@ export function KlikHero({ branch, onBranchChange, options }: KlikHeroProps) {
         tampilan.
       </p>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/70 p-3">
-          <span className="rounded-md bg-chart-1/10 p-2 text-chart-1">
-            <ShoppingBagIcon className="size-4" aria-hidden />
-          </span>
-          <div>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              PB masuk
-            </p>
-            <p className="text-lg font-bold tabular-nums">
-              {pesananLoading ? (
-                <span className="inline-block h-5 w-10 animate-pulse rounded bg-muted" />
-              ) : (
-                <AnimatedNumber value={pesananTotal} />
-              )}
-            </p>
-          </div>
-        </div>
-
-        {OTHER_STATS.map((s) => {
-          const Icon = s.icon;
-          return (
-            <div
-              key={s.label}
-              className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/70 p-3">
-              <span className={`rounded-md p-2 ${s.tint}`}>
-                <Icon className="size-4" aria-hidden />
-              </span>
-              <div>
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                  {s.label}
-                </p>
-                <p className="text-lg font-bold tabular-nums">{s.text}</p>
-              </div>
-            </div>
-          );
-        })}
+      <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-5">
+        <KpiTile
+          icon={ShoppingBagIcon}
+          tint="bg-chart-1/10 text-chart-1"
+          label="PB masuk"
+          value={pesananTotal}
+          loading={pesananLoading}
+          // ponytail: aksi navigasi belum ada — ganti dengan route ke halaman detail PB nanti
+          onClick={() => {}}
+        />
+        <KpiTile
+          icon={CircleDollarSign}
+          tint="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+          label="Sales Hari Ini"
+          value={salesHarian.hariIni}
+          prefix="Rp "
+          loading={salesLoading}
+          onClick={() => {}}
+        />
+        <KpiTile
+          icon={CircleDollarSign}
+          tint="bg-chart-2/10 text-chart-2"
+          label="Sales Kemarin"
+          value={salesHarian.kemarin}
+          prefix="Rp "
+          loading={salesLoading}
+          onClick={() => {}}
+        />
+        <KpiTile
+          icon={TrendingUp}
+          tint="bg-chart-3/10 text-chart-3"
+          label="Pertumbuhan Sales Bulan Ini"
+          value={`${Math.round(pertumbuhan.sales)}%`}
+          loading={pertumbuhanLoading}
+          onClick={() => {}}
+        />
+        <KpiTile
+          icon={Percent}
+          tint="bg-chart-1/10 text-chart-1"
+          label="Pertumbuhan Margin Bulan Ini"
+          value={`${Math.round(pertumbuhan.margin)}%`}
+          loading={pertumbuhanLoading}
+          onClick={() => {}}
+        />
       </div>
     </section>
   );

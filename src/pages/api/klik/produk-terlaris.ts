@@ -2,14 +2,7 @@ import { z } from "zod";
 
 import { createGetHandler } from "@/lib/handlerFactory";
 import type { QueryParam } from "@/types/queryParams";
-
-// skiplist kode member dari env (koma-separated). Kode member di DB kapital,
-// jadi tidak di-lowercase — banding harus case-sensitive sesuai nilai env.
-const getMemberSkiplist = (): string[] =>
-  (process.env.MEMBER_MDIH ?? "")
-    .split(",")
-    .map((m) => m.trim())
-    .filter(Boolean);
+import { getMemberSkiplist } from "@/utils/memberSkiplist";
 
 // ponytail: query fixed (bulan ini, realisasi, status SELESAI STRUK), tanpa filter user
 const buildQuery = (conditions: string, _params: QueryParam[]) => `
