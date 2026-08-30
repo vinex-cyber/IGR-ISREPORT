@@ -129,50 +129,18 @@ FROM (
       ELSE trjd_quantity * prd_frac
     END AS dtl_qty_pcs,
     CASE
-      WHEN trjd_flagtax1 = 'Y' AND trjd_create_by IN ('IDM', 'OMI', 'BKL')
-      THEN trjd_nominalamt * 11.1 / 10
+      WHEN trjd_flagtax2 = 'Y' AND trjd_create_by IN ('IDM', 'OMI', 'BKL')
+      THEN trjd_nominalamt * 1.11
       ELSE trjd_nominalamt
     END AS dtl_gross,
     CASE
-      WHEN trjd_divisioncode = '5' AND substr(trjd_division, 1, 2) = '39' THEN trjd_nominalamt
-      ELSE
-        CASE
-          WHEN COALESCE(tko_kodesbu, 'z') IN ('O', 'I') THEN
-            CASE
-              WHEN tko_tipeomi IN ('HE', 'HG') THEN
-                trjd_nominalamt - (
-                  CASE
-                    WHEN trjd_flagtax1 = 'Y' AND COALESCE(trjd_flagtax2, 'z') IN ('Y', 'z') AND COALESCE(prd_kodetag, 'zz') <> 'Q'
-                    THEN (trjd_nominalamt - (trjd_nominalamt / (1 + (COALESCE(prd_ppn, 10) / 100))))
-                    ELSE 0
-                  END
-                )
-              ELSE trjd_nominalamt
-            END
-          ELSE
-            trjd_nominalamt - (
-              CASE
-                WHEN substr(trjd_create_by, 1, 2) = 'EX' THEN 0
-                ELSE
-                  CASE
-                    WHEN trjd_flagtax1 = 'Y' AND COALESCE(trjd_flagtax2, 'z') IN ('Y', 'z') AND COALESCE(prd_kodetag, 'zz') <> 'Q'
-                    THEN (trjd_nominalamt - (trjd_nominalamt / (1 + (COALESCE(prd_ppn, 10) / 100))))
-                    ELSE 0
-                  END
-              END
-            )
-        END
+      WHEN trjd_flagtax2 = 'Y' AND trjd_create_by NOT IN ('IDM', 'OMI', 'BKL')
+      THEN trjd_nominalamt / 1.11
+      ELSE trjd_nominalamt
     END AS dtl_netto,
     CASE
-      WHEN trjd_divisioncode = '5' AND substr(trjd_division, 1, 2) = '39' THEN
-        trjd_nominalamt - (
-          CASE
-            WHEN prd_markupstandard IS NULL THEN (5 * trjd_nominalamt) / 100
-            ELSE (prd_markupstandard * trjd_nominalamt) / 100
-          END
-        )
-      ELSE
-        (trjd_quantity / CASE WHEN prd_unit = 'KG' THEN 1000 ELSE 1 END) * trjd_baseprice
+      WHEN prd_unit = 'KG' THEN (trjd_quantity * trjd_baseprice) / 1000
+      ELSE trjd_quantity * trjd_baseprice
     END AS dtl_hpp
   FROM (
     SELECT DISTINCT
@@ -199,8 +167,8 @@ FROM (
       FROM tbtr_jualdetail
       ${
         jualdetailDateFilter
-          ? `WHERE ${jualdetailDateFilter}`
-          : `WHERE date_trunc('day', trjd_create_dt) = date_trunc('day', now())`
+          ? `WHERE ${jualdetailDateFilter} AND trjd_recordid IS NULL AND trjd_quantity <> 0`
+          : `WHERE date_trunc('day', trjd_create_dt) = date_trunc('day', now()) AND trjd_recordid IS NULL AND trjd_quantity <> 0`
       }
       UNION ALL
       SELECT
@@ -216,8 +184,8 @@ FROM (
       FROM tbtr_jualdetail_interface
       ${
         jualdetailDateFilter
-          ? `WHERE ${jualdetailDateFilter}`
-          : `WHERE date_trunc('day', trjd_create_dt) = date_trunc('day', now())`
+          ? `WHERE ${jualdetailDateFilter} AND trjd_recordid IS NULL AND trjd_quantity <> 0`
+          : `WHERE date_trunc('day', trjd_create_dt) = date_trunc('day', now()) AND trjd_recordid IS NULL AND trjd_quantity <> 0`
       }
     ) s
   ) trjd
