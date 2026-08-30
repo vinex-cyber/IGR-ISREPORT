@@ -16,6 +16,7 @@ export default [
       "react-hooks/preserve-manual-memoization": "off",
       "react-hooks/purity": "off",
       "react-hooks/incompatible-library": "warn",
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     },
   },
 ];

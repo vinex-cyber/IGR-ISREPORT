@@ -23,6 +23,7 @@ import {
   INVENTORY_MENU,
   LOGISTIK_MENU,
   STORE_MENU,
+  KLIK_MENU,
   WEB_HO_MENU,
 } from "@/components/navbar/menus";
 
@@ -82,6 +83,8 @@ export default function Navbar({ branch, logoSrc }: NavbarProps) {
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
+
+          <NavDropdown label="klik" items={KLIK_MENU} />
 
           <NavDropdown label="Store" items={STORE_MENU} />
 

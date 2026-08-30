@@ -27,8 +27,8 @@ interface BaseConfig<TFilters> {
 // Handler GET (Ambil Semua Data)
 // ============================================================
 interface GetHandlerConfig<TFilters> extends BaseConfig<TFilters> {
-  successMessage: string | ((branch: string) => string);
-  emptyMessage: string | ((branch: string) => string);
+  successMessage: string | ((branch: string, filters?: TFilters) => string);
+  emptyMessage: string | ((branch: string, filters?: TFilters) => string);
   return404IfEmpty?: boolean;
   paginated?: boolean;
 }
@@ -100,7 +100,7 @@ export function createGetHandler<TFilters>(
       if (config.return404IfEmpty !== false && rows.length === 0) {
         const msg =
           typeof config.emptyMessage === "function"
-            ? config.emptyMessage(branch)
+            ? config.emptyMessage(branch, filters)
             : config.emptyMessage;
 
         return res.status(404).json({
@@ -111,7 +111,7 @@ export function createGetHandler<TFilters>(
 
       const successMsg =
         typeof config.successMessage === "function"
-          ? config.successMessage(branch)
+          ? config.successMessage(branch, filters)
           : config.successMessage;
 
       return res.status(200).json({
