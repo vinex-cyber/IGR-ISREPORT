@@ -67,7 +67,7 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
             id="date"
             variant="outline"
             className={cn(
-              "min-w-[200px] justify-start text-left font-bold",
+              "min-w-[200px] justify-center text-center font-bold",
               !date && "text-muted-foreground",
             )}>
             <CalendarIcon className="mr-2 h-4 w-4" />

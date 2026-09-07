@@ -15,6 +15,8 @@ export const klikSchemas = z.object({
       { message: "Format PLU tidak valid, harus 7 digit angka" },
     ),
   status: z.string().optional(),
+  typeBayar: z.string().optional(),
+  notRecid: z.string().optional(),
 });
 
 export type KlikFilters = z.infer<typeof klikSchemas>;

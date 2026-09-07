@@ -3,6 +3,8 @@
 
 import type { ComponentType, MouseEventHandler } from "react";
 
+import { Loader2 } from "lucide-react";
+
 import { AnimatedNumber } from "./AnimatedNumber";
 
 type KpiTileProps = {
@@ -11,6 +13,7 @@ type KpiTileProps = {
   label: string;
   value: string | number;
   loading?: boolean;
+  loaded?: boolean;
   prefix?: string;
   suffix?: string;
   delta?: number;
@@ -25,6 +28,7 @@ export function KpiTile({
   label,
   value,
   loading,
+  loaded,
   prefix = "",
   suffix = "",
   delta,
@@ -35,12 +39,17 @@ export function KpiTile({
       <span className={`rounded-md p-2 ${tint}`}>
         <Icon className="size-4" aria-hidden />
       </span>
-      <div className="min-w-0">
-        <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+      <div className="min-w-0 flex-1">
+        <p className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-muted-foreground">
           {label}
+          {loading && loaded && <Loader2 className="size-3 animate-spin" aria-hidden />}
         </p>
-        {loading ? (
-          <span className="inline-block h-5 w-10 animate-pulse rounded bg-muted" />
+        {loading && !loaded ? (
+          <span
+            className="relative mt-1 inline-block h-5 w-16 overflow-hidden rounded bg-muted"
+            aria-hidden>
+            <span className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-foreground/10 to-transparent" />
+          </span>
         ) : (
           <>
             {typeof value === "number" ? (

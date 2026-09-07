@@ -35,11 +35,38 @@ export const FilterKlik = (filters: KlikFilters) => {
       params.push(prdcd);
     }
   }
-  // Filter Status PB
+  // Filter Status PB — pakai obi_recid (bukan kolom CASE 'status' yang teks)
   if (filters.status) {
-    conditions.push(`status = $${params.length + 1}`);
+    conditions.push(`obi_recid = $${params.length + 1}`);
     params.push(filters.status);
   }
+  // Filter tipe bayar (COD / NON COD)
+  if (filters.typeBayar) {
+    conditions.push(`obi_tipebayar = $${params.length + 1}`);
+    params.push(filters.typeBayar);
+  }
+  // Filter kecualikan recid — dukung pola LIKE (contoh: notRecid '6,B%')
+  const notRecid = normalizeToArray(filters.notRecid);
+  if (notRecid.length > 0) {
+    const plain = notRecid.filter((v) => !v.includes("%"));
+    const patterns = notRecid.filter((v) => v.includes("%"));
+    if (plain.length > 0) {
+      conditions.push(`obi_recid <> ALL($${params.length + 1})`);
+      params.push(plain);
+    }
+    if (patterns.length > 0) {
+      const clauses = patterns.map((pattern) => {
+        params.push(pattern);
+        return `obi_recid NOT LIKE $${params.length}`;
+      });
+      conditions.push(clauses.join(" AND "));
+    }
+  }
+  // TMI: sama dengan kartu dashboard cpg-vite (flagTmi='N') — bukan member
+// cus_jenismember='T' DAN obi_attribute2 <> 'TMI'
+  conditions.push(`obi_kdmember not in (
+    select cus_kodemember from tbmaster_customer where cus_jenismember = 'T')
+    and obi_attribute2 <> 'TMI'`);
 
   return {
     conditions: conditions.length > 0 ? `${conditions.join(" AND ")}` : "",
