@@ -8,10 +8,10 @@ import { DATABASE_OPTIONS } from "@/configs/database-options";
 import type { DefaultBranchPageProps } from "@/utils/server/getDefaultBranchServerSideProps";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
 import { useFetchData } from "@/hooks/data/useFetchData";
-import { KlikHero } from "./components/KlikHero";
-import { PerformaPicker } from "./components/PerformaPicker";
-import { ProdukTerlaris } from "./components/ProdukTerlaris";
-import { StatusCard } from "./components/StatusCard";
+import { KlikHero } from "@/components/klik/KlikHero";
+import { PerformaPicker } from "@/components/klik/PerformaPicker";
+import { ProdukTerlaris } from "@/components/klik/ProdukTerlaris";
+import { StatusCard } from "@/components/klik/StatusCard";
 
 export const getServerSideProps = getDefaultBranchServerSideProps;
 
