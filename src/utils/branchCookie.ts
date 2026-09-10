@@ -14,6 +14,11 @@ export function setBranchCookie(branch: string) {
     `max-age=${MAX_AGE}`,
     "SameSite=Strict",
   ].join("; ");
+
+  // Beri tahu semua useFetchData aktif (kartu, tabel, select lookup) supaya
+  // refetch dengan branch baru. Sebelumnya bergantung pada masing-masing
+  // komponen punya useEffect [branch, refetch] sendiri, banyak yang terlewat.
+  window.dispatchEvent(new Event("branch-changed"));
 }
 
 export function getBranchCookie(): string {

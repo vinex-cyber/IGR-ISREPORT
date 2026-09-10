@@ -48,35 +48,35 @@ export default function InformasiPromosiPrdcd({ defaultBranch }: Props) {
               />
             </Reveal>
             <Reveal>
-              <TabelSettingHarga key={`sh-${branch}-${prdcd}`} plu={prdcd} branch={branch} />
+              <TabelSettingHarga plu={prdcd} branch={branch} />
             </Reveal>
             <Reveal>
-              <TabelMemberPricing key={`mp-${branch}-${prdcd}`} plu={prdcd} />
+              <TabelMemberPricing plu={prdcd} />
             </Reveal>
           </div>
 
           <div className="flex w-2/5 flex-col gap-5">
             <Reveal>
-              <KartuProduk key={`kp-${branch}-${prdcd}`} plu={prdcd} branch={branch} />
+              <KartuProduk plu={prdcd} branch={branch} />
             </Reveal>
             <Reveal>
-              <TabelTrendSales key={`ts-${branch}-${prdcd}`} plu={prdcd} />
+              <TabelTrendSales plu={prdcd} />
             </Reveal>
           </div>
         </section>
 
         <section className="mt-5 space-y-5">
           <Reveal direction="left" duration={durationAnimasi} ease="outCubic">
-            <TabelPromoCashback key={`cb-${branch}-${prdcd}`} plu={prdcd} />
+            <TabelPromoCashback plu={prdcd} />
           </Reveal>
           <Reveal direction="right" duration={durationAnimasi} ease="outCubic">
-            <TabelPromoGift key={`gf-${branch}-${prdcd}`} plu={prdcd} />
+            <TabelPromoGift plu={prdcd} />
           </Reveal>
           <Reveal direction="left" duration={durationAnimasi} ease="outCubic">
-            <TabelPromoInstore key={`is-${branch}-${prdcd}`} plu={prdcd} />
+            <TabelPromoInstore plu={prdcd} />
           </Reveal>
           <Reveal direction="right" duration={durationAnimasi} ease="outCubic">
-            <TabelPromoHJK key={`hjk-${branch}-${prdcd}`} plu={prdcd} />
+            <TabelPromoHJK plu={prdcd} />
           </Reveal>
         </section>
       </div>

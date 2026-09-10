@@ -3,6 +3,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 
+import { getRequestBranch } from "@/utils/getRequestBranch";
+
 const StrukQuerySchema = z.object({
   tanggal: z
     .string()
@@ -49,13 +51,26 @@ interface StrukErrorResponse {
 
 type StrukResponse = StrukSuccessResponse | StrukErrorResponse;
 
-const STRUK_DIRECTORY =
+const STRUK_DIRECTORY_IGR =
   process.env.STRUK_DIRECTORY_IGR ?? "\\\\192.168.226.194\\d\\GROSIR\\STRUK";
+
+// ponytail: file struk berada di share yang beda per branch.
+// Ambil dari env STRUK_DIRECTORY_<BRANCH>; kalau belum ada, jatuh ke IGR
+// (satu-satunya share yang punya env sampai sekarang).
+function getStrukDirectory(branch: string): string {
+  return (
+    process.env[`STRUK_DIRECTORY_${branch}`] ??
+    process.env.STRUK_DIRECTORY_IGR ??
+    STRUK_DIRECTORY_IGR
+  );
+}
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<StrukResponse>,
 ) {
+  res.setHeader("Cache-Control", "no-store");
+
   if (req.method !== "GET") {
     res.setHeader("Allow", ["GET"]);
 
@@ -81,6 +96,9 @@ export default async function handler(
   }
 
   const { tanggal, station, kasir, struk } = parsedQuery.data;
+
+  const branch = getRequestBranch(req);
+  const STRUK_DIRECTORY = getStrukDirectory(branch);
 
   const [day, month, year] = tanggal.split("-");
 

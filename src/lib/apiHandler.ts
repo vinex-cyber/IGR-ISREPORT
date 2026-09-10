@@ -9,6 +9,11 @@ export function checkMethod(
   res: NextApiResponse<ApiResponse<unknown>>,
   allowed: HttpMethod | HttpMethod[] = "GET",
 ): boolean {
+  // Semua respons API data bersifat per-branch (cookie selected_branch) dan
+  // terus berubah; larang cache supaya refetch saat ganti branch tidak
+  // disajikan dari cache browser (respon mereka sempat punya ETag).
+  res.setHeader("Cache-Control", "no-store");
+
   const allowedMethods = Array.isArray(allowed) ? allowed : [allowed];
 
   if (!allowedMethods.includes(req.method as HttpMethod)) {

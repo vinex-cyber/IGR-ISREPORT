@@ -5,16 +5,18 @@ const MONTHS = [
   "07", "08", "09", "10", "11", "12",
 ] as const;
 
-// ponytail: arsip tahun lalu = <tahun sekarang −1>, snapshot bulan 12.
-// Kalau arsipnya belum ada (awal Januari sebelum job jalan), query akan gagal.
-const REKAP_TABLE = `tbtr_rekapsalesbulanan_${new Date().getFullYear() - 1}_12`;
-
-export const QueryTrendSalesByDivisi = () => {
+// Tren divisi: tahun ini dari TBTR_SALESBULANAN (sls_) + bulan berjalan live
+// dari TBMASTER_STOCK, tahun lalu dari tabel arsip rekap bulanan (rsl_).
+// rekapTable di-resolve server-side (information_schema) karena tidak semua
+// branch punya snapshot arsip yang sama; null → tanpa rekap (kolom kosong).
+export const QueryTrendSalesByDivisi = (
+  rekapTable: string | null,
+  divisi?: string,
+) => {
   const cur = String(new Date().getMonth() + 1).padStart(2, "0");
+  const divisiCond = divisi ? ` AND p.prd_kodedivisi = $1 ` : "";
+  const rekapDivisiCond = divisi ? ` AND a.rsl_kodedivisi = $1 ` : "";
 
-  // Tahun ini: TBTR_SALESBULANAN (prefix sls_), bulan berjalan live dari
-  // TBMASTER_STOCK (st_sales × st_avgcost) karena belum terisi.
-  // Tahun lalu: tabel arsip rekap (prefix rsl_, kolom divisi sudah ada).
   const liveRph = MONTHS.map((m) =>
     m === cur
       ? `COALESCE(SUM(CASE WHEN p.PRD_UNIT = 'KG' AND p.PRD_FRAC = 1000
@@ -26,12 +28,22 @@ export const QueryTrendSalesByDivisi = () => {
     (m) => `COALESCE(SUM(a.SLS_RPH_${m} - a.SLS_HPP_${m}), 0) AS mgr_${m}`,
   ).join(",\n            ");
 
-  const rekapRph = MONTHS.map(
-    (m) => `COALESCE(SUM(a.RSL_RPH_${m}), 0) AS sls_rph_${m}`,
+  const rekapSource = rekapTable
+    ? `${rekapTable} a`
+    : "(SELECT NULL::varchar AS rsl_kodedivisi WHERE FALSE) a";
+  const rekapRph = MONTHS.map((m) =>
+    rekapTable
+      ? `COALESCE(SUM(a.RSL_RPH_${m}), 0) AS sls_rph_${m}`
+      : `NULL AS sls_rph_${m}`,
   ).join(",\n            ");
-  const rekapMgr = MONTHS.map(
-    (m) => `COALESCE(SUM(a.RSL_RPH_${m} - a.RSL_HPP_${m}), 0) AS mgr_${m}`,
+  const rekapMgr = MONTHS.map((m) =>
+    rekapTable
+      ? `COALESCE(SUM(a.RSL_RPH_${m} - a.RSL_HPP_${m}), 0) AS mgr_${m}`
+      : `NULL AS mgr_${m}`,
   ).join(",\n            ");
+  const rekapJoin = `
+        LEFT JOIN tbmaster_divisi d
+               ON a.rsl_kodedivisi = d.div_kodedivisi`;
 
   return `
     WITH live AS (
@@ -46,6 +58,7 @@ export const QueryTrendSalesByDivisi = () => {
                ON a.SLS_PRDCD = b.ST_PRDCD AND b.ST_LOKASI = '01'
         LEFT JOIN tbmaster_divisi d
                ON p.prd_kodedivisi = d.div_kodedivisi
+        WHERE 1 = 1${divisiCond}
         GROUP BY p.prd_kodedivisi
     ),
     rekap AS (
@@ -53,9 +66,9 @@ export const QueryTrendSalesByDivisi = () => {
                 MAX(d.div_namadivisi)                         AS namadivisi,
                 ${rekapRph},
                 ${rekapMgr}
-        FROM    ${REKAP_TABLE} a
-        LEFT JOIN tbmaster_divisi d
-               ON a.rsl_kodedivisi = d.div_kodedivisi
+        FROM    ${rekapSource}
+        ${rekapJoin}
+        WHERE 1 = 1${rekapDivisiCond}
         GROUP BY a.rsl_kodedivisi
     )
     SELECT  COALESCE(l.kodedivisi, r.kodedivisi)              AS kodedivisi,

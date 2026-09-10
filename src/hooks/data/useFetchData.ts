@@ -79,5 +79,20 @@ export function useFetchData<T>({
     fetchData();
   }, [endpoint, stableParams, enabled, fetchData]);
 
+  // ponytail: semua data endpoint bersifat per-branch (cookie selected_branch).
+  // Saat SettingsDatabase ganti branch, event "branch-changed" dikirim dari
+  // setBranchCookie; di sini semua fetch aktif di-refetch sekali biar tidak
+  // ada kartu/tabel/select yang nyangkut di branch lama.
+  useEffect(function refetchOnBranchChanged() {
+    if (typeof window === "undefined") return;
+    const handler = () => {
+      if (enabled) fetchData();
+    };
+    window.addEventListener("branch-changed", handler);
+    return function removeBranchChangedListener() {
+      window.removeEventListener("branch-changed", handler);
+    };
+  }, [enabled, fetchData]);
+
   return { data, error, loading, total, totalPages, totals, refetch: fetchData };
 }
