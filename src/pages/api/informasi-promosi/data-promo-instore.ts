@@ -34,4 +34,5 @@ export default createGetHandler({
     `Data instore berhasil diambil untuk branch '${branch}'.`,
   errorContext: "Data instore error",
   emptyMessage: (branch) => `Tidak ada data instore untuk branch '${branch}'.`,
+  return404IfEmpty: false,
 });
