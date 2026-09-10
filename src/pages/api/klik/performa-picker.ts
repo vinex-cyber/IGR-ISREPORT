@@ -78,7 +78,7 @@ function buildQuery(conditions: string): string {
       AND coalesce(c.cus_jenismember,'-') <> 'T'
       ${conditions}
   ),
-  totalpb AS (
+  totalpb AS MATERIALIZED (
     SELECT count(DISTINCT obi_nopb)::int AS total FROM src
   )
   SELECT
