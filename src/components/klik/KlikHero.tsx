@@ -44,8 +44,7 @@ export function KlikHero({ branch, onBranchChange, options }: KlikHeroProps) {
     loading: pesananLoading,
     refetch,
   } = useFetchData<{ obi_nopb: string }[]>({
-    endpoint: "klik/status-order",
-    queryParams: { startDate: today },
+    endpoint: "klik/pb-masuk",
   });
 
   const {

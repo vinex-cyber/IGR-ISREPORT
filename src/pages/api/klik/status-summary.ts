@@ -7,20 +7,24 @@ import type { QueryParam } from "@/types/queryParams";
 // SELESAI STRUK (6) hanya per hari ini.
 // TMI (flagTmi='N') = dibatasi sama persis dengan backend cpg-vite:
 // bukan member cus_jenismember='T' DAN obi_attribute2 <> 'TMI'.
+// NOT EXISTS (bukannya NOT IN) memakai indeks pkey customer per-bar,
+// bukan scan 5,7 juta baris tbmaster_customer; filter "today" sargable.
 const buildQuery = (_conditions: string, _params: QueryParam[]) => `
 WITH all_status AS (
   SELECT h.obi_recid, h.obi_tipebayar
   FROM tbtr_obi_h h
-  WHERE h.obi_kdmember NOT IN (
-        SELECT cus_kodemember FROM tbmaster_customer WHERE cus_jenismember = 'T')
+  WHERE NOT EXISTS (
+    SELECT 1 FROM tbmaster_customer c
+    WHERE c.cus_kodemember = h.obi_kdmember AND c.cus_jenismember = 'T')
     AND h.obi_attribute2 <> 'TMI'
 ),
 today AS (
   SELECT h.obi_recid
   FROM tbtr_obi_h h
-  WHERE date_trunc('day', h.obi_tglpb) = date_trunc('day', now())
-    AND h.obi_kdmember NOT IN (
-        SELECT cus_kodemember FROM tbmaster_customer WHERE cus_jenismember = 'T')
+  WHERE h.obi_tglpb >= now()::date AND h.obi_tglpb < now()::date + interval '1 day'
+    AND NOT EXISTS (
+    SELECT 1 FROM tbmaster_customer c
+    WHERE c.cus_kodemember = h.obi_kdmember AND c.cus_jenismember = 'T')
     AND h.obi_attribute2 <> 'TMI'
 )
 SELECT '1' AS key, count(*)::int AS total FROM all_status WHERE obi_recid = '1'

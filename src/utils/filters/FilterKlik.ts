@@ -63,9 +63,12 @@ export const FilterKlik = (filters: KlikFilters) => {
     }
   }
   // TMI: sama dengan kartu dashboard cpg-vite (flagTmi='N') — bukan member
-// cus_jenismember='T' DAN obi_attribute2 <> 'TMI'
-  conditions.push(`obi_kdmember not in (
-    select cus_kodemember from tbmaster_customer where cus_jenismember = 'T')
+// cus_jenismember='T' DAN obi_attribute2 <> 'TMI'.
+// -> NOT EXISTS (bukannya NOT IN) supaya korelasi per-bar lewat indeks pkey
+//    customer, bukan memindai seluruh tbmaster_customer (~5,7 juta baris).
+  conditions.push(`NOT EXISTS (
+    select 1 from tbmaster_customer c
+    where c.cus_kodemember = obi_kdmember and c.cus_jenismember = 'T')
     and obi_attribute2 <> 'TMI'`);
 
   return {
