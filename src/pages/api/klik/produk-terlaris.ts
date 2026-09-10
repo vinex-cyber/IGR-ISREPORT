@@ -1,11 +1,38 @@
-import { z } from "zod";
+// src/pages/api/klik/produk-terlaris.ts
+import type { NextApiRequest, NextApiResponse } from "next";
 
-import { createGetHandler } from "@/lib/handlerFactory";
+import { checkMethod, handleServerError } from "@/lib/apiHandler";
+import { getPool } from "@/lib/db";
 import type { QueryParam } from "@/types/queryParams";
+import { getRequestBranch } from "@/utils/getRequestBranch";
 import { getMemberSkiplist } from "@/utils/memberSkiplist";
 
+// ponytail: kode `cus_kodeigr` pemilik data Klik mengikuti nama branch
+// (SPICPG1I→'1I', SPICPG4L→'4L', IGRCPG→'01'). Branch di-resolve server-side
+// via getRequestBranch (cookie → IP), lalu dilempar sebagai SQL param.
+function getKodeIgr(branch: string): string {
+  return branch === "IGRCPG" ? "01" : branch.slice(-2);
+}
+
+function buildFilters(kodeIgr: string) {
+  const parts: string[] = [];
+  const params: QueryParam[] = [];
+
+  parts.push(`c.cus_kodeigr = $${params.length + 1}`);
+  params.push(kodeIgr);
+
+  const members = getMemberSkiplist();
+  if (members.length > 0) {
+    parts.push(`NOT (c.cus_kodemember = ANY($${params.length + 1}))`);
+    params.push(members);
+  }
+
+  return { conditions: `AND ${parts.join(" AND ")}`, params };
+}
+
 // ponytail: query fixed (bulan ini, realisasi, status SELESAI STRUK), tanpa filter user
-const buildQuery = (conditions: string, _params: QueryParam[]) => `
+function buildQuery(conditions: string): string {
+  return `
   SELECT
     row_number() OVER (ORDER BY sum(d.obi_qtyrealisasi) DESC)::int AS rank,
     substr(d.obi_prdcd, 1, 6) || '0' AS prdcd_ctn,
@@ -25,26 +52,40 @@ const buildQuery = (conditions: string, _params: QueryParam[]) => `
     AND date_trunc('month', h.obi_tglpb) = date_trunc('month', now())
     AND d.obi_qtyrealisasi <> 0
     AND coalesce(c.cus_jenismember,'-') <> 'T'
-    AND c.cus_kodeigr = '01'
     ${conditions}
   GROUP BY substr(d.obi_prdcd, 1, 6) || '0'
   ORDER BY sum(d.obi_qtyrealisasi) DESC
   LIMIT 10
-`;
+  `;
+}
 
-export default createGetHandler<Record<string, never>>({
-  schema: z.object({}),
-  buildFilters: () => {
-    const members = getMemberSkiplist();
-    if (members.length === 0) return { conditions: "", params: [] };
-    return {
-      conditions: "AND NOT (c.cus_kodemember = ANY($1))",
-      params: [members],
-    };
-  },
-  buildQuery,
-  successMessage: `Data 10 produk terlaris bulan ini berhasil diambil.`,
-  emptyMessage: `Tidak ada produk terlaris untuk bulan ini.`,
-  errorContext: "Produk Terlaris Bulan Ini",
-  return404IfEmpty: false,
-});
+// ponytail: pengecualian dari createGetHandler (rujukan: api/chart/trend-tahunan) —
+// query butuh nilai per-branch (kodeigr) yang baru bisa di-resolve dari request,
+// sedangkan buildFilters/buildQuery factory tidak menerima branch.
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
+  if (!checkMethod(req, res, "GET")) return;
+
+  const branch = getRequestBranch(req);
+  const kodeIgr = getKodeIgr(branch);
+
+  try {
+    const pool = getPool(branch);
+    const { conditions, params } = buildFilters(kodeIgr);
+    const result = await pool.query({
+      text: buildQuery(conditions),
+      values: params.length > 0 ? params : undefined,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Data 10 produk terlaris bulan ini berhasil diambil.",
+      total: result.rows.length,
+      data: result.rows,
+    });
+  } catch (error) {
+    return handleServerError(res, error, branch, "Produk Terlaris Bulan Ini");
+  }
+}
