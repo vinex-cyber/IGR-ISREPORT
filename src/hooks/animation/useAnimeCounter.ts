@@ -6,6 +6,7 @@ interface CounterOptions {
   to: number;
   duration?: number;
   ease?: string;
+  decimals?: number;
   autoplay?: boolean;
   delay?: number;
 }
@@ -16,6 +17,7 @@ export function useAnimeCounter(opts: CounterOptions) {
     to,
     duration = 1000,
     ease = "outExpo",
+    decimals = 0,
     autoplay = true,
     delay = 0,
   } = opts;
@@ -26,14 +28,15 @@ export function useAnimeCounter(opts: CounterOptions) {
   const start = useCallback(() => {
     if (animRef.current) animRef.current.cancel();
     const obj = { v: from };
+    const factor = 10 ** decimals;
     animRef.current = animate(obj, {
       v: to,
       duration,
       ease,
       delay,
-      onUpdate: () => setValue(Math.round(obj.v)),
+      onUpdate: () => setValue(Math.round(obj.v * factor) / factor),
     });
-  }, [from, to, duration, ease, delay]);
+  }, [from, to, duration, ease, delay, decimals]);
 
   useEffect(
     function autoStartAnimation() {

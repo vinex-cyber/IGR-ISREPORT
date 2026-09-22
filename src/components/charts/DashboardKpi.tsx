@@ -66,7 +66,7 @@ function KpiAnimatedValue({ value, decimals = 0, suffix }: KpiValueProps) {
     () => Number(Number(value).toFixed(decimals)),
     [value, decimals],
   );
-  const { value: animated } = useAnimeCounter({ to: rounded });
+  const { value: animated } = useAnimeCounter({ to: rounded, decimals });
   const display =
     decimals > 0
       ? animated.toLocaleString("id-ID", { minimumFractionDigits: decimals })

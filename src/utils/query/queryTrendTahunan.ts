@@ -1,5 +1,7 @@
 // src/utils/query/queryTrendTahunan.ts
 
+import { JUALDETAIL_DISTINCT_BASE } from "@/utils/query/jualdetailBase";
+
 const MONTHS = [
   "01", "02", "03", "04", "05", "06",
   "07", "08", "09", "10", "11", "12",
@@ -27,35 +29,36 @@ export const QueryTrendTahunan = (rekap: RekapSource[]): string => {
   }).join(",\n            ");
 
   // ponytail: margin bulan berjalan tidak bisa dari stock (omzet saja) maupun
-  // salesbulanan (belum diisi job) — dihitung live dari transaksi bulan ini.
+  // salesbulanan (belum diisi job) — dihitung live dari transaksi bulan ini
+  // dengan granularity DISTINCT + formula netto-hpp yang sama dengan DetailStruk
+  // (report evaluasi sales per bulan).
   const mtdMargin = `
     SELECT COALESCE(SUM(
       CASE WHEN t.dtl_rtype = 'S' THEN t.dtl_netto - t.dtl_hpp
            ELSE (t.dtl_netto - t.dtl_hpp) * -1 END), 0)::float8 AS margin
     FROM (
-      SELECT x.trjd_transactiontype AS dtl_rtype,
-        CASE WHEN x.trjd_flagtax2 = 'Y' AND x.trjd_create_by IN ('IDM','OMI','BKL')
-             THEN x.trjd_nominalamt * 1.11 ELSE x.trjd_nominalamt END AS dtl_netto,
-        CASE WHEN prd.prd_unit = 'KG'
-             THEN x.trjd_quantity * x.trjd_baseprice / 1000
-             ELSE x.trjd_quantity * x.trjd_baseprice END AS dtl_hpp
+      SELECT t.trjd_transactiontype AS dtl_rtype,
+             CASE WHEN t.trjd_flagtax2 = 'Y' AND t.trjd_create_by NOT IN ('IDM', 'OMI', 'BKL')
+                  THEN t.trjd_nominalamt / 1.11 ELSE t.trjd_nominalamt END AS dtl_netto,
+             CASE WHEN prd.prd_unit = 'KG'
+                  THEN t.trjd_quantity * t.trjd_baseprice / 1000
+                  ELSE t.trjd_quantity * t.trjd_baseprice END AS dtl_hpp
       FROM (
-        SELECT DISTINCT trjd_transactiontype, trjd_prdcd, trjd_flagtax2,
-               trjd_quantity, trjd_nominalamt, trjd_baseprice, trjd_create_by,
-               trjd_recordid, trjd_transactionno, trjd_cashierstation, trjd_seqno
-        FROM tbtr_jualdetail
-        WHERE trjd_transactiondate >= date_trunc('month', now())
-          AND trjd_recordid IS NULL
-        UNION ALL
-        SELECT DISTINCT trjd_transactiontype, trjd_prdcd, trjd_flagtax2,
-               trjd_quantity, trjd_nominalamt, trjd_baseprice, trjd_create_by,
-               trjd_recordid, trjd_transactionno, trjd_cashierstation, trjd_seqno
-        FROM tbtr_jualdetail_interface
-        WHERE trjd_transactiondate >= date_trunc('month', now())
-          AND trjd_recordid IS NULL
-      ) x
-      JOIN tbmaster_prodmast prd ON x.trjd_prdcd = prd.prd_prdcd
-      WHERE x.trjd_quantity <> 0
+        SELECT DISTINCT ${JUALDETAIL_DISTINCT_BASE}
+        FROM (
+          SELECT ${JUALDETAIL_DISTINCT_BASE}
+          FROM tbtr_jualdetail
+          WHERE trjd_transactiondate >= date_trunc('month', now())
+            AND trjd_recordid IS NULL AND trjd_quantity <> 0
+          UNION ALL
+          SELECT ${JUALDETAIL_DISTINCT_BASE}
+          FROM tbtr_jualdetail_interface
+          WHERE trjd_transactiondate >= date_trunc('month', now())
+            AND trjd_recordid IS NULL AND trjd_quantity <> 0
+        ) s
+      ) t
+      LEFT JOIN tbmaster_prodmast prd ON t.trjd_prdcd = prd.prd_prdcd
+      WHERE t.trjd_quantity <> 0
     ) t
   `;
 
