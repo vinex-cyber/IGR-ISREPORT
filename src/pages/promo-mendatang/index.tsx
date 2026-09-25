@@ -59,6 +59,8 @@ const PromoMendatangPage = () => {
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
                 onSearchReset={() => setSearchTerm("")}
+                textBody="xxs"
+                textHeader="xs"
               />
             )}
           </>

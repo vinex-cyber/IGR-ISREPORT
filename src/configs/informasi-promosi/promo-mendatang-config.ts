@@ -4,6 +4,7 @@ export type PromoMendatangRows = {
   kd_promo: string;
   nama_promo: string;
   plu_promo: string;
+  deskripsi_promo: string;
   tglawal_promo: string;
   tglakhir_promo: string;
   flag_promo: string;
@@ -18,7 +19,8 @@ const joinFlags = (row: Record<string, unknown>) =>
 
 const joinMember = (row: Record<string, unknown>) => {
   const jenis: string[] = [];
-  if (row.mm_reguler === "1" || row.mm_reguler_biruplus === "1") jenis.push("Mb");
+  if (row.mm_reguler === "1" || row.mm_reguler_biruplus === "1")
+    jenis.push("Mb");
   if (
     row.mm_retailer === "1" ||
     row.mm_silver === "1" ||
@@ -35,6 +37,7 @@ export const promoMendatangColumns: ColumnConfig<PromoMendatangRows>[] = [
   { field: "kd_promo", label: "KODE", isSearchable: true },
   { field: "nama_promo", label: "NAMA PROMOSI", isSearchable: true },
   { field: "plu_promo", label: "PLU", isSearchable: true },
+  { field: "deskripsi_promo", label: "DESKRIPSI", isSearchable: true },
   { field: "tglawal_promo", label: "TGL AWAL" },
   { field: "tglakhir_promo", label: "TGL AKHIR" },
   {
