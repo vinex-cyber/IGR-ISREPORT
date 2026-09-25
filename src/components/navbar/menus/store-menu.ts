@@ -16,6 +16,12 @@ export const STORE_MENU = [
       "Halaman untuk melihat informasi promosi yang sedang berlangsung.",
   },
   {
+    title: "Promo Mendatang",
+    href: "/promo-mendatang",
+    description:
+      "Halaman untuk melihat informasi promo mendatang yang akan datang.",
+  },
+  {
     title: "Form SO Harian",
     href: "/form-so-harian",
     description: "Halaman untuk Cek Data SO harian.",

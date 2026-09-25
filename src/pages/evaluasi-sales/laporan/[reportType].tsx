@@ -46,6 +46,7 @@ const LaporanPage = () => {
   } = useReportPage({
     basePath: "evaluasi-sales",
     reportType,
+    reportTitle: reportType,
     paginated: reportDef.paginated,
     defaultLimit: reportDef.defaultLimit,
     ...config,

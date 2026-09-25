@@ -15,6 +15,7 @@ import TabelPromoCashback from "../table/TabelPromoCashback";
 import TabelPromoGift from "../table/TabelPromoGift";
 import TabelPromoInstore from "../table/TabelPromoInstore";
 import TabelPromoHJK from "../table/TabelPromoHJK";
+import TabelPromoMendatang from "../table/TabelPromoMendatang";
 
 export const getServerSideProps = getDefaultBranchServerSideProps;
 type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
@@ -52,6 +53,9 @@ export default function InformasiPromosiPrdcd({ defaultBranch }: Props) {
             </Reveal>
             <Reveal>
               <TabelMemberPricing plu={prdcd} />
+            </Reveal>
+            <Reveal>
+              <TabelPromoMendatang plu={prdcd} />
             </Reveal>
           </div>
 
