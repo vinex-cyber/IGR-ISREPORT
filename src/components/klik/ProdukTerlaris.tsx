@@ -1,5 +1,4 @@
 // src/pages/klik/components/ProdukTerlaris.tsx
-"use client";
 
 import { useEffect } from "react";
 import { Package } from "lucide-react";
@@ -31,7 +30,9 @@ function formatQtyCtn(qty: number, frac: number): string {
   const f = Math.max(1, frac || 1);
   const ctn = Math.floor(qty / f);
   const sisa = Math.round(qty % f);
-  return sisa > 0 ? `${ctn.toLocaleString("id-ID")} ctn, ${sisa} pcs` : `${ctn.toLocaleString("id-ID")} ctn`;
+  return sisa > 0
+    ? `${ctn.toLocaleString("id-ID")} ctn, ${sisa} pcs`
+    : `${ctn.toLocaleString("id-ID")} ctn`;
 }
 
 export function ProdukTerlaris({ branch }: ProdukTerlarisProps) {
@@ -68,7 +69,13 @@ export function ProdukTerlaris({ branch }: ProdukTerlarisProps) {
               key={t.prdcd_ctn}
               className="flex items-center gap-3 rounded-lg border border-transparent px-2 py-2 transition-colors hover:border-border/60 hover:bg-muted/40">
               <span className="w-6 shrink-0 text-center text-sm" aria-hidden>
-                {t.rank === 1 ? "🥇" : t.rank === 2 ? "🥈" : t.rank === 3 ? "🥉" : t.rank}
+                {t.rank === 1
+                  ? "🥇"
+                  : t.rank === 2
+                    ? "🥈"
+                    : t.rank === 3
+                      ? "🥉"
+                      : t.rank}
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">

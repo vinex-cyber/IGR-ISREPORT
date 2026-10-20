@@ -1,5 +1,4 @@
 // src/pages/klik/components/KpiTile.tsx
-"use client";
 
 import type { ComponentType, MouseEventHandler } from "react";
 
@@ -42,7 +41,9 @@ export function KpiTile({
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-muted-foreground">
           {label}
-          {loading && loaded && <Loader2 className="size-3 animate-spin" aria-hidden />}
+          {loading && loaded && (
+            <Loader2 className="size-3 animate-spin" aria-hidden />
+          )}
         </p>
         {loading && !loaded ? (
           <span
@@ -66,8 +67,7 @@ export function KpiTile({
                   delta >= 0
                     ? "text-emerald-600 dark:text-emerald-400"
                     : "text-red-600 dark:text-red-400"
-                }`}
-              >
+                }`}>
                 {delta >= 0 ? "▲" : "▼"} {Math.abs(delta)}%
               </p>
             )}

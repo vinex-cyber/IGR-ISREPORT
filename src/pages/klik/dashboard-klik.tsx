@@ -9,6 +9,7 @@ import type { DefaultBranchPageProps } from "@/utils/server/getDefaultBranchServ
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
 import { useFetchData } from "@/hooks/data/useFetchData";
 import { KlikHero } from "@/components/klik/KlikHero";
+import { PbKlikPerTanggal } from "@/components/klik/PbKlikPerTanggal";
 import { PerformaPicker } from "@/components/klik/PerformaPicker";
 import { ProdukTerlaris } from "@/components/klik/ProdukTerlaris";
 import { StatusCard } from "@/components/klik/StatusCard";
@@ -123,9 +124,15 @@ export default function DashboardKlik({
           ))}
         </div>
 
+        <PbKlikPerTanggal branch={branch} />
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
-          <ProdukTerlaris branch={branch} />
-          <PerformaPicker branch={branch} />
+          <div className="col-span-2">
+            <ProdukTerlaris branch={branch} />
+          </div>
+
+          <div>
+            <PerformaPicker branch={branch} />
+          </div>
         </div>
       </div>
     </Layout>

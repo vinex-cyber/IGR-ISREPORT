@@ -1,6 +1,4 @@
 // src/pages/klik/components/KlikHero.tsx
-"use client";
-
 import { useEffect, useMemo } from "react";
 import { format, addMonths } from "date-fns";
 import {

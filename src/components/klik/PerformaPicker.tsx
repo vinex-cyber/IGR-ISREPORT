@@ -1,6 +1,4 @@
 // src/pages/klik/components/PerformaPicker.tsx
-"use client";
-
 import { useEffect, useState } from "react";
 import { endOfMonth, format, startOfMonth } from "date-fns";
 import { UserCheck } from "lucide-react";
@@ -89,10 +87,9 @@ export function PerformaPicker({ branch }: PerformaPickerProps) {
     },
   });
 
-  const {
-    data: detailRows,
-    loading: detailLoading,
-  } = useFetchData<PickerDetailRow[]>({
+  const { data: detailRows, loading: detailLoading } = useFetchData<
+    PickerDetailRow[]
+  >({
     endpoint: "klik/performa-picker-detail",
     queryParams: {
       ...(selected ? { picker: selected } : {}),
@@ -130,7 +127,8 @@ export function PerformaPicker({ branch }: PerformaPickerProps) {
             Performa Picker
           </CardTitle>
           <CardDescription>
-            Total {totalPb.toLocaleString("id-ID")} PB · klik picker untuk detail
+            Total {totalPb.toLocaleString("id-ID")} PB · klik picker untuk
+            detail
           </CardDescription>
         </div>
         <DateRangePicker value={dateRange} onChange={setDateRange} />
@@ -171,7 +169,9 @@ export function PerformaPicker({ branch }: PerformaPickerProps) {
         )}
       </CardContent>
 
-      <Dialog open={selected !== null} onOpenChange={(o) => !o && setSelected(null)}>
+      <Dialog
+        open={selected !== null}
+        onOpenChange={(o) => !o && setSelected(null)}>
         <DialogContent className="max-w-7xl overflow-hidden p-0 sm:max-w-7xl xl:max-w-[92vw]">
           <DialogHeader className="px-6 pt-5">
             <DialogTitle className="flex items-center gap-2">
@@ -187,21 +187,43 @@ export function PerformaPicker({ branch }: PerformaPickerProps) {
           </DialogHeader>
           <div className="max-h-[70vh] overflow-auto p-4 pt-2">
             {detailLoading ? (
-              <p className="p-4 text-sm text-muted-foreground">Memuat data...</p>
+              <p className="p-4 text-sm text-muted-foreground">
+                Memuat data...
+              </p>
             ) : detailRows && detailRows.length > 0 ? (
               <table className="w-full text-left text-sm text-muted-foreground">
                 <thead className="sticky top-0 z-10 bg-muted/90 text-xs uppercase text-muted-foreground backdrop-blur">
                   <tr>
-                    <th scope="col" className="px-4 py-3">No</th>
-                    <th scope="col" className="px-4 py-3">Recid</th>
-                    <th scope="col" className="px-4 py-3">No PB</th>
-                    <th scope="col" className="px-4 py-3">Tgl PB</th>
-                    <th scope="col" className="px-4 py-3">Tgl Trans</th>
-                    <th scope="col" className="px-4 py-3">No Trans</th>
-                    <th scope="col" className="px-4 py-3 text-right">Item Order</th>
-                    <th scope="col" className="px-4 py-3 text-right">Real Item</th>
-                    <th scope="col" className="px-4 py-3 text-right">Pick Dt</th>
-                    <th scope="col" className="px-4 py-3 text-right">Close Dt</th>
+                    <th scope="col" className="px-4 py-3">
+                      No
+                    </th>
+                    <th scope="col" className="px-4 py-3">
+                      Recid
+                    </th>
+                    <th scope="col" className="px-4 py-3">
+                      No PB
+                    </th>
+                    <th scope="col" className="px-4 py-3">
+                      Tgl PB
+                    </th>
+                    <th scope="col" className="px-4 py-3">
+                      Tgl Trans
+                    </th>
+                    <th scope="col" className="px-4 py-3">
+                      No Trans
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-right">
+                      Item Order
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-right">
+                      Real Item
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-right">
+                      Pick Dt
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-right">
+                      Close Dt
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -209,10 +231,13 @@ export function PerformaPicker({ branch }: PerformaPickerProps) {
                     <tr
                       key={`${r.obi_nopb}-${r.obi_notrans}`}
                       className="animate-fade-up border-t border-border/50 odd:bg-muted/20 transition-colors hover:bg-muted/50"
-                      style={{ animationDelay: `${Math.min(idx * 40, 480)}ms` }}>
+                      style={{
+                        animationDelay: `${Math.min(idx * 40, 480)}ms`,
+                      }}>
                       <td className="px-4 py-3">{idx + 1}</td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-bold ${recidBadgeClass(r.obi_recid)}`}>
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-bold ${recidBadgeClass(r.obi_recid)}`}>
                           {r.obi_recid}
                         </span>
                       </td>
@@ -225,7 +250,9 @@ export function PerformaPicker({ branch }: PerformaPickerProps) {
                       <td className="px-4 py-3 whitespace-nowrap tabular-nums">
                         {formatDateTime(r.obi_tgltrans)}
                       </td>
-                      <td className="px-4 py-3 tabular-nums">{r.obi_notrans}</td>
+                      <td className="px-4 py-3 tabular-nums">
+                        {r.obi_notrans}
+                      </td>
                       <td className="px-4 py-3 text-right tabular-nums">
                         {r.obi_itemorder.toLocaleString("id-ID")}
                       </td>
@@ -243,7 +270,9 @@ export function PerformaPicker({ branch }: PerformaPickerProps) {
                 </tbody>
               </table>
             ) : (
-              <p className="p-4 text-sm text-muted-foreground">Tidak ada data.</p>
+              <p className="p-4 text-sm text-muted-foreground">
+                Tidak ada data.
+              </p>
             )}
           </div>
         </DialogContent>
