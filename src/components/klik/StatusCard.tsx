@@ -1,11 +1,10 @@
-"use client";
-
+// src/components/klik/StatusCard.tsx
 import { useEffect, useState } from "react";
-import { format } from "date-fns";
 import { ArrowRight, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import ButtonExportExcel from "@/components/ButtonExportExcel";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +14,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useFetchData } from "@/hooks/data/useFetchData";
+import { useExportToExcel } from "@/hooks/useExportToExcel";
+import { FormatTanggal } from "@/utils/formatTanggal";
 import { AnimatedNumber } from "./AnimatedNumber";
 
 type StatusCardProps = {
@@ -38,6 +39,7 @@ type DetailRow = {
   obi_shippingservice: string;
   obi_itemorder: string | number;
   obi_nopb: string;
+  obi_notrans: string;
 };
 
 const statusConfig: Record<
@@ -125,6 +127,38 @@ export function StatusCard({
     [open, refetch],
   );
 
+  // shortcut: export mengikuti isi tabel modal (pageSize 100) — naikkan pageSize
+  // atau pakai fetchAll bila perlu export seluruh data
+  const { handleExport, isExporting } = useExportToExcel({
+    title: `Detail ${title}`,
+    data: (rows ?? []) as unknown as Record<string, unknown>[],
+    columns: [
+      { field: "status", label: "Status" },
+      { field: "obi_tglpb", label: "Tgl" },
+      { field: "trx", label: "Trx" },
+      { field: "obi_nopb", label: "No PB" },
+      { field: "obi_kdmember", label: "Member" },
+      { field: "cus_namamember", label: "Nama Member" },
+      { field: "obi_tipebayar", label: "Tipe" },
+      { field: "obi_shippingservice", label: "Service" },
+      { field: "obi_itemorder", label: "Item", isNumeric: true },
+    ],
+    mapRow: (row) => {
+      const r = row as unknown as DetailRow;
+      return [
+        r.status,
+        FormatTanggal(r.obi_tglpb),
+        r.trx,
+        r.obi_nopb,
+        r.obi_kdmember,
+        r.cus_namamember,
+        r.obi_tipebayar,
+        r.obi_shippingservice,
+        Number(r.obi_itemorder) || 0,
+      ];
+    },
+  });
+
   return (
     <Card
       className={`group relative overflow-hidden border ${cfg.border} bg-gradient-to-br ${cfg.grad} shadow-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl h-full flex flex-col`}>
@@ -178,11 +212,18 @@ export function StatusCard({
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-7xl sm:max-w-7xl xl:max-w-[92vw]">
-              <DialogHeader>
-                <DialogTitle>{title}</DialogTitle>
-                <DialogDescription>
-                  Detail {title.toLowerCase()} — {total ?? 0} data
-                </DialogDescription>
+              <DialogHeader className="flex-row items-start justify-between gap-4 space-y-0 pr-12">
+                <div className="min-w-0">
+                  <DialogTitle>{title}</DialogTitle>
+                  <DialogDescription>
+                    Detail {title.toLowerCase()} — {total ?? 0} data
+                  </DialogDescription>
+                </div>
+                <ButtonExportExcel
+                  handleExport={handleExport}
+                  isExporting={isExporting}
+                  className="mb-0 shrink-0 border-emerald-600/40 bg-emerald-600 py-1 text-xxs whitespace-nowrap text-white shadow-sm hover:bg-emerald-700 hover:text-white dark:border-emerald-500/40 dark:bg-emerald-600 dark:hover:bg-emerald-500 dark:hover:text-white"
+                />
               </DialogHeader>
               <div className="max-h-[70vh] overflow-auto rounded-lg border border-border/60">
                 {detailLoading ? (
@@ -204,6 +245,9 @@ export function StatusCard({
                         </th>
                         <th scope="col" className="px-4 py-3">
                           Trx
+                        </th>
+                        <th scope="col" className="px-4 py-3">
+                          No Trans
                         </th>
                         <th scope="col" className="px-4 py-3">
                           Member
@@ -230,9 +274,10 @@ export function StatusCard({
                           <td className="px-4 py-3">{idx + 1}</td>
                           <td className="px-4 py-3">{row.status}</td>
                           <td className="px-4 py-3 whitespace-nowrap tabular-nums">
-                            {format(new Date(row.obi_tglpb), "dd/MM/yyyy")}
+                            {FormatTanggal(row.obi_tglpb)}
                           </td>
                           <td className="px-4 py-3">{row.trx}</td>
+                          <td className="px-4 py-3">{row.obi_notrans}</td>
                           <td className="px-4 py-3">
                             {row.obi_kdmember} - {row.cus_namamember}
                           </td>
