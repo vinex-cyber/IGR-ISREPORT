@@ -48,8 +48,13 @@ export const FilterKlik = (filters: KlikFilters) => {
   // whereSub (subquery rokok). Ekspresi tanpa placeholder $N bikin whereSub kosong
   // -> "AND PRD_KODEDIVISI..." nempel tanpa WHERE -> syntax error 500.
   if (filters.belumSerah === "true") {
+    // coalesce+btrim: ekspedisi NULL maupun kosong (order Corp/TOP tanpa kurir,
+    // mis. '3703556/cor/09/2026') ikut dibuang — bukan lolos diam-diam.
+    // Empat pengecualian ini semuanya 0% tercatat di tbtr_serahterima_ipp di
+    // semua branch, jadi memang tidak lewat serah terima IPP. JANGAN tambah
+    // 'Indopaket Nusantara': 64,7% sudah tercatat (kurir IPP biasa).
     conditions.push(`obi_recid IN ('5','6')
-      AND obi_kdekspedisi NOT IN ('Ambil di Toko Indogrosir', 'MOBIL ENGKEL/DOUBLE')
+      AND btrim(coalesce(obi_kdekspedisi, '')) NOT IN ('', 'Ambil di Toko Indogrosir', 'Ambil di Stock Point Indogrosir', 'MOBIL ENGKEL/DOUBLE')
       AND NOT EXISTS (
         select 1 from tbtr_serahterima_ipp s
         where s.sti_codpaymentcode = obi_nopb)`);

@@ -6,8 +6,12 @@ import type { QueryParam } from "@/types/queryParams";
 // ponytail: status belum selesai (1,2,3,5,COD) dihitung semua masa;
 // SELESAI STRUK (6) hanya per hari ini; BELUM_SERAH dibatasi 2 bulan berjalan
 // (recid 5/6 yang PB-nya belum ada di tbtr_serahterima_ipp, kecuali ekspedisi
-// 'Ambil di Toko Indogrosir' & 'MOBIL ENGKEL/DOUBLE' — PB itu memang tidak
-// lewat serah terima IPP).
+// 'Ambil di Toko Indogrosir', 'Ambil di Stock Point Indogrosir',
+// 'MOBIL ENGKEL/DOUBLE' & ekspedisi kosong (order Corp/TOP tanpa kurir,
+// mis. '3703556/cor/09/2026') — keempatnya 0% tercatat di
+// tbtr_serahterima_ipp di semua branch, jadi memang tidak lewat serah
+// terima IPP.
+// 'Indopaket Nusantara' TIDAK dibuang: 64,7% sudah tercatat — kurir IPP biasa.
 // TMI (flagTmi='N') = dibatasi sama persis dengan backend cpg-vite:
 // bukan member cus_jenismember='T' DAN obi_attribute2 <> 'TMI'.
 // NOT EXISTS (bukannya NOT IN) memakai indeks pkey customer per-bar,
@@ -48,7 +52,7 @@ UNION ALL SELECT 'COD', count(*)::int FROM all_status
   WHERE obi_tipebayar = 'COD' AND obi_recid <> '6' AND obi_recid NOT LIKE 'B%'
 UNION ALL SELECT 'BELUM_SERAH', count(*)::int FROM recent
   WHERE obi_recid IN ('5','6')
-    AND obi_kdekspedisi NOT IN ('Ambil di Toko Indogrosir', 'MOBIL ENGKEL/DOUBLE')
+    AND btrim(coalesce(obi_kdekspedisi, '')) NOT IN ('', 'Ambil di Toko Indogrosir', 'Ambil di Stock Point Indogrosir', 'MOBIL ENGKEL/DOUBLE')
     AND NOT EXISTS (
       SELECT 1 FROM tbtr_serahterima_ipp s
       WHERE s.sti_codpaymentcode = recent.obi_nopb)
