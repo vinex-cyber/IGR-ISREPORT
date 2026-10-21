@@ -8,7 +8,11 @@ const buildRokokWhere = (conditions: string) => {
     ...conditions.matchAll(/obi_tglpb\s*(>=|<=|>|<|=)\s*\$(\d+)/g),
   ].map((m) => ({ op: m[1], idx: m[2] }));
 
-  if (matches.length === 0) return { whereObih: "", whereSub: "" };
+  // Jaring pengaman: semua pemanggil dashboard mengirim startDate/endDate, jadi
+  // matches selalu ada. Kalau ada pemanggil tanpa tanggal, whereSub tetap
+  // diawali WHERE (1=1) — di subquery rokok ${whereSub} diikuti
+  // "AND PRD_KODEDIVISI..." yang menggantung -> syntax error kalau kosong.
+  if (matches.length === 0) return { whereObih: "", whereSub: "WHERE 1=1" };
 
   const obih = matches
     .map((m) => `date_trunc('day', obi_tglpb) ${m.op} $${m.idx}`)
@@ -74,11 +78,20 @@ export const queryDetailKlik = (conditions: string): string => {
       END AS stt,
       notif_rokok,
       ${caseUtils.getCaseShippingService()} as obi_shippingservice,
-      ${caseUtils.getExpedisi()} as ekspedisi
-
+      ${caseUtils.getExpedisi()} as ekspedisi,
+      sti_codpaymentcode,
+      sti_tipeproses,
+      sti_noawb,
+      sti_pin
       FROM tbtr_obi_h
       left join tbmaster_customer on obi_kdmember = cus_kodemember
       
+      LEFT JOIN LATERAL (
+        select sti_codpaymentcode, sti_tipeproses, sti_noawb, sti_pin 
+        from tbtr_serahterima_ipp s
+        where s.sti_codpaymentcode = obi_nopb
+        limit 1
+      ) sti ON true
       -- ROKOK --
       LEFT JOIN (SELECT DISTINCT
           PPPB, 

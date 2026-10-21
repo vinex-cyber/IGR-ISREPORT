@@ -17,6 +17,8 @@ export const klikSchemas = z.object({
   status: z.string().optional(),
   typeBayar: z.string().optional(),
   notRecid: z.string().optional(),
+  /** "true" = hanya PB recid 5/6 yang belum ada di tbtr_serahterima_ipp */
+  belumSerah: z.string().optional(),
 });
 
 export type KlikFilters = z.infer<typeof klikSchemas>;

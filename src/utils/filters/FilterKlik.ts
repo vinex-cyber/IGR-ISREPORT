@@ -40,6 +40,20 @@ export const FilterKlik = (filters: KlikFilters) => {
     conditions.push(`obi_recid = $${params.length + 1}`);
     params.push(filters.status);
   }
+  // Belum serah terima: recid 5/6 yang PB-nya belum ada di tbtr_serahterima_ipp.
+  // NOT EXISTS (bukan LEFT JOIN ... IS NULL) supaya tidak menggandakan baris.
+  // Batas 2 bulan berjalan dikirim caller lewat startDate/endDate — JANGAN taruh
+  // `obi_tglpb >= date_trunc(...)` di sini: queryDetailKlik mem-parsing conditions
+  // dengan regex `/obi_tglpb\s*(>=|<=|>|<|=)\s*\$(\d+)/` untuk membangun whereObih/
+  // whereSub (subquery rokok). Ekspresi tanpa placeholder $N bikin whereSub kosong
+  // -> "AND PRD_KODEDIVISI..." nempel tanpa WHERE -> syntax error 500.
+  if (filters.belumSerah === "true") {
+    conditions.push(`obi_recid IN ('5','6')
+      AND obi_kdekspedisi NOT IN ('Ambil di Toko Indogrosir', 'MOBIL ENGKEL/DOUBLE')
+      AND NOT EXISTS (
+        select 1 from tbtr_serahterima_ipp s
+        where s.sti_codpaymentcode = obi_nopb)`);
+  }
   // Filter tipe bayar (COD / NON COD)
   if (filters.typeBayar) {
     conditions.push(`obi_tipebayar = $${params.length + 1}`);
@@ -63,9 +77,9 @@ export const FilterKlik = (filters: KlikFilters) => {
     }
   }
   // TMI: sama dengan kartu dashboard cpg-vite (flagTmi='N') — bukan member
-// cus_jenismember='T' DAN obi_attribute2 <> 'TMI'.
-// -> NOT EXISTS (bukannya NOT IN) supaya korelasi per-bar lewat indeks pkey
-//    customer, bukan memindai seluruh tbmaster_customer (~5,7 juta baris).
+  // cus_jenismember='T' DAN obi_attribute2 <> 'TMI'.
+  // -> NOT EXISTS (bukannya NOT IN) supaya korelasi per-bar lewat indeks pkey
+  //    customer, bukan memindai seluruh tbmaster_customer (~5,7 juta baris).
   conditions.push(`NOT EXISTS (
     select 1 from tbmaster_customer c
     where c.cus_kodemember = obi_kdmember and c.cus_jenismember = 'T')

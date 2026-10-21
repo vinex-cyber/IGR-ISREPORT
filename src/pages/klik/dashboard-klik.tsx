@@ -1,12 +1,13 @@
 // src/pages/klik/dashboard-klik.tsx
 
 import { useEffect, useMemo, useState } from "react";
-import { format } from "date-fns";
+import { startOfMonth, subMonths } from "date-fns";
 
 import Layout from "@/components/Layout";
 import { DATABASE_OPTIONS } from "@/configs/database-options";
 import type { DefaultBranchPageProps } from "@/utils/server/getDefaultBranchServerSideProps";
 import { getDefaultBranchServerSideProps } from "@/utils/server/getDefaultBranchServerSideProps";
+import { FormatTanggalISO } from "@/utils/formatTanggal";
 import { useFetchData } from "@/hooks/data/useFetchData";
 import { KlikHero } from "@/components/klik/KlikHero";
 import { PbKlikPerTanggal } from "@/components/klik/PbKlikPerTanggal";
@@ -23,6 +24,8 @@ type StatusCardDef = {
   label: string;
   key: string;
   cod?: boolean;
+  /** true = kartu "Belum Serah": PB recid 5/6 yang belum ada di tbtr_serahterima_ipp */
+  belumSerah?: boolean;
 };
 
 // ponytail: 6 kartu status dashboard; count dari satu endpoint summary,
@@ -39,11 +42,14 @@ const STATUS_CARDS: StatusCardDef[] = [
     key: "COD",
     cod: true,
   },
+  {
+    title: "Belum Serah",
+    label: "BELUM SERAH",
+    key: "BELUM_SERAH",
+    belumSerah: true,
+  },
 ];
 
-// ponytail: status belum selesai (picking, scanning, draft, siap struk, COD)
-// ambil semua masa; detail SELESAI STRUK dibatasi tanggal hari ini saja.
-// TMI (member cus_jenismember='T') dikecualikan di query backend (FilterKlik + summary).
 function detailParamsFor(
   card: StatusCardDef,
   today: string,
@@ -52,11 +58,21 @@ function detailParamsFor(
   if (card.cod) {
     params.typeBayar = "COD";
     params.notRecid = "6,B%";
+  } else if (card.belumSerah) {
+    params.belumSerah = "true";
+    params.startDate = FormatTanggalISO(startOfMonth(subMonths(new Date(), 1)));
+    params.endDate = today;
   } else {
     params.status = card.key;
   }
   if (card.label === "SELESAI STRUK") {
     params.startDate = today;
+    params.endDate = today;
+  } else if (!card.belumSerah) {
+    // Semua kartu selain Selesai Struk & Belum Serah pakai rentang 2 bulan berjalan
+    // supaya subquery rokok punya filter tanggal (konsisten). Angka kartu tetap
+    // "semua masa" dari status-summary, jadi modal bisa beda jumlahnya.
+    params.startDate = FormatTanggalISO(startOfMonth(subMonths(new Date(), 1)));
     params.endDate = today;
   }
   return params;
@@ -66,7 +82,7 @@ export default function DashboardKlik({
   defaultBranch,
 }: DefaultBranchPageProps) {
   const [branch, setBranch] = useState(defaultBranch);
-  const today = useMemo(() => format(new Date(), "yyyy-MM-dd"), []);
+  const today = useMemo(() => FormatTanggalISO(new Date()), []);
 
   const {
     data: summary,
@@ -111,7 +127,7 @@ export default function DashboardKlik({
           options={DATABASE_OPTIONS}
         />
 
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-7">
           {STATUS_CARDS.map((card) => (
             <StatusCard
               key={card.title}
