@@ -63,5 +63,8 @@ export default createGetHandler<KlikFilters>({
     `Tidak ada data status order untuk branch '${branch}'.`,
   errorContext: "Daftar Status Order",
   return404IfEmpty: false,
-  paginated: true,
+  // ponytail: hasil = 1 baris per tanggal (jauh di bawah 100), jadi tak perlu
+  // paginasi. `paginated: true` menambah query COUNT yang mengulang seluruh
+  // agregat — jadi 2x query untuk hasil yang sama.
+  paginated: false,
 });

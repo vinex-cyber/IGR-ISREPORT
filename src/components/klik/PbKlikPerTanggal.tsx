@@ -112,12 +112,8 @@ function columnLabel(col: ColumnDef) {
   ));
 }
 
-// ponytail: default 7 hari terakhir (termasuk hari ini). pageSize 100 dikirim
-// karena endpoint-nya `paginated: true` (default server cuma 10 baris).
-// shortcut: range > 100 hari ikut terpotong diam-diam — upgrade ke export/paged
-// kalau user butuh rentang lebih panjang.
-const PAGE_SIZE = 100;
-
+// ponytail: default 7 hari terakhir (termasuk hari ini). Endpoint-nya tak
+// dipaginasikan (1 baris per tanggal), jadi tidak ada param pageSize.
 export function PbKlikPerTanggal({ branch }: PbKlikPerTanggalProps) {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => ({
     from: subDays(new Date(), 6),
@@ -136,7 +132,6 @@ export function PbKlikPerTanggal({ branch }: PbKlikPerTanggalProps) {
         ? { startDate: format(dateRange.from, "yyyy-MM-dd") }
         : {}),
       ...(dateRange?.to ? { endDate: format(dateRange.to, "yyyy-MM-dd") } : {}),
-      pageSize: PAGE_SIZE,
     },
   });
 

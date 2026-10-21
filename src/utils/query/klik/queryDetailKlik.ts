@@ -86,12 +86,12 @@ export const queryDetailKlik = (conditions: string): string => {
       FROM tbtr_obi_h
       left join tbmaster_customer on obi_kdmember = cus_kodemember
       
-      LEFT JOIN LATERAL (
-        select sti_codpaymentcode, sti_tipeproses, sti_noawb, sti_pin 
-        from tbtr_serahterima_ipp s
-        where s.sti_codpaymentcode = obi_nopb
-        limit 1
-      ) sti ON true
+      LEFT JOIN (
+        select distinct on (sti_codpaymentcode)
+          sti_codpaymentcode, sti_tipeproses, sti_noawb, sti_pin
+        from tbtr_serahterima_ipp
+        order by sti_codpaymentcode
+      ) sti on obi_nopb = sti.sti_codpaymentcode
       -- ROKOK --
       LEFT JOIN (SELECT DISTINCT
           PPPB, 
