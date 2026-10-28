@@ -68,7 +68,8 @@ export const queryPertumbuhanKlik = (conditions: string): string => `
       JOIN tbtr_obi_h h
         ON h.obi_kdmember = t.trjd_cus_kodemember
        AND h.obi_kdstation = t.trjd_cashierstation
-       AND date_trunc('day', h.obi_tglstruk) = date_trunc('day', t.trjd_transactiondate)
+       AND h.obi_tglstruk >= date_trunc('day', t.trjd_transactiondate)
+       AND h.obi_tglstruk < date_trunc('day', t.trjd_transactiondate) + interval '1 day'
        AND h.obi_nostruk = t.trjd_transactionno
        AND h.obi_modifyby = t.trjd_create_by
       LEFT JOIN tbmaster_customer cus ON cus.cus_kodemember = t.trjd_cus_kodemember

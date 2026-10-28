@@ -24,12 +24,9 @@ type StatusCardDef = {
   label: string;
   key: string;
   cod?: boolean;
-  /** true = kartu "Belum Serah": PB recid 5/6 yang belum ada di tbtr_serahterima_ipp */
   belumSerah?: boolean;
 };
 
-// ponytail: 6 kartu status dashboard; count dari satu endpoint summary,
-// detail di-fetch lazy saat modal dibuka (query status-order berat).
 const STATUS_CARDS: StatusCardDef[] = [
   { title: "Siap Picking", label: "SIAP PICKING", key: "1" },
   { title: "Siap Scanning", label: "SIAP SCANNING", key: "2" },
@@ -99,7 +96,6 @@ export default function DashboardKlik({
     [branch, refetch],
   );
 
-  // ponytail: sumary status di-polling tiap 1 menit agar angka kartu selalu segar
   useEffect(
     function pollSummaryEveryMinute() {
       const id = setInterval(() => {
