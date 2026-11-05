@@ -28,15 +28,15 @@ SELECT
     WHEN tpod_recordid IS NULL
       AND pbd_nopb IS NOT NULL
       AND mstd_qty IS NULL
-      THEN 'POmati/Kdlwarsa'
+      THEN 'PO mati / Kdlwarsa'
     WHEN tpod_recordid = '1'
-      THEN 'PO Alokasi/Mati'
+      THEN 'PO Alokasi / Mati'
     WHEN tpod_recordid IN ('1','2')
       AND (tpod_qtypb = '0' OR tpod_qtypb IS NULL)
       THEN 'QTY BPB 0'
     WHEN pbd_nopb IS NULL
       AND (tpod_qtypb = '0' OR tpod_qtypb IS NULL)
-      THEN 'PO Alokasi/Mati'
+      THEN 'PO Alokasi / Mati'
     WHEN pbd_nopb IS NULL
       AND (tpod_qtypb <> '0' OR tpod_qtypb IS NOT NULL)
       AND mstd_nopo IS NULL

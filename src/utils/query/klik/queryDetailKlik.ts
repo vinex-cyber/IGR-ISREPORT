@@ -39,6 +39,7 @@ export const queryDetailKlik = (conditions: string): string => {
         WHEN obi_recid = '3'      THEN 'SIAP DRAFT STRUK'
         WHEN obi_recid = '5'      THEN 'SIAP STRUK'
         WHEN obi_recid = '6'      THEN 'SELESAI STRUK'
+        WHEN obi_recid = '7'      THEN 'SET ONGKIR'
         WHEN coalesce(obi_recid, 'N') = 'N'    THEN 'SIAP SEND HH'
         WHEN obi_recid like 'B%'  THEN 'BATAL'
       END as status,

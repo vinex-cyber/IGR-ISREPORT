@@ -20,7 +20,7 @@ const StrukQuerySchema = z.object({
     .string()
     .trim()
     .toUpperCase()
-    .regex(/^(\d{3}|IK[1-3])$/, "Kasir harus 3 digit atau IK1, IK2, IK3"),
+    .regex(/^[A-Z0-9]{3}$/, "Kasir harus 3 karakter (digit/huruf)"),
 
   struk: z
     .string()

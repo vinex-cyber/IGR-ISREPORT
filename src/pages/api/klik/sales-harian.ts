@@ -27,7 +27,7 @@ const buildFiltersSales = (filters: KlikFilters) => {
 };
 
 const buildQuery = (conditions: string, _params: QueryParam[]) => `
-${querySalesKlik(conditions)}
+${querySalesKlik(conditions)} 
 `;
 
 export default createGetHandler<KlikFilters>({

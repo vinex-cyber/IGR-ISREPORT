@@ -12,6 +12,7 @@ select
       sum(coalesce(proses_picking,0)) as proses_picking,
       sum(coalesce(siap_struk_cod,0)) as siap_struk_cod,
       sum(coalesce(siap_struk_non_cod,0)) as siap_struk_non_cod,
+      sum(coalesce(set_ongkir,0)) as set_ongkir,
       sum(coalesce(selesai_struk,0)) as selesai_struk,
       sum(coalesce(batal,0)) as batal,
       sum(coalesce(total_pb,0)) as total_pb,
@@ -34,6 +35,9 @@ select
         case
           when status = 'SIAP STRUK' and tipebayar <> 'COD' then count(obi_nopb)
         end as siap_struk_non_cod,
+        case
+          when status = 'SET ONGKIR' then count(obi_nopb)
+        end as set_ongkir,
         case
           when status = 'SELESAI STRUK' then count(obi_nopb)
         end as selesai_struk,

@@ -14,7 +14,7 @@ interface StrukFileModalProps {
   struk: string;
   kasir: string;
   onClose: () => void;
-  branch: string;
+  branch?: string;
 }
 
 interface StrukFileSuccessResponse {
@@ -55,71 +55,74 @@ const StrukViewModal = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(function fetchStrukData() {
-    if (!show || !tanggal || !station || !kasir || !struk || !branch) {
-      return;
-    }
+  useEffect(
+    function fetchStrukData() {
+      if (!show || !tanggal || !station || !kasir || !struk) {
+        return;
+      }
 
-    const controller = new AbortController();
+      const controller = new AbortController();
 
-    const fetchStrukFile = async () => {
-      setIsLoading(true);
-      setError(null);
-      setContent("");
-      setFilename("");
+      const fetchStrukFile = async () => {
+        setIsLoading(true);
+        setError(null);
+        setContent("");
+        setFilename("");
 
-      try {
-        const response = await axios.get<StrukFileSuccessResponse>(
-          "/api/struk",
-          {
-            params: {
-              tanggal,
-              station,
-              kasir,
-              struk,
+        try {
+          const response = await axios.get<StrukFileSuccessResponse>(
+            "/api/struk",
+            {
+              params: {
+                tanggal,
+                station,
+                kasir,
+                struk,
+              },
+              signal: controller.signal,
             },
-            signal: controller.signal,
-          },
-        );
-
-        if (controller.signal.aborted) {
-          return;
-        }
-
-        setContent(response.data.data.content);
-
-        setFilename(response.data.data.filename);
-      } catch (requestError) {
-        if (
-          axios.isAxiosError(requestError) &&
-          requestError.code === "ERR_CANCELED"
-        ) {
-          return;
-        }
-
-        if (axios.isAxiosError<StrukFileErrorResponse>(requestError)) {
-          setError(
-            requestError.response?.data?.message ??
-              "Gagal mengambil file struk",
           );
 
-          return;
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          setContent(response.data.data.content);
+
+          setFilename(response.data.data.filename);
+        } catch (requestError) {
+          if (
+            axios.isAxiosError(requestError) &&
+            requestError.code === "ERR_CANCELED"
+          ) {
+            return;
+          }
+
+          if (axios.isAxiosError<StrukFileErrorResponse>(requestError)) {
+            setError(
+              requestError.response?.data?.message ??
+                "Gagal mengambil file struk",
+            );
+
+            return;
+          }
+
+          setError("Gagal mengambil file struk");
+        } finally {
+          if (!controller.signal.aborted) {
+            setIsLoading(false);
+          }
         }
+      };
 
-        setError("Gagal mengambil file struk");
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    };
+      void fetchStrukFile();
 
-    void fetchStrukFile();
-
-    return function abortFetch() {
-      controller.abort();
-    };
-  }, [show, tanggal, station, kasir, struk, branch]);
+      return function abortFetch() {
+        controller.abort();
+      };
+    },
+    [show, tanggal, station, kasir, struk],
+  );
 
   const handlePrint = () => {
     if (!content) {
@@ -240,7 +243,9 @@ const StrukViewModal = ({
 
         <body>
           <div class="receipt">
+           <div>
             <pre>${safeContent}</pre>
+           </div>
           </div>
         </body>
       </html>
@@ -321,8 +326,8 @@ const StrukViewModal = ({
 
           {!isLoading && !error && content && (
             <div className="flex min-w-max justify-center">
-              <div className="w-[120mm] rounded bg-gray-100 p-2 shadow dark:bg-slate-800 dark:text-black">
-                <pre className="flex items-center justify-center whitespace-pre rounded bg-gray-200 p-2">
+              <div className="w-full mx-32 rounded bg-gray-100 p-2 shadow dark:bg-slate-800 dark:text-black">
+                <pre className="flex items-center justify-center whitespace-pre rounded bg-gray-200 p-2 text-xs text-black dark:bg-slate-950 dark:text-white">
                   {content}
                 </pre>
               </div>

@@ -33,18 +33,18 @@ interface GetHandlerConfig<TFilters> extends BaseConfig<TFilters> {
   paginated?: boolean;
 }
 
-function parsePageParams(
-  req: NextApiRequest,
-): { page: number; pageSize: number; offset: number } {
+function parsePageParams(req: NextApiRequest): {
+  page: number;
+  pageSize: number;
+  offset: number;
+} {
   const page = Math.max(1, Number(req.query.page) || 1);
   const pageSize = Math.min(100, Math.max(1, Number(req.query.pageSize) || 10));
   const offset = (page - 1) * pageSize;
   return { page, pageSize, offset };
 }
 
-export function createGetHandler<TFilters>(
-  config: GetHandlerConfig<TFilters>,
-) {
+export function createGetHandler<TFilters>(config: GetHandlerConfig<TFilters>) {
   return async function handler(
     req: NextApiRequest,
     res: NextApiResponse<ApiResponse<unknown>>,
@@ -68,14 +68,35 @@ export function createGetHandler<TFilters>(
       const { conditions, params } = config.buildFilters(filters);
       const paramCount = params.length;
 
-      const query = stripTrailingSemicolon(config.buildQuery(conditions, params));
+      const query = stripTrailingSemicolon(
+        config.buildQuery(conditions, params),
+      );
 
       let total: number;
       let rows: unknown[];
 
       async function executeQuery(q: string, p: QueryParam[]) {
         const stmtName = `q_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-        return pool.query({ name: stmtName, text: q, values: p.length > 0 ? p : undefined });
+        const maxRetries = 3;
+        let lastError: unknown;
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+          try {
+            return await pool.query({
+              name: stmtName,
+              text: q,
+              values: p.length > 0 ? p : undefined,
+            });
+          } catch (error: unknown) {
+            lastError = error;
+            const err = error as { code?: string };
+            if (err?.code === "40001" && attempt < maxRetries) {
+              await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
+              continue;
+            }
+            throw error;
+          }
+        }
+        throw lastError;
       }
 
       if (config.paginated) {
@@ -89,7 +110,11 @@ export function createGetHandler<TFilters>(
 
         const paramIdx = paramCount + 1;
         const paginatedQuery = `${query} LIMIT $${paramIdx} OFFSET $${paramIdx + 1}`;
-        const result = await executeQuery(paginatedQuery, [...params, pageSize, offset]);
+        const result = await executeQuery(paginatedQuery, [
+          ...params,
+          pageSize,
+          offset,
+        ]);
         rows = result.rows;
       } else {
         const result = await executeQuery(query, params);

@@ -23,6 +23,7 @@ type PbKlikRow = {
   proses_picking: number;
   siap_struk_cod: number;
   siap_struk_non_cod: number;
+  set_ongkir: number;
   selesai_struk: number;
   batal: number;
   total_pb: number;
@@ -71,6 +72,12 @@ const COLUMNS: ColumnDef[] = [
     label: "Siap Struk\nNon COD",
     tone: "text-violet-600 dark:text-violet-400",
     cellTone: "bg-violet-500/10 text-violet-700 dark:text-violet-300",
+  },
+  {
+    field: "set_ongkir",
+    label: "Set\nOngkir",
+    tone: "text-fuchsia-600 dark:text-fuchsia-400",
+    cellTone: "bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300",
   },
   {
     field: "selesai_struk",
