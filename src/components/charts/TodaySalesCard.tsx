@@ -7,6 +7,7 @@ import { ShoppingCart, Users, Receipt, Wallet, Package } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAnimeCounter } from "@/hooks/animation/useAnimeCounter";
 import { useFetchData } from "@/hooks/data/useFetchData";
+import { KasirAktifModal } from "@/components/charts/KasirAktifModal";
 
 type MemberRow = {
   jenis: string;
@@ -168,6 +169,7 @@ export function TodaySalesCard({ branch }: { branch?: string }) {
     endpoint: "/evaluasi-sales/today-by-member",
   });
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
+  const [kasirOpen, setKasirOpen] = useState(false);
   const hasAnnouncedRef = useRef(false);
 
   useEffect(function announceKasirClosed() {
@@ -239,12 +241,15 @@ export function TodaySalesCard({ branch }: { branch?: string }) {
   );
 
   return (
-    <Card className="overflow-hidden border-border/60 bg-gradient-to-r from-primary/5 via-card to-card transition-shadow duration-200 hover:shadow-md">
+    <>
+      <Card className="overflow-hidden border-border/60 bg-gradient-to-r from-primary/5 via-card to-card transition-shadow duration-200 hover:shadow-md">
       <CardContent className="space-y-2 p-3">
         <div>
           <div className="mb-1.5 flex flex-wrap items-center gap-2">
-            <span
-              className={`-mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
+            <button
+              type="button"
+              onClick={() => setKasirOpen(true)}
+              className={`-mt-3 inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition-shadow hover:shadow-sm ${
                 total.jumlah_kasir > 0
                   ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                   : "bg-red-500/10 text-red-600 dark:text-red-400"
@@ -258,7 +263,7 @@ export function TodaySalesCard({ branch }: { branch?: string }) {
                 aria-hidden
               />
               {total.jumlah_kasir} kasir aktif
-            </span>
+            </button>
             {updatedAt ? (
               <span className="ml-auto text-[10px] tabular-nums text-muted-foreground/70">
                 Diperbarui{" "}
@@ -286,6 +291,11 @@ export function TodaySalesCard({ branch }: { branch?: string }) {
           );
         })}
       </CardContent>
-    </Card>
+      </Card>
+      <KasirAktifModal
+        show={kasirOpen}
+        onClose={() => setKasirOpen(false)}
+      />
+    </>
   );
 }

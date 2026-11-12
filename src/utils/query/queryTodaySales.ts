@@ -18,6 +18,8 @@ SELECT
     ELSE 'OTHER'
   END AS jenis_member,
   COALESCE(div.div_namadivisi, sls.trjd_divisioncode) AS namadivisi,
+  sls.dtl_stat,
+  sls.dtl_kasir,
   sls.dtl_rtype,
   sls.dtl_cusno,
   sls.dtl_struk,
@@ -38,6 +40,7 @@ FROM (
     t.trjd_prdcd,
     t.trjd_divisioncode,
     t.trjd_create_by AS dtl_kasir,
+    t.trjd_cashierstation AS dtl_stat,
     t.trjd_cus_kodemember AS dtl_cusno,
     cus.cus_flagmemberkhusus AS dtl_memberkhusus,
     cus.cus_kodeoutlet AS dtl_outlet,
@@ -60,7 +63,9 @@ FROM (
       trjd_divisioncode, trjd_division, trjd_recordid, trjd_create_by,
       trjd_cus_kodemember, trjd_cashierstation, trjd_transactionno, trjd_seqno
     FROM TBTR_JUALDETAIL
-    WHERE trjd_transactiondate::date = current_date AND trjd_recordid IS NULL
+    WHERE trjd_transactiondate >= current_date
+      AND trjd_transactiondate < current_date + 1
+      AND trjd_recordid IS NULL
     UNION ALL
     SELECT DISTINCT
       trjd_transactiontype, trjd_transactiondate, trjd_prdcd,
@@ -68,7 +73,9 @@ FROM (
       trjd_divisioncode, trjd_division, trjd_recordid, trjd_create_by,
       trjd_cus_kodemember, trjd_cashierstation, trjd_transactionno, trjd_seqno
     FROM tbtr_jualdetail_interface
-    WHERE trjd_transactiondate::date = current_date AND trjd_recordid IS NULL
+    WHERE trjd_transactiondate >= current_date
+      AND trjd_transactiondate < current_date + 1
+      AND trjd_recordid IS NULL
   ) t
   JOIN tbmaster_prodmast prd ON t.trjd_prdcd = prd.prd_prdcd
   JOIN tbmaster_customer cus ON t.trjd_cus_kodemember = cus.cus_kodemember
@@ -106,4 +113,39 @@ SELECT
 FROM (${BASE_DETAIL}) agg
 GROUP BY namadivisi
 ORDER BY netto DESC
+`;
+
+/** Ringkasan transaksi hari ini per kasir — dipakai modal "kasir aktif". */
+export const TodayPerKasirQuery = (): string => `
+WITH sales AS (
+  SELECT
+    dtl_stat AS station,
+    dtl_kasir AS kasir,
+    count(DISTINCT dtl_cusno)::int AS customer,
+    count(DISTINCT dtl_struk)::int AS struk,
+    count(DISTINCT dtl_prdcd_ctn)::int AS produk,
+    coalesce(trunc(sum(dtl_netto)), 0)::float8 AS netto,
+    coalesce(trunc(sum(dtl_hpp)), 0)::float8 AS hpp
+  FROM (${BASE_DETAIL}) agg
+  GROUP BY dtl_stat, dtl_kasir
+),
+aktif AS (
+  SELECT js_cashierstation AS station, js_cashierid AS kasir
+  FROM tbtr_jualsummary
+  WHERE js_resetamt = 0 AND js_cashdrawerend IS NULL
+  GROUP BY js_cashierstation, js_cashierid
+)
+SELECT
+  a.station,
+  a.kasir,
+  COALESCE(usr.username, a.kasir) AS nama_kasir,
+  COALESCE(s.customer, 0) AS customer,
+  COALESCE(s.struk, 0) AS struk,
+  COALESCE(s.produk, 0) AS produk,
+  COALESCE(s.netto, 0) AS netto,
+  COALESCE(s.hpp, 0) AS hpp
+FROM aktif a
+LEFT JOIN sales s ON s.station = a.station AND s.kasir = a.kasir
+LEFT JOIN tbmaster_user usr ON usr.userid = a.kasir
+ORDER BY a.station, a.kasir
 `;
