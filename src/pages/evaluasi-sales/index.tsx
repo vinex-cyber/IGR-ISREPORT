@@ -148,6 +148,7 @@ export default function EvaluasiSales({
                 fields={{
                   plu: {
                     name: "prdcd",
+                    multiple: true,
                   },
 
                   namaProduk: {

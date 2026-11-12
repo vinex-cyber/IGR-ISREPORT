@@ -11,6 +11,11 @@ interface Props {
   onClose: () => void;
   prdcd?: boolean;
   namaBarang?: boolean;
+  /**
+   * Override penanganan baris terpilih. Kalau diisi, `prdcd`/`namaBarang`
+   * diabaikan dan pemanggil yang menyimpan nilai (mis. mode multiple PLU).
+   */
+  onSelectRow?: (row: DaftarProdukRows) => void;
 }
 
 export default function InputProdukModal({
@@ -18,11 +23,16 @@ export default function InputProdukModal({
   onClose,
   prdcd,
   namaBarang,
+  onSelectRow,
 }: Props) {
   const { setValue } = useFormContext();
   const branch = getBranchCookie();
 
   const onSelect = (row: DaftarProdukRows) => {
+    if (onSelectRow) {
+      onSelectRow(row);
+      return;
+    }
     if (prdcd) {
       setValue("prdcd", row.prd_prdcd);
     }

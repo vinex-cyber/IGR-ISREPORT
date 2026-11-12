@@ -23,6 +23,7 @@ type FormInputProps<TFieldValues extends FieldValues> = {
   iconRight?: ReactNode;
   onIconClick?: () => void;
   disabled?: boolean;
+  readOnly?: boolean;
   className?: string;
 };
 
@@ -35,6 +36,7 @@ const FormInput = <TFieldValues extends FieldValues>({
   iconRight,
   onIconClick,
   disabled = false,
+  readOnly = false,
   className,
 }: FormInputProps<TFieldValues>) => {
   const { control } = useFormContext<TFieldValues>();
@@ -51,6 +53,7 @@ const FormInput = <TFieldValues extends FieldValues>({
             placeholder={placeholder}
             required={required}
             disabled={disabled}
+            readOnly={readOnly}
             className={cn(className, iconRight && "pr-10")}
             onInvalid={() => {
               if (required) {

@@ -36,8 +36,17 @@ interface DependentFieldConfig<
   parentName: StringFieldName<TFieldValues>;
 }
 
+interface PluFieldConfig<
+  TFieldValues extends FieldValues,
+> extends StringFieldConfig<TFieldValues> {
+  multiple?: boolean;
+  appendOnSelect?: boolean;
+  separator?: string;
+  allowManualInput?: boolean;
+}
+
 export interface CardProdukFields<TFieldValues extends FieldValues> {
-  plu?: StringFieldConfig<TFieldValues> | false;
+  plu?: PluFieldConfig<TFieldValues> | false;
 
   namaProduk?: StringFieldConfig<TFieldValues> | false;
 
@@ -84,6 +93,10 @@ const CardProduk = <TFieldValues extends FieldValues>({
             name={fields.plu.name}
             placeholder={fields.plu.placeholder ?? "Input PLU"}
             disabled={fields.plu.disabled}
+            multiple={fields.plu.multiple}
+            appendOnSelect={fields.plu.appendOnSelect}
+            separator={fields.plu.separator}
+            allowManualInput={fields.plu.allowManualInput}
             className={`!text-xs`}
           />
         )}
