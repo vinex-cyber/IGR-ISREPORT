@@ -1,3 +1,4 @@
+// src/utils/query/queryLppSaatIni.ts
 import { QueryGroupFlag } from "./queryGroupFlag";
 import { QueryHargaBeli } from "./queryHargaBeli";
 import { QueryPoOutStanding } from "./queryPoOutStanding";
@@ -85,3 +86,38 @@ SELECT     prd.prd_kodedivisi AS st_div,
    ${filters.conditions ? `AND ${filters.conditions}` : ""}
     `;
 };
+
+/**
+ * KPI ringkas untuk dashboard: total nilai LPP (Rp) dan jumlah baris stock minus.
+ * Versi slim dari QueryLppSaatIni — tanpa join harga beli/PO/sales/group flag.
+ */
+export const QueryLppKpi = () => `
+SELECT
+    COALESCE(SUM(
+      CASE
+        WHEN prd.prd_unit = 'KG' AND prd.prd_frac = 1000
+        THEN stk.st_saldoakhir * stk.st_avgcost / 1000
+        ELSE stk.st_saldoakhir * stk.st_avgcost
+      END
+    ), 0)::float8 AS total_lpp_rph,
+    COUNT(*) FILTER (WHERE stk.st_saldoakhir < 0)::int AS stock_minus
+FROM tbmaster_prodmast prd
+LEFT JOIN tbmaster_stock stk ON prd.prd_prdcd = stk.st_prdcd
+WHERE prd.prd_prdcd LIKE '%0'
+`;
+
+/** Detail baris stock minus — dipakai modal "Detail" pada kartu KPI. */
+export const QueryLppStockMinus = () => `
+SELECT
+    prd.prd_prdcd AS st_prdcd,
+    prd.prd_deskripsipanjang AS st_deskripsi,
+    prd.prd_unit AS st_unit,
+    prd.prd_frac AS st_frac,
+    COALESCE(prd.prd_kodetag, '-') AS st_kodetag,
+    stk.st_saldoakhir::float8 AS st_qty
+FROM tbmaster_prodmast prd
+JOIN tbmaster_stock stk ON prd.prd_prdcd = stk.st_prdcd
+WHERE prd.prd_prdcd LIKE '%0'
+  AND stk.st_saldoakhir < 0
+ORDER BY stk.st_saldoakhir, prd.prd_prdcd
+`;

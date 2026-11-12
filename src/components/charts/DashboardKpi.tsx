@@ -1,10 +1,12 @@
 // src/components/charts/DashboardKpi.tsx
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+  AlertTriangle,
   ArrowDownRight,
   ArrowUpRight,
+  Package,
   Percent,
   ShoppingBag,
   Wallet,
@@ -12,6 +14,7 @@ import {
 
 import { useAnimeCounter } from "@/hooks/animation/useAnimeCounter";
 import { useFetchData } from "@/hooks/data/useFetchData";
+import { StockMinusModal } from "@/components/charts/StockMinusModal";
 
 const MONTHS = [
   "01",
@@ -34,6 +37,11 @@ type DivisiRow = {
   [key: `mgr_${string}`]: number;
 };
 
+type LppKpiRow = {
+  total_lpp_rph: number;
+  stock_minus: number;
+};
+
 type Kpi = {
   key: string;
   label: string;
@@ -43,6 +51,7 @@ type Kpi = {
   delta?: number;
   icon: typeof Wallet;
   accentClass: string;
+  onDetail?: () => void;
 };
 
 function sumField(rows: DivisiRow[], prefix: string, months: string[]): number {
@@ -84,16 +93,39 @@ function KpiAnimatedValue({ value, decimals = 0, suffix }: KpiValueProps) {
 }
 
 export function DashboardKpi({ branch }: { branch?: string }) {
+  const [stockMinusOpen, setStockMinusOpen] = useState(false);
+
   const { data, loading, refetch } = useFetchData<DivisiRow[]>({
     endpoint: "/chart/trend-sales-divisi",
   });
 
-  useEffect(function refetchOnBranchChange() {
-    refetch();
-  }, [branch, refetch]);
+  const { data: lppData, refetch: refetchLpp } = useFetchData<LppKpiRow[]>({
+    endpoint: "/inventory/lpp-saat-ini/kpi",
+  });
+
+  useEffect(
+    function refetchOnBranchChange() {
+      refetch();
+      refetchLpp();
+    },
+    [branch, refetch, refetchLpp],
+  );
+
+  useEffect(
+    function pollLppEveryMinute() {
+      const id = setInterval(function pollRefetch() {
+        refetchLpp();
+      }, 60_000);
+      return function stopPolling() {
+        clearInterval(id);
+      };
+    },
+    [refetchLpp],
+  );
 
   const kpis = useMemo<Kpi[]>(() => {
     const rows = data ?? [];
+    const lpp = lppData ?? [];
     const now = new Date();
     const currentIdx = now.getMonth();
     const ytdMonths = MONTHS.slice(0, currentIdx + 1) as unknown as string[];
@@ -164,17 +196,31 @@ export function DashboardKpi({ branch }: { branch?: string }) {
             ? "text-emerald-600 dark:text-emerald-400"
             : "text-red-600 dark:text-red-400",
       },
+      {
+        key: "lpp-rph",
+        label: "Nilai RPH LPP",
+        value: Number(lpp?.[0]?.total_lpp_rph ?? 0),
+        icon: Package,
+        accentClass: "text-chart-4",
+      },
+      {
+        key: "stock-minus",
+        label: "Stock Minus",
+        value: Number(lpp?.[0]?.stock_minus ?? 0),
+        icon: AlertTriangle,
+        accentClass: "text-red-600 dark:text-red-400",
+        onDetail: () => setStockMinusOpen(true),
+      },
     ];
-  }, [data]);
+  }, [data, lppData]);
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
-        {[0, 1, 2, 3].map((i) => (
+      <div className="flex flex-wrap justify-center gap-3">
+        {[0, 1, 2, 3, 4, 5, 6].map((i) => (
           <div
             key={i}
-            className="space-y-1 rounded-lg border border-border/40 bg-card/60 p-2 backdrop-blur-sm"
-          >
+            className="basis-[calc(50%-0.375rem)] shrink-0 space-y-1 rounded-lg border border-border/70 bg-card/90 p-2 shadow-sm backdrop-blur-sm xl:basis-[calc(20%-0.6rem)]">
             <div className="h-3 w-24 animate-pulse rounded bg-muted" />
             <div className="h-5 w-20 animate-pulse rounded bg-muted" />
           </div>
@@ -184,15 +230,15 @@ export function DashboardKpi({ branch }: { branch?: string }) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
-      {kpis.map((kpi) => {
-        const Icon = kpi.icon;
-        const positive = (kpi.delta ?? 0) >= 0;
-        return (
-          <div
-            key={kpi.key}
-            className="rounded-xl border border-border/40 bg-card/60 px-2 py-2 text-center backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-card/80 hover:shadow-md"
-          >
+    <>
+      <div className="flex flex-wrap justify-center gap-3">
+        {kpis.map((kpi) => {
+          const Icon = kpi.icon;
+          const positive = (kpi.delta ?? 0) >= 0;
+          return (
+            <div
+              key={kpi.key}
+              className="basis-[calc(50%-0.375rem)] shrink-0 rounded-xl border border-border/70 bg-card/90 px-2 py-2 text-center shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-card hover:shadow-md xl:basis-[calc(20%-0.6rem)]">
               <p className="flex items-center justify-center gap-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                 <span
                   className={`inline-flex rounded bg-muted/60 p-1 ${kpi.accentClass}`}>
@@ -222,9 +268,22 @@ export function DashboardKpi({ branch }: { branch?: string }) {
                   vs bulan lalu
                 </p>
               ) : null}
-          </div>
-        );
-      })}
-    </div>
+              {kpi.onDetail ? (
+                <button
+                  type="button"
+                  onClick={kpi.onDetail}
+                  className="mt-0.5 inline-flex items-center gap-0.5 rounded-full px-1.5 text-[10px] font-medium text-primary hover:underline hover:cursor-pointer">
+                  Detail
+                </button>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+      <StockMinusModal
+        show={stockMinusOpen}
+        onClose={() => setStockMinusOpen(false)}
+      />
+    </>
   );
 }
