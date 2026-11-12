@@ -59,14 +59,14 @@ export function applyGiftFilters(
 
     case "per-member":
       conditions.push(
-        `dtl_cusno = ANY(SELECT DISTINCT kd_member FROM m_gift_h WHERE kd_promosi = $${params.length + 1})`,
+        `dtl_cusno = ANY(SELECT DISTINCT kd_member FROM m_gift_h WHERE kd_promosi = ANY($${params.length + 1}))`,
       );
       params.push(gift);
       break;
 
     case "per-struk":
       conditions.push(
-        `dtl_struk = ANY(SELECT DISTINCT to_char(tgl_trans,'yyyymmdd')||create_by||trans_no||'S' FROM m_gift_h WHERE kd_promosi = $${params.length + 1})`,
+        `dtl_struk = ANY(SELECT DISTINCT to_char(tgl_trans,'yyyymmdd')||create_by||trans_no||'S' FROM m_gift_h WHERE kd_promosi = ANY($${params.length + 1}))`,
       );
       params.push(gift);
       break;

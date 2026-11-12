@@ -1,7 +1,14 @@
 // /src/utils/filters/FiltersDetailStruk.ts
 import { FilterDetailStrukInput } from "@/schema/filterDetailStruk";
 import { normalizeToArray } from "@/utils/normalizeToArray";
-import { applyGiftFilters, GiftReportType } from "@/utils/filters/GiftFilters";
+import {
+  applyGiftFilters,
+  GiftReportType,
+} from "@/utils/filters/shared/GiftFilters";
+import {
+  applyCashbackFilters,
+  CashbackReportType,
+} from "@/utils/filters/shared/CashbackFilters";
 import { applyStrukFilters } from "./StrukFilters";
 import type { QueryParam } from "@/types/queryParams";
 
@@ -125,20 +132,14 @@ export const FilterDetailStruk = (filters: FilterDetailStrukInput) => {
     params.push(filters.subOutlet);
   }
   // Filter Cash Back
-  const cashbacks = normalizeToArray(filters.cashback);
-  if (cashbacks.length > 0) {
-    if (cashbacks.length === 1) {
-      conditions.push(
-        `dtl_struk = ANY(select distinct to_char(tgl_trans,'yyyymmdd')||create_by||trans_no||'S' as cashback_struk from m_promosi_h where kd_promosi = $${params.length + 1})`,
-      );
-      params.push(cashbacks[0]);
-    } else {
-      conditions.push(
-        `dtl_struk = ANY(select distinct to_char(tgl_trans,'yyyymmdd')||create_by||trans_no||'S' as cashback_struk from m_promosi_h where kd_promosi = ANY($${params.length + 1}))`,
-      );
-      params.push(cashbacks);
-    }
-  }
+  applyCashbackFilters(
+    {
+      kodeCashback: filters.cashback,
+      reportType: filters.selectedReport as CashbackReportType,
+    },
+    conditions,
+    params,
+  );
 
   // Filter Cashback Aktif
   if (filters.cbAktif && filters.cbAktif !== "") {
