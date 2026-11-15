@@ -1,7 +1,8 @@
-import type { ColumnConfig } from "@/types/report";
+import { ColumnConfig } from "@/types/report";
 
 export type MonitoringPoStockProdukRows = {
   div: string;
+  nama_div: string;
   dept: string;
   kat: string;
   plu: string;
@@ -26,15 +27,26 @@ export type MonitoringPoStockProdukRows = {
   minorder: number;
   kd_supl: string;
   nama_supplier: string;
+  mpl_namamonitoring: string | null;
 };
 
 export const monitoringPoStockProdukColumns: ColumnConfig<MonitoringPoStockProdukRows>[] =
   [
     { field: "div", label: "Divisi" },
+    { field: "nama_div", label: "Nama Divisi" },
     { field: "dept", label: "Departemen" },
     { field: "kat", label: "Kategori" },
     { field: "plu", label: "PLU", isSearchable: true },
-    { field: "nama_barang", label: "Nama Barang", isSearchable: true },
+    {
+      field: "nama_barang",
+      label: "Nama Barang",
+      isSearchable: true,
+      render: (v: unknown) => (
+        <span className="block max-w-[200px] truncate" title={String(v ?? "")}>
+          {String(v ?? "")}
+        </span>
+      ),
+    },
     { field: "frac", label: "Frac" },
     { field: "unit", label: "Unit" },
     { field: "tag", label: "Tag" },
@@ -44,8 +56,26 @@ export const monitoringPoStockProdukColumns: ColumnConfig<MonitoringPoStockProdu
     { field: "acost", label: "ACost" },
     { field: "hgbeli", label: "HGBeli" },
     { field: "po_out", label: "PO Out" },
-    { field: "nopo", label: "No PO", isSearchable: true },
-    { field: "ket", label: "Keterangan", isSearchable: true },
+    {
+      field: "nopo",
+      label: "No PO",
+      isSearchable: true,
+      render: (v: unknown) => (
+        <span className="block max-w-[140px] truncate" title={String(v ?? "")}>
+          {String(v ?? "")}
+        </span>
+      ),
+    },
+    {
+      field: "ket",
+      label: "Keterangan",
+      isSearchable: true,
+      render: (v: unknown) => (
+        <span className="block max-w-[160px] truncate" title={String(v ?? "")}>
+          {String(v ?? "")}
+        </span>
+      ),
+    },
     { field: "sales_jalan", label: "Sales Jalan" },
     { field: "bulan_1", label: "Bulan 1" },
     { field: "bulan_2", label: "Bulan 2" },
@@ -54,5 +84,24 @@ export const monitoringPoStockProdukColumns: ColumnConfig<MonitoringPoStockProdu
     { field: "pkm", label: "PKM" },
     { field: "minorder", label: "Min Order" },
     { field: "kd_supl", label: "Kode Supplier", isSearchable: true },
-    { field: "nama_supplier", label: "Nama Supplier", isSearchable: true },
+    {
+      field: "nama_supplier",
+      label: "Nama Supplier",
+      isSearchable: true,
+      render: (v: unknown) => (
+        <span className="block max-w-[160px] truncate" title={String(v ?? "")}>
+          {String(v ?? "")}
+        </span>
+      ),
+    },
+    {
+      field: "mpl_namamonitoring",
+      label: "Monitoring",
+      isSearchable: true,
+      render: (v: unknown) => (
+        <span className="block max-w-[140px] truncate" title={String(v ?? "")}>
+          {String(v ?? "")}
+        </span>
+      ),
+    },
   ];

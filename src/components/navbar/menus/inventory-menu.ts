@@ -4,6 +4,12 @@ import type { NavbarMenuItem } from "../types";
 
 export const INVENTORY_MENU = [
   {
+    title: "Monitoring PO & Stock Produk",
+    href: "/inventory/monitoring-po-stock-produk",
+    description:
+      "Halaman untuk mengecek status PO dan stock produk, termasuk status PO, status PB, dan status stock.",
+  },
+  {
     title: "Produk Baru",
     href: "/inventory/produk-baru",
     description:

@@ -1,8 +1,8 @@
 export const MonitoringPoStockProdukQuery = (): string => {
   return `
-        
-SELECT
+ SELECT
     p.prd_kodedivisi AS div,
+    div.div_namadivisi AS div_nama,
     p.prd_kodedepartement AS dept,
     p.prd_kodekategoribarang AS kat,
     p.prd_prdcd AS plu,
@@ -43,14 +43,14 @@ SELECT
     k.pkm_pkmt AS pkm,
     k.pkm_minorder AS minorder,
     h.hgb_kodesupplier AS kd_supl,
-    s.sup_namasupplier AS nama_supplier
-
+    s.sup_namasupplier AS nama_supplier,
+    mon.mpl_namamonitoring AS mpl_namamonitoring
 FROM tbmaster_prodmast p
 
 JOIN tbmaster_hargabeli h
     ON h.hgb_prdcd = p.prd_prdcd
    AND h.hgb_tipe = '2'
-
+LEFT JOIN tbmaster_divisi div on prd_kodedivisi = div_kodedivisi
 LEFT JOIN tbmaster_supplier s
     ON s.sup_kodesupplier = h.hgb_kodesupplier
 
@@ -143,6 +143,14 @@ LEFT JOIN tbtr_salesbulanan sl
 LEFT JOIN tbmaster_kkpkm k
     ON k.pkm_prdcd = p.prd_prdcd
 
+LEFT JOIN (
+    SELECT
+        mpl_prdcd,
+        string_agg(DISTINCT mpl_namamonitoring, ' - '
+            ORDER BY mpl_namamonitoring) AS mpl_namamonitoring
+    FROM tbtr_monitoringplu
+    GROUP BY mpl_prdcd
+) mon ON mon.mpl_prdcd = p.prd_prdcd
 CROSS JOIN LATERAL (
     SELECT
         ((EXTRACT(MONTH FROM CURRENT_DATE)::int - 2 + 12) % 12) + 1
@@ -185,6 +193,7 @@ CROSS JOIN LATERAL (
 
 WHERE
     p.prd_prdcd LIKE '%0'
+    AND p.prd_kodedivisi <> '4'
     AND COALESCE(p.prd_kodetag, '-') NOT IN ('N', 'O', 'A', 'X', 'H')
     AND COALESCE(p.prd_flagigr, 'N') = 'Y'
 ORDER BY
