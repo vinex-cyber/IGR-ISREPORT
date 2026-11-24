@@ -35,6 +35,7 @@ type DetailRow = {
   obi_tglpb: string;
   obi_kdmember: string;
   cus_namamember: string;
+  obi_ttlorder: number;
   obi_tipebayar: string;
   obi_shippingservice: string;
   obi_itemorder: string | number;
@@ -98,6 +99,7 @@ const statusConfig: Record<
 };
 
 const ENDPOINT = "klik/status-order";
+const idNumberFormat = new Intl.NumberFormat("id-ID");
 
 export function StatusCard({
   title,
@@ -138,6 +140,7 @@ export function StatusCard({
       { field: "trx", label: "Trx" },
       { field: "obi_nopb", label: "No PB" },
       { field: "obi_kdmember", label: "Member" },
+      { field: "obi_ttlorder", label: "Rp PB" },
       { field: "cus_namamember", label: "Nama Member" },
       { field: "obi_tipebayar", label: "Tipe" },
       { field: "obi_shippingservice", label: "Service" },
@@ -152,6 +155,7 @@ export function StatusCard({
         r.obi_nopb,
         r.obi_kdmember,
         r.cus_namamember,
+        Number(r.obi_ttlorder) || 0,
         r.obi_tipebayar,
         r.obi_shippingservice,
         Number(r.obi_itemorder) || 0,
@@ -227,14 +231,17 @@ export function StatusCard({
               </DialogHeader>
               <div className="max-h-[70vh] overflow-auto rounded-lg border border-border/60">
                 {detailLoading ? (
-                  <p className="p-4 text-sm text-muted-foreground">
+                  <div className="flex items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
+                    <Loader2 className="size-4 animate-spin" aria-hidden />
                     Memuat data...
-                  </p>
+                  </div>
                 ) : rows && rows.length > 0 ? (
-                  <table className="w-full text-left text-sm text-muted-foreground">
-                    <thead className="bg-muted/60 text-xs uppercase text-muted-foreground">
-                      <tr>
-                        <th scope="col" className="px-4 py-3">
+                  <table
+                    aria-label={`Detail ${title}`}
+                    className="w-full min-w-[960px] text-left text-sm text-muted-foreground">
+                    <thead className="sticky top-0 z-10 bg-muted text-xs uppercase tracking-wide text-muted-foreground shadow-sm">
+                      <tr className="whitespace-nowrap">
+                        <th scope="col" className="px-4 py-3 text-center">
                           No
                         </th>
                         <th scope="col" className="px-4 py-3">
@@ -252,6 +259,9 @@ export function StatusCard({
                         <th scope="col" className="px-4 py-3">
                           Member
                         </th>
+                        <th scope="col" className="px-4 py-3 text-right">
+                          Rp PB
+                        </th>
                         <th scope="col" className="px-4 py-3">
                           Tipe
                         </th>
@@ -263,30 +273,49 @@ export function StatusCard({
                         </th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-border/50">
                       {rows.map((row, idx) => (
                         <tr
                           key={
                             row.obi_key ??
                             `${row.trx}-${row.obi_kdmember}-${row.obi_tglpb}-${row.obi_nopb}-${idx}`
                           }
-                          className="border-t border-border/50">
-                          <td className="px-4 py-3">{idx + 1}</td>
-                          <td className="px-4 py-3">{row.status}</td>
-                          <td className="px-4 py-3 whitespace-nowrap tabular-nums">
+                          className="transition-colors hover:bg-muted/40">
+                          <td className="px-4 py-3 text-center tabular-nums">
+                            {idx + 1}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3">
+                            {row.status}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 tabular-nums">
                             {FormatTanggal(row.obi_tglpb)}
                           </td>
-                          <td className="px-4 py-3">{row.trx}</td>
-                          <td className="px-4 py-3">{row.obi_notrans}</td>
-                          <td className="px-4 py-3">
-                            {row.obi_kdmember} - {row.cus_namamember}
+                          <td className="whitespace-nowrap px-4 py-3">
+                            {row.trx}
                           </td>
-                          <td className="px-4 py-3">{row.obi_tipebayar}</td>
+                          <td className="whitespace-nowrap px-4 py-3">
+                            {row.obi_notrans}
+                          </td>
                           <td className="px-4 py-3">
+                            <div
+                              className="max-w-56 truncate"
+                              title={`${row.obi_kdmember} - ${row.cus_namamember}`}>
+                              {row.obi_kdmember} - {row.cus_namamember}
+                            </div>
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                            {idNumberFormat.format(
+                              Number(row.obi_ttlorder) || 0,
+                            )}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3">
+                            {row.obi_tipebayar}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3">
                             {row.obi_shippingservice}
                           </td>
-                          <td className="px-4 py-3 text-right tabular-nums">
-                            {Intl.NumberFormat("id-ID").format(
+                          <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                            {idNumberFormat.format(
                               Number(row.obi_itemorder) || 0,
                             )}
                           </td>
@@ -295,7 +324,7 @@ export function StatusCard({
                     </tbody>
                   </table>
                 ) : (
-                  <p className="p-4 text-sm text-muted-foreground">
+                  <p className="p-8 text-center text-sm text-muted-foreground">
                     Tidak ada data.
                   </p>
                 )}
