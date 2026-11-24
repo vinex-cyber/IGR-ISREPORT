@@ -239,7 +239,7 @@ export function StatusCard({
                   <table
                     aria-label={`Detail ${title}`}
                     className="w-full min-w-[960px] text-left text-sm text-muted-foreground">
-                    <thead className="sticky top-0 z-10 bg-muted text-xs uppercase tracking-wide text-muted-foreground shadow-sm">
+                    <thead className="sticky top-0 z-10 border-b border-border/60 bg-muted text-xs uppercase tracking-wide text-muted-foreground shadow-sm">
                       <tr className="whitespace-nowrap">
                         <th scope="col" className="px-4 py-3 text-center">
                           No
@@ -280,30 +280,44 @@ export function StatusCard({
                             row.obi_key ??
                             `${row.trx}-${row.obi_kdmember}-${row.obi_tglpb}-${row.obi_nopb}-${idx}`
                           }
-                          className="transition-colors hover:bg-muted/40">
+                          className="even:bg-muted/20 transition-colors hover:bg-muted/50">
                           <td className="px-4 py-3 text-center tabular-nums">
                             {idx + 1}
                           </td>
                           <td className="whitespace-nowrap px-4 py-3">
-                            {row.status}
+                            <span
+                              className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${
+                                statusConfig[row.status]?.bg ?? "bg-muted"
+                              } ${
+                                statusConfig[row.status]?.border ??
+                                "border-border"
+                              } ${
+                                statusConfig[row.status]?.color ??
+                                "text-foreground"
+                              }`}>
+                              <span aria-hidden>
+                                {statusConfig[row.status]?.icon}
+                              </span>
+                              {row.status}
+                            </span>
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 tabular-nums">
                             {FormatTanggal(row.obi_tglpb)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3">
+                          <td className="whitespace-nowrap px-4 py-3 font-medium text-foreground">
                             {row.trx}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3">
+                          <td className="whitespace-nowrap px-4 py-3 font-medium text-foreground">
                             {row.obi_notrans}
                           </td>
                           <td className="px-4 py-3">
                             <div
-                              className="max-w-56 truncate"
+                              className="max-w-56 truncate font-medium text-foreground"
                               title={`${row.obi_kdmember} - ${row.cus_namamember}`}>
                               {row.obi_kdmember} - {row.cus_namamember}
                             </div>
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                          <td className="whitespace-nowrap px-4 py-3 text-right font-medium tabular-nums text-foreground">
                             {idNumberFormat.format(
                               Number(row.obi_ttlorder) || 0,
                             )}
@@ -314,7 +328,7 @@ export function StatusCard({
                           <td className="whitespace-nowrap px-4 py-3">
                             {row.obi_shippingservice}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                          <td className="whitespace-nowrap px-4 py-3 text-right font-medium tabular-nums text-foreground">
                             {idNumberFormat.format(
                               Number(row.obi_itemorder) || 0,
                             )}
