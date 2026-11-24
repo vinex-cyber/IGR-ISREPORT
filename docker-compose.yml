@@ -1,0 +1,19 @@
+# Jalankan: docker compose --env-file .env.local up --build -d
+# STRUK_HOST_PATH boleh diisi share/host mount yang sudah disiapkan,
+# misalnya //192.168.226.194/d/GROSIR/STRUK
+
+services:
+  app:
+    build:
+      context: .
+    env_file:
+      - .env.local
+    environment:
+      NODE_ENV: production
+      # Di container, path struk memakai mount POSIX, bukan UNC Windows.
+      STRUK_DIRECTORY_IGR: /mnt/struk
+    ports:
+      - "5000:5000"
+    volumes:
+      - ${STRUK_HOST_PATH:-/mnt/struk}:/mnt/struk
+    restart: unless-stopped

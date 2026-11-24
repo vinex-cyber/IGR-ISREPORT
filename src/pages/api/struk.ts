@@ -113,15 +113,16 @@ export default async function handler(
 
   const isIkiosk = ["IK1", "IK2", "IK3"].includes(kasir);
 
+  // path.join memakai separator sesuai OS: UNC di Windows, mount POSIX di container.
   const filePath = isIkiosk
-    ? path.win32.join(
+    ? path.join(
         STRUK_DIRECTORY,
         "IKIOSK",
         folderTanggal,
         station,
         filename,
       )
-    : path.win32.join(STRUK_DIRECTORY, folderTanggal, station, filename);
+    : path.join(STRUK_DIRECTORY, folderTanggal, station, filename);
 
   try {
     const content = await fs.readFile(filePath, "utf8");
